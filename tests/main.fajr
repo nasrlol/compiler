@@ -1,0 +1,6 @@
+module file;
+
+void main()
+{
+    s32 value = 0;
+}
