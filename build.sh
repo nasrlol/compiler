@@ -13,9 +13,9 @@ CLEAN=0
 ASAN=0
 DEBUG=1
 RELEASE=0
-TARGET_FAJR=0
+TARGET=0
 
-[ "$#" = 0 ] && TARGET_FAJR=1
+[ "$#" = 0 ] && TARGET=1
 for ARG in "$@"; do eval "$ARG=1" 2>/dev/null || :; done
 
 [ "$RELEASE" = 1 ] && DEBUG=0
@@ -31,7 +31,7 @@ compile() {
     local LINKER="-lm -ldl -lpthread"
 
     local FLAGS="$COMMON $WARNINGS $CLANG"
-    
+
     [ "$DEBUG" = 1 ]   && FLAGS="$FLAGS -g -ggdb3"
     [ "$RELEASE" = 1 ] && FLAGS="$FLAGS -O3"
     [ "$ASAN" = 1 ]    && FLAGS="$FLAGS -fsanitize=address -fsanitize-trap -Isource"
@@ -45,8 +45,8 @@ if [ "$CLEAN" = 1 ]; then
     echo "Cleaned $BUILD"
 fi
 
-if [ "$TARGET_FAJR" = 1 ] || [ "${fajr:-0}" = 1 ]; then
-    compile "./source/fajr/fajr_main.c" "compiler"
+if [ "$TARGET" = 1 ] || [ "${compiler:-0}" = 1 ]; then
+    compile "./source/compiler/compiler_main.c" "compiler"
 fi
 
 echo "Done."

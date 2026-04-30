@@ -1,6 +1,8 @@
 module file;
 
-void main()
-{
-    s32 value = 0;
-}
+
+func :: main :: x, y, z :: void
+    s32 value := 0
+    value = 5
+
+end :: main

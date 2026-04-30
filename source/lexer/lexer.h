@@ -1,5 +1,5 @@
-#ifndef FAJR_LEXER_H
-#define FAJR_LEXER_H
+#ifndef LEXER_H
+#define LEXER_H
 
 typedef enum token_type token_type;
 enum token_type
@@ -88,7 +88,8 @@ struct lexer
     u8 *UndefinedTokens;
 };
 
-global_variable const u8 Delimiters[] =
+global_variable const
+u8 Delimiters[] =
 {
     '{',
     '}',
@@ -99,7 +100,8 @@ global_variable const u8 Delimiters[] =
     ';',
 };
 
-read_only global_variable token nil_token =
+read_only global_variable
+token nil_token =
 {
     .Lexeme     = {NULL, 0},
     .Type       = TokenUndefined,
@@ -109,11 +111,12 @@ read_only global_variable token nil_token =
     .Line       = 0,
 };
 
-read_only global_variable token_node nil_token_node =
+read_only global_variable
+token_node nil_token_node =
 {
     .Next     = &nil_token_node,
     .Previous = &nil_token_node,
     .Token    = NULL,
 };
 
-#endif // FAJR_LEXER_H
+#endif /* LEXER_H */

@@ -1,10 +1,10 @@
 #define BASE_UNITY
 #include "base/base_include.h"
-#include "fajr_lexer/fajr_lexer.h"
-#include "fajr_parser/fajr_parser.h"
+#include "lexer/lexer.h"
+#include "parser/parser.h"
 
-#include "fajr_lexer/fajr_lexer.c"
-#include "fajr_parser/fajr_parser.c"
+#include "lexer/lexer.c"
+#include "parser/parser.c"
 
 int
 main(int argc, char **argv)
