@@ -5,14 +5,20 @@
 #define _GNU_SOURCE
 #endif
 
+#if 1
 extern long syscall(long number, ...);
+#endif
 
+#ifdef __linux__
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/syscall.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#else __defined(_WIN32)
+#include <windows.h>
+#endif
 #include <time.h>
 #include <math.h>
 #include <string.h>

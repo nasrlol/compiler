@@ -11,7 +11,6 @@
 #define MiB(n) (((u64)(n)) << 20)
 #define GiB(n) (((u64)(n)) << 30)
 
-
 typedef struct mem_arena  mem_arena;
 struct mem_arena
 {
@@ -28,43 +27,17 @@ struct temp_arena
     u64        start_position;
 };
 
-#endif /* BASE_ARENA_H */
+// platform specific allocation implementations
+#if defined(_WIN32)
+#include base_arena_windows.h
+#elif defined(__linux__)
+#include base_arena_linux.h
+#else
+#endif
 
-#ifdef BASE_IMPLEMENTATION
-internal mem_arena *
-arena_create(u64 capacity)
-{
-    mem_arena *arena = (mem_arena *)mmap(
-    /* kernel decides where to throw the arena */
-    NULL,
-    capacity + sizeof(mem_arena),
-    PROT_READ | PROT_WRITE,
-    MAP_SHARED | MAP_ANONYMOUS,
-    -1,
-    0);
+#define arena_create(capacity) _arena_create(capacity)
+#define arena_destroy(arena) _arena_destroy(arena)
 
-    if (arena == MAP_FAILED)
-    {
-        return NULL;
-    }
-
-    arena->capacity          = capacity;
-    arena->base_position     = (u8 *)arena + sizeof(mem_arena);
-    arena->current_position  = 0;
-    arena->previous_position = 0;
-
-    return arena;
-}
-
-internal void
-arena_destroy(mem_arena *arena)
-{
-    if (!arena)
-    {
-        return;
-    }
-    munmap(arena, arena->capacity + sizeof(mem_arena));
-}
 internal void *
 arena_alloc(mem_arena *arena, u64 size, b32 zero)
 {
@@ -171,4 +144,4 @@ temp_arena_end(temp_arena temp)
     temp.arena->current_position = temp.start_position;
 }
 
-#endif
+#endif /* BASE_ARENA_H */
