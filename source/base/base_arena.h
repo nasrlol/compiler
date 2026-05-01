@@ -29,14 +29,14 @@ struct temp_arena
 
 // platform specific allocation implementations
 #if defined(_WIN32)
-#include base_arena_windows.h
+#include "base_arena_windows.h"
 #elif defined(__linux__)
-#include base_arena_linux.h
+#include "base_arena_linux.h"
 #else
 #endif
 
-#define arena_create(capacity) _arena_create(capacity)
-#define arena_destroy(arena) _arena_destroy(arena)
+#define ArenaCreate(capacity) _arena_create(capacity)
+#define ArenaDestroy(arena) _arena_destroy(arena)
 
 internal void *
 arena_alloc(mem_arena *arena, u64 size, b32 zero)

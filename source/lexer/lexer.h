@@ -34,8 +34,8 @@ enum token_type
 typedef struct Tokenizer Tokenizer;
 struct Tokenizer
 {
-    i32 Line;
-    i32 Column;
+    s32 line;
+    s32 column;
 };
 
 typedef enum token_flags token_flags;
@@ -54,12 +54,12 @@ enum token_flags
 typedef struct token token;
 struct token
 {
-    string8     Lexeme;
-    token_type  Type;
-    token_flags Flags;
-    u64         ByteOffset;
-    i32         Column;
-    i32         Line;
+    string8     lexeme;
+    token_type  type;
+    token_flags flags;
+    u64         byteOffset;
+    s32         column;
+    s32         line;
 
     string8 MetaData;
 };
@@ -67,29 +67,29 @@ struct token
 typedef struct token_node token_node;
 struct token_node
 {
-    token_node *Next;
-    token_node *Previous;
-    token      *Token;
+    token_node *next;
+    token_node *previous;
+    token_node *child;
+    token_node *parent;
+    token      *token;
 };
 
-typedef struct token_list token_list;
-struct token_list
+typedef struct token_tree token_tree;
+struct token_tree
 {
-    token_node *Root;
-    token_node *Current;
+    token_node *root;
+    token_node *current;
 };
 
 typedef struct lexer lexer;
 struct lexer
 {
-    u8 *Text;
-    u64 TextCount;
-    u8 *EndOfFile;
-    u8 *UndefinedTokens;
+    string8 *text;
+    u8 *undefinedTokens;
 };
 
 global_variable const
-u8 Delimiters[] =
+u8 delimiters[] =
 {
     '{',
     '}',
@@ -103,20 +103,20 @@ u8 Delimiters[] =
 read_only global_variable
 token nil_token =
 {
-    .Lexeme     = {NULL, 0},
-    .Type       = TokenUndefined,
-    .Flags      = FlagNone,
-    .ByteOffset = 0,
-    .Column     = 0,
-    .Line       = 0,
+    .lexeme     = {NULL, 0},
+    .type       = TokenUndefined,
+    .flags      = FlagNone,
+    .byteOffset = 0,
+    .column     = 0,
+    .line       = 0,
 };
 
 read_only global_variable
 token_node nil_token_node =
 {
-    .Next     = &nil_token_node,
-    .Previous = &nil_token_node,
-    .Token    = NULL,
+    .next     = &nil_token_node,
+    .previous = &nil_token_node,
+    .token    = NULL,
 };
 
 #endif /* LEXER_H */

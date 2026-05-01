@@ -104,10 +104,13 @@ _os_read(int fd, const void *buf, u64 count)
 internal void
 os_print_stdout_format(char *format, ...)
 {
+
+#ifdef BASE_LOGGING
     va_list arguments;
     va_start(arguments, format);
     vprintf(format, arguments);
     va_end(arguments);
+#endif
 }
 
 #endif /* BASE_OS_H */

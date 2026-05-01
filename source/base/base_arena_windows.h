@@ -20,13 +20,13 @@ _arena_create(u64 capacity)
 	return arena;
 }
 
-internal mem_arena *
+internal void
 _arena_destroy(mem_arena *arena)
 {
-	if (!arena)
-	{
+	if (!arena) {
 		return NULL;
 	}
+
 	VirtualFree(arena, 0, MEM_RELEASE);
 	return NULL;
 }
