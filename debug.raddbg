@@ -1,0 +1,15 @@
+// raddbg 0.9.26 project file
+
+target:
+{
+  executable: "build/compiler.exe"
+  working_directory: source
+  enabled: 1
+  label: compiler
+  arguments: "W:/compiler/test/main.fajr"
+}
+watch_pin:
+{
+  expression: "#ifdef BASE_IMPLEMENTATION"
+  source_location: "source/base/base_string.h:85:1"
+}
