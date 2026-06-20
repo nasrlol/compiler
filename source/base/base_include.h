@@ -9,14 +9,14 @@
 extern long syscall(long number, ...);
 #endif
 
+#if defined(__linux__)
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/syscall.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#if 0
+#elif defined(_WIN32)
 #include <windows.h>
 #endif
 
