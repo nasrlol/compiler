@@ -1,7 +1,8 @@
-module file;
+use file;
 
-func main(x, y, z) :: void
-{
-    s32 value := 0
-    value = 5
+func main(x : s32, y: s32, z s64) :: void {
+
+	result: u64 = x + y + z;
+
+	return;
 }
