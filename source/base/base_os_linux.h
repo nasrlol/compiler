@@ -3,7 +3,7 @@
 
 //- file stuff
 internal string8
-_file_load(mem_arena *arena, const char *path)
+_file_load_linux(mem_arena *arena, const char *path)
 {
   string8 result = {0};
   struct stat sbuf = {0};
@@ -35,7 +35,7 @@ _file_load(mem_arena *arena, const char *path)
 }
 
 internal string8
-_file_write(const char *path, string8 data)
+_file_write_linux(const char *path, string8 data)
 {
   string8 result = {0};
   s32 file = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -62,6 +62,12 @@ _file_write(const char *path, string8 data)
 }
 
 //- stdout stuff etc
+
+//
+// TODO: improve the API interface for a better linux logging system
+// and prepare to seperate it from the windows api system
+//
+
 #if 1
 internal s64
 os_write(int fd, const void *buf, u64 count)

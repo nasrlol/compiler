@@ -28,8 +28,19 @@
 #endif
 
 
-//- file reading and handling
-#define FileLoad(arena, path) _file_load(arena, path)
-#define FileWrite(data, path) _file_write(data, path)
+
+//- file reading, writing and checking
+#if defined(__linux__)
+
+#elif defined(__WIN32)
+#define FileLoad(arena, path) _file_load_into_memory_win32(arena, path)
+#define FileWrite(data, path) _file_write_win32(data, path)
+#define FileExists(path)      _file_exists_win32(path)
+
+#else
+// TODO: error unsupported platform
+
+#endif
+
 
 #endif /* BASE_OS_LINUX_H */

@@ -3,7 +3,7 @@
 
 // credits: luca
 internal b32
-_file_exists(u8 *path) {
+_file_exists_win32(u8 *path) {
 
   DWORD attributes = GetFileAttributes(path);
 
@@ -22,7 +22,7 @@ _file_exists(u8 *path) {
 
 // TODO: fix
 internal b32
-_file_write(mem_arena *arena, u8 *file) {
+_file_write_win32(mem_arena *arena, u8 *file) {
 
   b32 result = false;
 
@@ -45,7 +45,8 @@ _file_write(mem_arena *arena, u8 *file) {
 
 }
 
-internal string8 _file_load_into_memory(u8 *file) {
+internal string8
+_file_load_into_memory_win32(u8 *file) {
 
   string8 result = {0};
 
