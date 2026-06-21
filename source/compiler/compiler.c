@@ -8,7 +8,6 @@
 #include "parser.h"
 #include "parser.c"
 
-
 int main(int argc, char **argv) {
   string8 path = {0};
 
