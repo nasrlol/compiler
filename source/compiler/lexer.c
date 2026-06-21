@@ -1,3 +1,4 @@
+
 internal token_tree *
 lex(mem_arena *lexical_arena, string8 *buffer) {
 
@@ -15,6 +16,12 @@ lex(mem_arena *lexical_arena, string8 *buffer) {
     while(is_alpha(buffer->data[jump_index])) {
       if (token_end == True) {
         token_node *node = PushStruct(lexical_arena, token_node);
+        // push the node
+        {
+          // 6/21: was here pushing the node
+
+
+        }
         break;
       } else {
 

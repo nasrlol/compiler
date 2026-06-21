@@ -1,6 +1,11 @@
+// compiler
+
+//- base stuff
 #define BASE_INCLUDE
 #define BASE_IMPLEMENTATION
 #include "base/base_include.h"
+
+//- compiler includes
 
 #include "lexer.h"
 #include "lexer.c"
@@ -8,6 +13,7 @@
 #include "parser.h"
 #include "parser.c"
 
+//- entry point
 int main(int argc, char **argv) {
   string8 path = {0};
 
