@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
   // parse the buffer into a token tree
 
   token_tree *tt =  lex(global_arena, &path);
+  token
 
 
-  return 0;
+    return 0;
 }
