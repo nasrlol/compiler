@@ -1,12 +1,6 @@
 #ifndef BASE_OS_LINUX_H
 #define BASE_OS_LINUX_H
 
-#if defined(__linux__)
-#include "base_os_linux.h"
-#elif defined(__WIN32)
-#include "base_os_windows.h"
-#endif
-
 #define STDIN_FD  0
 #define STDOUT_FD 1
 #define STDERR_FD 2
@@ -32,6 +26,7 @@
 //- file reading, writing and checking
 #if defined(__linux__)
 #elif defined(_WIN32) || defined(_WIN64)
+
 #define FileLoad(arena, path) _file_load_into_memory_win32(arena, path)
 #define FileWrite(data, path) _file_write_win32(data, path)
 #define FileExists(path)      _file_exists_win32(path)

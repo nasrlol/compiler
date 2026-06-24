@@ -71,7 +71,7 @@ string8_appendc(String8 *buf, u8 c) {
  buf->size += 1;
 }
 
-read_only global_variable
+ReadOnly global_variable
 String8 nil_string = { NULL, 0};
 
 #endif /* BASE_STRING_H */

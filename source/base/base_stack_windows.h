@@ -1,29 +1,29 @@
 #ifndef BASE_STACK_WINDOWS_H
 #define BASE_STACK_WINDOWS_H
 
-internal mem_stack *
+internal MemStack *
 _stack_create(u64 capacity)
 {
-  mem_stack *stack = (mem_stack*)VirtualAlloc(
+    MemStack *stack = (MemStack*)VirtualAlloc(
                                               NULL,
                                               capacity + sizeof(mem_stack),
                                               MEM_COMMIT | MEM_RESERVE,
                                               PAGE_READWRITE);
 
 
-  return stack;
+    return stack;
 }
 
 internal void *
-_stack_destroy(mem_stack* stack)
+_stack_destroy(MemStack* stack) {
 
-b32 result = VirtualFree(stack,
-                         0, // stands for the byte of commited pages
-                         MEM_RELEASE);
+    b32 result = VirtualFree(stack,
+                             0, // stands for the byte of commited pages
+                             MEM_RELEASE);
 
-if (!result) {
-  // TODO: Logging
-}
+    if (!result) {
+        // TODO: Logging
+    }
 
 }
 
