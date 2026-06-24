@@ -13,3 +13,8 @@ watch_pin:
   expression: "#ifdef BASE_IMPLEMENTATION"
   source_location: "source/base/base_string.h:85:1"
 }
+watch_pin:
+{
+  expression: nil_token_node
+  source_location: "source/lexer.h:166:1"
+}

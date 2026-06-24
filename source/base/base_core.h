@@ -27,13 +27,12 @@
 #define MemCpy(dest, src, len) memcpy((dest), (src), (len))
 #define MemSet(dest, len) memset((dest), (0), (len))
 
-#if COMPILER_MSVC
-#pragma section(".rdata$", read)
-#define read_only __declspec(allocate(".rdata$"))
+#pragma section("read_only",read)
+
+#if defined(_MSC_VER)
+#define ReadOnly __declspec(allocate("read_only"))
 #elif defined(__GNUC__) || defined(__clang__)
-#define read_only __attribute__((section(".rodata")))
-#else
-#define read_only
+#define ReadOnly __attribute__((section(".rodata")))
 #endif
 
 typedef uint64_t u64;
@@ -71,15 +70,15 @@ typedef intptr_t  smm;
 
 internal inline b8
 is_pow(umm x) {
-  return (x & (x - 1)) == 0;
+ return (x & (x - 1)) == 0;
 }
 
 internal inline u64
 align(u64 pointer, umm alignment) {
-  if ((alignment & (alignment - 1)) == 0) {
-    return pointer;
-  }
-  return (pointer + alignment - 1) & ~(alignment - 1);
+ if ((alignment & (alignment - 1)) == 0) {
+  return pointer;
+ }
+ return (pointer + alignment - 1) & ~(alignment - 1);
 }
 
 
