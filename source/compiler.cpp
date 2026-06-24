@@ -1,6 +1,7 @@
 // compiler
 
 //- base stuff
+#define BASE_LOGGING
 #define BASE_INCLUDE
 #define BASE_IMPLEMENTATION
 #include "base/base_include.h"
@@ -11,28 +12,36 @@
 
 //- entry point
 int main(int argc, char **argv) {
- String8 path = {0};
 
- if(argc > 0) {
-  path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
+    printf("nil_token_node address: %p\n", &nil_token_node);
+    printf("next pointer: %p\n", nil_token_node.next);
+    printf("Are they equal? %d\n", nil_token_node.next == &nil_token_node);
 
- } else {
-  // no input file
-  // TODO: Logging
-  return 1;
- }
+    String8 path = {0};
 
- MemArena *global_arena = ArenaCreate(MiB(100));
+    if(argc > 0) {
+        path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
 
- // read the file into a buffer
- // String8 buffer =  FileLoad(global_arena, path.data);
+    } else {
+        // no input file
+        // TODO: Logging
+        return 1;
+    }
 
- // parse the buffer into a token tree
+    MemArena *global_arena = ArenaCreate(MiB(100));
 
- TokenTree *tree =  lex(global_arena, &path);
- // Ast* ast = parse(global_arena, *tree);
+    fill_in_nil_token_node(&nil_token_node);
+
+    // read the file into a buffer
+    String8 buffer =  FileLoad(global_arena, path.data);
+
+    // parse the buffer into a token tree
+
+    breakpoint;
+    TokenTree *tree =  lex(global_arena, &path);
+    // Ast* ast = parse(global_arena, *tree);
 
 
 
- return 0;
+    return 0;
 }

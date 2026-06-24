@@ -35,7 +35,7 @@ struct Ast {
 };
 
 // TODO(nasr): implement this later together with file handling
-read_only global_variable
+ReadOnly global_variable
 SyntaxNode nil_syntax_node =
 {
  &nil_syntax_node,     // first
@@ -45,9 +45,8 @@ SyntaxNode nil_syntax_node =
  &nil_token,           // token
 };
 
-read_only global_variable
-ConcreteSyntaxTree nil_concrete_syntax_tree =
-{
+ReadOnly global_variable
+Ast nil_concrete_syntax_tree = {
  &nil_syntax_node,      // root
  &nil_syntax_node,      // currrent
 };
