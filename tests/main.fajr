@@ -1,8 +1,8 @@
-use file;
+#use module;
 
-func main(x : s32, y: s32, z s64) :: void {
+func main(x : s32, y: s32, z s64) (int, string, float)  {
 
 	result: u64 = x + y + z;
 
-	return;
+	return {4, "Hello World", 9};
 }
