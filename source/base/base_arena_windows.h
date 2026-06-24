@@ -1,26 +1,26 @@
 #ifndef BASE_ARENA_WINDOWS_H
 #define BASE_ARENA_WINDOWS_H
 
-internal mem_arena *
+internal MemArena *
 _arena_create(u64 capacity) {
-  mem_arena *arena = (mem_arena *)VirtualAlloc(
-                                               NULL,
-                                               capacity + sizeof(mem_arena),
-                                               MEM_COMMIT | MEM_RESERVE,
-                                               PAGE_READWRITE);
+  MemArena *arena = (MemArena *)VirtualAlloc(
+                                             NULL,
+                                             capacity + sizeof(MemArena),
+                                             MEM_COMMIT | MEM_RESERVE,
+                                             PAGE_READWRITE);
   if (!arena) {
     return NULL;
   }
 
   arena->capacity          = capacity;
-  arena->base_position     = (u8 *)arena + sizeof(mem_arena);
+  arena->base_position     = (u8 *)arena + sizeof(MemArena);
   arena->current_position  = 0;
   arena->previous_position = 0;
   return arena;
 }
 
 internal void
-_arena_destroy(mem_arena *arena) {
+_arena_destroy(MemArena *arena) {
   if (!arena) {
     return;
   }

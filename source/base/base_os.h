@@ -31,8 +31,7 @@
 
 //- file reading, writing and checking
 #if defined(__linux__)
-
-#elif defined(__WIN32)
+#elif defined(_WIN32) || defined(_WIN64)
 #define FileLoad(arena, path) _file_load_into_memory_win32(arena, path)
 #define FileWrite(data, path) _file_write_win32(data, path)
 #define FileExists(path)      _file_exists_win32(path)

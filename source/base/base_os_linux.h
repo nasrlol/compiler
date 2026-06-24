@@ -3,7 +3,7 @@
 
 //- file stuff
 internal string8
-_file_load_linux(mem_arena *arena, const char *path)
+_file_load_linux(MemArena *arena, const char *path)
 {
   string8 result = {0};
   struct stat sbuf = {0};

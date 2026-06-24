@@ -1,28 +1,27 @@
+// credits: luca
 #ifndef BASE_OS_WINDOWS_H
 #define BASE_OS_WINDOWS_H
 
-// credits: luca
+internal inline
+s32 safe_truncate_64(u64 value) {
+  Assert(value <= (u64)~0);
+  return (u32)value;
+}
+
 internal b32
 _file_exists_win32(u8 *path) {
-
   DWORD attributes = GetFileAttributes(path);
-
   //
   // make sure that the file has proper attributes and is not a directory
   //
   return ( attributes != INVALID_FILE_ATTRIBUTES || !(Attributes & FILE_ATTRIBUTES_DIRECTORY));
-
-
 }
-
-
 
 //- file stuff
 
-
 // TODO: fix
 internal b32
-_file_write_win32(mem_arena *arena, u8 *file) {
+_file_write_win32(MemArena *arena, u8 *file) {
 
   b32 result = false;
 
@@ -45,10 +44,10 @@ _file_write_win32(mem_arena *arena, u8 *file) {
 
 }
 
-internal string8
-_file_load_into_memory_win32(u8 *file) {
+internal String8
+_file_load_into_memory_win32(MemArena *arena, u8 *file) {
 
-  string8 result = {0};
+  String8 result = {0};
 
   HANDLE file_handle = CreateFileA(file,
                                    GENERIC_READ,
@@ -99,12 +98,5 @@ _file_load_into_memory_win32(u8 *file) {
   }
 
 }
-
-internal inline
-s32 safe_truncate_64(/* TODO: */) {
-
-}
-
-
 
 #endif

@@ -3,17 +3,16 @@
 
 
 //-
-typedef struct mem_stack_header mem_stack_header;
-struct mem_stack_header {
+typedef struct MemStackHeader MemStackHeader;
+struct MemStackHeader {
   u8 padding;
   u8 previous_offset;
 };
 
 
-typedef struct mem_stack mem_stack;
-struct mem_stack {
-  mem_stack_header *header;
-
+typedef struct MemStack MemStack;
+struct MemStack {
+  MemStackHeader *header;
   u64 current_offset;
   u64 capacity;
   u8 *base_position;
@@ -33,7 +32,7 @@ struct mem_stack {
 
 internal u8
 calculate_padding(u64 pointer, u8 alignment, u64 header_size) {
-  u8 modulo, padding;
+ u8 modulo,padding;
 
   if (!is_pow(alignment)) {
     return 0;
@@ -62,8 +61,8 @@ calculate_padding(u64 pointer, u8 alignment, u64 header_size) {
 }
 
 
-internal mem_stack *
-stack_push_align(mem_stack *stack, u64 size, u8 alignment) {
+internal MemStack *
+stack_push_align(MemStack *stack, u64 size, u8 alignment) {
   u8 padding = 0;
 
   if (!is_pow(alignment)) {
@@ -75,7 +74,7 @@ stack_push_align(mem_stack *stack, u64 size, u8 alignment) {
   }
 
   u64 current_address = (u64)stack->base_position + stack->current_offset;
-  padding             = calculate_padding(current_address, alignment, sizeof(mem_stack_header));
+  padding             = calculate_padding(current_address, alignment, sizeof(MemStackHeader));
 
   if (stack->current_offset + padding + size > stack->capacity) {
     return 0;
@@ -84,24 +83,24 @@ stack_push_align(mem_stack *stack, u64 size, u8 alignment) {
   stack->current_offset += padding;
 
   u64               next_address = current_address + (u64)padding;
-  mem_stack_header *header       = (mem_stack_header *)(next_address - sizeof(mem_stack_header));
+  MemStackHeader *header       = (MemStackHeader *)(next_address - sizeof(MemStackHeader));
   header->padding                = padding;
 
   stack->current_offset += size;
 
-  return MemSet((void *)next_address, size);
+  return (MemStack *)MemSet((MemStack *)next_address, size);
 }
 
 internal void *
-stack_push(mem_stack *stack, u64 size) {
+stack_push(MemStack *stack, u64 size) {
   return stack_push_align(stack, size, arena_align);
 }
 
 internal void
-stack_pop(mem_stack *stack, void *pointer) {
+stack_pop(MemStack *stack, void *pointer) {
   if (pointer != NULL) {
     u64               start, end, current_address;
-    mem_stack_header *header;
+    MemStackHeader *header;
     u64               prev_offset;
 
     start           = (u64)stack->base_position;
@@ -119,14 +118,14 @@ stack_pop(mem_stack *stack, void *pointer) {
       return;
     }
 
-    header                = (mem_stack_header *)(current_address - sizeof(mem_stack_header));
+    header                = (MemStackHeader *)(current_address - sizeof(MemStackHeader));
     prev_offset           = (size_t)(current_address - (u64)header->padding - start);
     stack->current_offset = prev_offset;
   }
 }
 
-internal mem_stack *
-stack_resize_align(mem_stack *stack, void *pointer, u64 old_size, u64 new_size, u8 alignment) {
+internal MemStack *
+stack_resize_align(MemStack *stack, void *pointer, u64 old_size, u64 new_size, u8 alignment) {
   if (pointer == NULL) {
     return stack_push_align(stack, new_size, alignment);
   }
@@ -151,16 +150,16 @@ stack_resize_align(mem_stack *stack, void *pointer, u64 old_size, u64 new_size, 
   }
 
   if (old_size == new_size) {
-    return pointer;
+    return (MemStack *)pointer;
   }
 
   new_pointer = stack_push_align(stack, new_size, alignment);
   memmove(new_pointer, pointer, min_size);
-  return new_pointer;
+  return (MemStack *)new_pointer;
 }
 
 internal void
-stack_pop_all(mem_stack *stack) {
+stack_pop_all(MemStack *stack) {
   stack->current_offset = 0;
 }
 

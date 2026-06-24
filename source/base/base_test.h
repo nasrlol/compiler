@@ -7,7 +7,7 @@
 
 #define _write(buffer) _os_write(STDERR_FD, (buffer), Len(buffer))
 
-#define error_at(msg)                                                          \
+#define Error(msg)                                                          \
   do {                                                                         \
     _write("[ERROR] " __FILE__ ":" _str(__LINE__) ":");                        \
     _write(__func__);                                                          \
@@ -16,16 +16,8 @@
     _write("\n");                                                              \
   } while (0)
 
-#define warn(msg)                                                              \
-  do {                                                                         \
-    _write("[WARN] " __FILE__ ":" _str(__LINE__) ":");                         \
-    _write(__func__);                                                          \
-    _write(": ");                                                              \
-    _write((msg));                                                             \
-    _write("\n");                                                              \
-  } while (0)
 
-#define assert_msg(expr, msg)                                                  \
+#define Test(expr, msg)                                                  \
   do {                                                                         \
     if (!(expr)) {                                                             \
       _write("[ASSERT] " __FILE__ ":" _str(__LINE__) ":");                     \
@@ -37,7 +29,7 @@
     }                                                                          \
   } while (0)
 
-#define test(expr)                                                             \
+#define Assert(expr)                                                             \
   do {                                                                         \
     if ((expr) != 0) {                                                         \
       _write("[FAILED] " __FILE__ ":" _str(__LINE__) ":");                     \
