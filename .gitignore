@@ -5,3 +5,8 @@
 CppProperties.json
 /build
 /vc140.pdb
+/compiler/x64/Debug
+/compiler.sln
+/compiler.vcxproj
+/compiler.vcxproj.filters
+/compiler.vcxproj.user

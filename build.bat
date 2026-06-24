@@ -1,7 +1,8 @@
 @echo off
 
-set opts=-FC -GR- -EHa- -nologo -Zi -Od -RTC1
+set opts=-FC -GR- -EHa- -nologo -Zi -Od -RTC1 /std:c++11
 set libs=user32.lib gdi32.lib kernel32.lib
+set includes=  -Iw:\compiler\source -Iw:\compiler\source\base
 pushd build
-cl %opts% w:\compiler\source\compiler\compiler.c -Fecompiler -Iw:\compiler\source\
+cl %opts% w:\compiler\source\compiler.cpp -Fecompiler  %includes%
 popd

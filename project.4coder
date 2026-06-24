@@ -26,7 +26,7 @@ load_paths = {
 };
 
 commands = {
-  .build = { .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,
+  .build = { .out = "*compilation*", .footer_panel = false, .save_dirty_files = true,
     .win = "build.bat",
     .linux = "./build.sh",
     .mac = "./build.sh", },
