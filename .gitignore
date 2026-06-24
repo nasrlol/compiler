@@ -10,3 +10,4 @@ CppProperties.json
 /compiler.vcxproj
 /compiler.vcxproj.filters
 /compiler.vcxproj.user
+/x64/Debug/compiler.pdb
