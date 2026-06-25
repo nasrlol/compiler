@@ -24,20 +24,21 @@ int main(int argc, char **argv) {
 
     } else {
         // no input file
-        // TODO: Logging
+        // @TODO: Logging
         return 1;
     }
 
     MemArena *global_arena = ArenaCreate(MiB(100));
 
-    fill_in_nil_token_node(&nil_token_node);
+    fill_in_nil_token_node(&nil_token_node); // @debugging: this can be removed this was for testing the read only section with msvc
 
     // read the file into a buffer
     String8 buffer =  FileLoad(global_arena, path.data);
 
     // parse the buffer into a token tree
 
-    breakpoint;
+    // breakpoint;
+    // __asm__ "int3" // @debug why doesnt inline asm work with msvc
     TokenTree *tree =  lex(global_arena, &path);
     // Ast* ast = parse(global_arena, *tree);
 

@@ -20,7 +20,7 @@
 #define breakpoint __asm__ volatile("brk #0");
 #define temp_breakpoint __asm__ volatile("udf #0");
 #elif defined(__i386__) || defined(__x86_64__)
-#define breakpoint __asm__ volatile("int3");
+#define breakpoint __asm__ volatile("int3"); // @TODO: put this in the architecture guard
 #endif
 
 
@@ -70,15 +70,15 @@ typedef intptr_t  smm;
 
 internal inline b8
 is_pow(umm x) {
- return (x & (x - 1)) == 0;
+    return (x & (x - 1)) == 0;
 }
 
 internal inline u64
 align(u64 pointer, umm alignment) {
- if ((alignment & (alignment - 1)) == 0) {
-  return pointer;
- }
- return (pointer + alignment - 1) & ~(alignment - 1);
+    if ((alignment & (alignment - 1)) == 0) {
+        return pointer;
+    }
+    return (pointer + alignment - 1) & ~(alignment - 1);
 }
 
 
