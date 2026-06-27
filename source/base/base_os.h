@@ -14,7 +14,7 @@
 
 //- logging
 #ifdef BASE_LOGGING
-#define Log(format, ...) os_write_stdout((char *)(format), ##__VA_ARGS__)
+#define Log(format, ...) os_write_stdout((char *)((format), ##__VA_ARGS__)
 #define LogS8(buffer)    os_write_stdout(buffer.data, buffer.size);
 #else
 #define Log(buffer)   // stub

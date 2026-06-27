@@ -2,6 +2,8 @@
 #define LEXER_H
 
 //-
+
+// @TODO: find a fix for this continuing casting to enum
 enum struct TokenType {
     // first 255 characters are reserved for ascii stuff
     Undefined= 256,
@@ -26,27 +28,12 @@ enum struct TokenType {
     C_Style_Comment_End,
 };
 
-enum class TokenNodeFlags : unsigned int {
-    None        = (0 << 0),
-    Constant    = (1 << 0),
-    Global      = (1 << 1),
-    Value       = (1 << 2),
-    Definition  = (1 << 3),
-    Comparison  = (1 << 4),
-    Deprecated  = (1 << 5),
-    Dirty       = (1 << 6),
-    FuncBody    = (1 << 7),
-    Expression  = (1 << 8),
-    Func        = (1 << 9),
-
-    Declaration = (1 << 10),
-    RootNode    = (1 << 11),
-
-    ChildNode   = (1 << 12),
-
-    Eof         = (1 << 13),
-
-    Bad         = (1 << 14),
+enum TokenNodeFlags  {
+    None    = (1 << 0),
+    Root    = (1 << 11),
+    Child   = (1 << 12),
+    Eof     = (1 << 13),
+    Bad     = (1 << 14),
 };
 
 typedef struct Token Token;
@@ -67,7 +54,7 @@ struct Token {
 typedef struct TokenNode TokenNode;
 struct TokenNode {
 
-    enum TokenNodeFlags flags;
+    TokenNodeFlags flag;
 
     union {
         TokenNode *reference_to_root_node; // case: we are not the root node so we reference to it to find out in which file we are
@@ -172,6 +159,7 @@ is_token_nil(Token *token) {
 
 #if 0
 
+
 internal void
 fill_token_node_with_nil_nodes(TokenNode *node) {
     if(node->next == NULL)     node->next     = &nil_token_node;
@@ -182,6 +170,17 @@ fill_token_node_with_nil_nodes(TokenNode *node) {
     if(node->last == NULL)     node->last     = &nil_token_node;
 }
 #endif
+
+
+
+internal void
+tokens_handle_cpp_style_comments() {
+
+    // @TODO: handle comments
+    // for each line that starts with // or /*
+
+    return;
+}
 
 internal void
 push_token_node(TokenTree *tree, TokenNode *node) {
@@ -237,7 +236,7 @@ lex(MemArena *arena, String8 *buffer) {
     }
 
     // nasr: using a unsinged integer index to crash on a negative number
-    for (u8 index = 0; index < buffer->size; ++index) {
+    for (u64 index = 0; index < buffer->size; ++index) {
 
         //- skip stuff
         // skip while the current character is classified as whitespace
@@ -294,7 +293,7 @@ lex(MemArena *arena, String8 *buffer) {
                 node->child    = &nil_token_node;
                 node->parent   = &nil_token_node;
                 node->token    = token;
-                node->flags     = TokenNodeFlags::None;
+                node->flag     = TokenNodeFlags::None;
             }
 
 
@@ -302,39 +301,29 @@ lex(MemArena *arena, String8 *buffer) {
             // @TODO: Error unless the previous token was a declaration token and thus this needs to be handled
             // as a value intead of a declaration
 
-            if(node->parent->token.type == TokenType::Identifier
-               || node->parent->flags   == TokenNodeFlags::Definition
-               || node->parent->flags   == TokenNodeFlags::Declaration) {
+            if(node->parent->token.type == TokenType::Identifier) {
 
-
-                node->parent->flags       = TokenNodeFlags::Value;
+                node->parent->flag       = TokenNodeFlags::None;
                 node->parent->token.type  = TokenType::Identifier;
 
             } else {
-                node->parent->flags = TokenNodeFlags::Bad;
+                node->parent->flag = TokenNodeFlags::Bad;
             }
 
         } else if(buffer->data[index] == '"') {
             token.type = TokenType::Identifier;
-        }
-
-        else if(buffer->data[index] == '\'') {
-            // tokens_handle_cpp_style_comments();
-
+        } else if(buffer->data[index] == '\'') {
+            tokens_handle_cpp_style_comments();
         } else if(buffer->data[index] == '{') {
-
             node->token.type  = (enum TokenType)'{';
-
-
         } else if(buffer->data[index] == '}') {
 
-            if(node->first != ((TokenType)'{')) {
-
+            if(node->first->token.type != (enum TokenType)'{') {
+                // @TODO: do something here i forgot what
 
             } else {
 
                 Token token = {};
-
                 tree->current->last = node;
 
                 // @TODO: extract into function later
@@ -348,12 +337,10 @@ lex(MemArena *arena, String8 *buffer) {
 
                 if(is_token_node_nil(tree->current->last)) {
 
-
-                    // fill in the node
-                    {
+                    { // fill in the node
                         node->token; // do we want this as a pointer
 
-                        node->flags                  = TokenNodeFlags::ChildNode; // @TODO: no flags yet
+                        node->flag                  = TokenNodeFlags::Child; // @TODO: no flags yet
                         node->file_reference.reference_to_root_node = tree->root; // case: we are not the root node so we reference to it to find out in which file we are
                         node->previous = tree->current;
                         node->parent = node->previous->parent;
@@ -371,9 +358,11 @@ lex(MemArena *arena, String8 *buffer) {
                     //
 
                 }
+
             }
 
         } else if(buffer->data[index] == '(') {
+
         } else if(buffer->data[index] == ')') {
 
         } else if(buffer->data[index] == '[') {
@@ -381,25 +370,48 @@ lex(MemArena *arena, String8 *buffer) {
 
         } else if(buffer->data[index] == '#') {
             // @TODO HANDLE MODULE
-        } else if(buffer->data[index] == ';') {
+        } else if(buffer->data[index] == ';' && (tree->current->flag & TokenNodeFlags::Child) != 0) {
 
-        } else if(buffer->data[index] == ':') {
-
-        } else {
-            // @TODO: Logging
         }
 
+        else if(buffer->data[index] == ':') {
+
+            // @TODO: typecheckiing
+
+        } else {
+            Log("Unrecognized token");
+        }
+
+        tree->root->flag = (TokenNodeFlags)(tree->root->flag | TokenNodeFlags::Eof);
         //- end fo file
 
 
     }
-#define backupflags flags
-#undef flags
 
-    tree->root->flags |= TokenNodeFlags::Eof;
 
-#define flags backupflags
-    return NULL ;
+    return tree;
+}
+
+internal void
+push_token_children(TokenNode *current_node, String8 buffer, u64 index, TokenNode *node) {
+
+    for(;buffer.data[index] != ';';) {
+
+        if(!is_token_node_nil(current_node->first)) { // @note: we can assume that if the first node is nil that the last node will be nill aswell
+            current_node->first = node;
+            current_node->last  = node;
+        } else {
+
+            current_node->last->next = node;
+            current_node->last = node;
+            // @TODO: i think this is good but have to check again
+        }
+
+
+        // @TODO: find a mechenism to make sure we aren't going to far.
+    }
+
+    return;
 }
 
 

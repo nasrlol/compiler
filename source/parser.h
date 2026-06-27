@@ -48,7 +48,7 @@ internal Ast *
 parse(MemArena *arena, TokenTree *token_tree) {
 
     Ast *ast = PushStruct(arena, Ast);
-    for(Token *current_token = token_tree->root; !(current_token->flags |  TokenNodeFlags::Eof); current_token = current_token->next) {
+    for(TokenNode *current = token_tree->root; !(current->flag |  TokenNodeFlags::Eof); current = current->next) {
 
 
     }

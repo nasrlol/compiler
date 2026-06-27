@@ -1,7 +1,7 @@
 // compiler
 
 //- base stuff
-#define BASE_LOGGING
+// #define BASE_LOGGING
 #define BASE_INCLUDE
 #define BASE_IMPLEMENTATION
 #include "base/base_include.h"
@@ -13,9 +13,11 @@
 //- entry point
 int main(int argc, char **argv) {
 
+#ifdef BASE_LOGGING
     printf("nil_token_node address: %p\n", &nil_token_node);
     printf("next pointer: %p\n", nil_token_node.next);
     printf("Are they equal? %d\n", nil_token_node.next == &nil_token_node);
+#endif
 
     String8 path = {0};
 
