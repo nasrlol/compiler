@@ -16,11 +16,28 @@
 
 #define DEPRECATED __attribute__((__deprecated__))
 
-#if defined(__arm__) || defined(__aarch64__)
+/*
+#if  0
+
+// #if defined(__arm__) || defined(__aarch64__)
 #define breakpoint __asm__ volatile("brk #0");
 #define temp_breakpoint __asm__ volatile("udf #0");
+
 #elif defined(__i386__) || defined(__x86_64__)
+
+#if defined(__gnu__)
 #define breakpoint __asm__ volatile("int3"); // @TODO: put this in the architecture guard
+#endif
+
+
+#endif // 0
+*/
+
+
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+#define breakpoint() __debugbreak()
 #endif
 
 
