@@ -1,59 +1,65 @@
 #ifndef EDITOR_PARSER_H
 #define EDITOR_PARSER_H
 
-typedef struct Token Token;
-
 typedef enum AstNodeType AstNodeType;
-enum AstNodeType
-{
- Ast_Node_Literal,
- Ast_Node_Identifier,
- Ast_Node_Binary,
- Ast_Node_Assignment,
- Ast_Node_Return,
- Ast_Node_Function,
- Ast_Node_Undefined,
+enum AstNodeType {
+    Ast_Node_Literal,
+    Ast_Node_Identifier,
+    Ast_Node_Binary,
+    Ast_Node_Assignment,
+    Ast_Node_Return,
+    Ast_Node_Function,
+    Ast_Node_Undefined,
 };
 
-typedef struct SyntaxNode SyntaxNode;
-struct SyntaxNode {
- SyntaxNode *first;
- SyntaxNode *last;
- SyntaxNode *parent;
- SyntaxNode *next;
+typedef struct AstNode AstNode;
+struct AstNode {
 
- Token *token;
+    AstNode *first;
+    AstNode *last;
 
- AstNodeType type;
+    AstNode *parent;
+    AstNode *next;
 };
+
 
 typedef struct Ast Ast;
 struct Ast {
- SyntaxNode *root;
- SyntaxNode *current;
- String8List *symbols;
+    AstNode     *root;
+    AstNode     *current;
+    String8List *symbols;
 };
 
-// TODO(nasr): implement this later together with file handling
 ReadOnly global_variable
-SyntaxNode nil_syntax_node =
-{
- &nil_syntax_node,     // first
- &nil_syntax_node,     // last
- &nil_syntax_node,     // parent
- &nil_syntax_node,     // next
- &nil_token,           // token
+AstNode nil_syntax_node = {
+    &nil_syntax_node,     // first
+    &nil_syntax_node,     // last
+    &nil_syntax_node,     // parent
+    &nil_syntax_node,     // next
 };
 
 ReadOnly global_variable
 Ast nil_concrete_syntax_tree = {
- &nil_syntax_node,      // root
- &nil_syntax_node,      // currrent
+    &nil_syntax_node,      // root
+    &nil_syntax_node,      // currrent
 };
 
-#define PeekForward(Node, Type, NilNode) \
- for(; (Node) && (Node) != &(NilNode); (Node) = (Node)->next) \
- if((Node)->token->type == (Type)) \
- break;
+internal Ast *
+parse(MemArena *arena, TokenTree *token_tree) {
+
+    Ast *ast = PushStruct(arena, Ast);
+    for(Token *current_token = token_tree->root; !(current_token->flags |  TokenNodeFlags::Eof); current_token = current_token->next) {
+
+
+    }
+
+    return NULL;
+}
+
+#define PeekForward(node, type, nil_node) \
+    for(; (node) && (node) != &(nil_node); (node) = (node)->next) \
+    if((node)->token->type == (type)) \
+    break;
+
 
 #endif // EDITOR_PARSER_H

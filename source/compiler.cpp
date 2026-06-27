@@ -37,10 +37,9 @@ int main(int argc, char **argv) {
 
     // parse the buffer into a token tree
 
-    // breakpoint;
-    // __asm__ "int3" // @debug why doesnt inline asm work with msvc
+    breakpoint();
     TokenTree *tree =  lex(global_arena, &path);
-    // Ast* ast = parse(global_arena, *tree);
+    Ast* ast = parse(global_arena, tree);
 
 
 

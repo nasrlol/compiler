@@ -17,16 +17,6 @@ enum struct TokenType {
     Lesser_Equal,
     Param,
 
-    Return,
-
-    If,
-    Else,
-    For,
-    While,
-
-    Break,
-    Continue,
-
     Right_Shift,
     Left_Shift,
     Asterisk,
@@ -36,7 +26,7 @@ enum struct TokenType {
     C_Style_Comment_End,
 };
 
-enum struct TokenNodeFlags {
+enum class TokenNodeFlags : unsigned int {
     None        = (0 << 0),
     Constant    = (1 << 0),
     Global      = (1 << 1),
@@ -48,10 +38,15 @@ enum struct TokenNodeFlags {
     FuncBody    = (1 << 7),
     Expression  = (1 << 8),
     Func        = (1 << 9),
-    Declaration = (1 << 10),
 
+    Declaration = (1 << 10),
     RootNode    = (1 << 11),
-    Error       = (1 << 31),
+
+    ChildNode   = (1 << 12),
+
+    Eof         = (1 << 13),
+
+    Bad         = (1 << 14),
 };
 
 typedef struct Token Token;
@@ -66,7 +61,7 @@ struct Token {
         String8 string_value;
         f64     float64_value; // this is a seperate type because floats have a different notation than integers do
         u64     integer_value;
-    };
+    } value;
 };
 
 typedef struct TokenNode TokenNode;
@@ -142,18 +137,19 @@ nil_token_node = {
 };
 #endif
 
+// @TODO: rmeove this
 internal void
 fill_in_nil_token_node(TokenNode *nil_node) {
 
 #if 0
     nil_node->file_reference =  {&nil_token_node},    // nill referecnce for *reference_to_root_node
-    nil_node->next      =  &nil_token_node;      // next
-    nil_node->previous  =  &nil_token_node;      // previous
-    nil_node->child     =  &nil_token_node;      // child
-    nil_node->parent    =  &nil_token_node;      // parent
-    nil_node->first     =  &nil_token_node;      // first
-    nil_node->last      =  &nil_token_node;      // last
-    nil_node->token     =  {};                   // token,
+    nil_node->next           =  &nil_token_node;      // next
+    nil_node->previous       =  &nil_token_node;      // previous
+    nil_node->child          =  &nil_token_node;      // child
+    nil_node->parent         =  &nil_token_node;      // parent
+    nil_node->first          =  &nil_token_node;      // first
+    nil_node->last           =  &nil_token_node;      // last
+    nil_node->token          =  {};                   // token,
 #endif
 
 }
@@ -282,7 +278,7 @@ lex(MemArena *arena, String8 *buffer) {
                 if(is_token_node_nil(tree->root))  tree->root->child = node ;
 
                 u64 lexeme_size = token_end - token_start; // @debug the issue is not with the size when casting to String8
-                token.string_value = ToString8(buffer->data[token_start], lexeme_size);
+                token.value.string_value = ToString8(buffer->data[token_start], lexeme_size);
 
                 token.type = TokenType::Identifier;
                 token.line = amount_of_newlines; // good for line errors...
@@ -315,11 +311,10 @@ lex(MemArena *arena, String8 *buffer) {
                 node->parent->token.type  = TokenType::Identifier;
 
             } else {
-                node->parent->flags = TokenNodeFlags::Error;
+                node->parent->flags = TokenNodeFlags::Bad;
             }
 
         } else if(buffer->data[index] == '"') {
-
             token.type = TokenType::Identifier;
         }
 
@@ -333,6 +328,50 @@ lex(MemArena *arena, String8 *buffer) {
 
         } else if(buffer->data[index] == '}') {
 
+            if(node->first != ((TokenType)'{')) {
+
+
+            } else {
+
+                Token token = {};
+
+                tree->current->last = node;
+
+                // @TODO: extract into function later
+                {
+                    token.type               = TokenType::Param;
+                    token.line               = amount_of_newlines;
+                    token.column             = index / amount_of_newlines;
+                    token.byte_offset        = index;
+                    token.value.string_value       = ToString8('}', 1);
+                }
+
+                if(is_token_node_nil(tree->current->last)) {
+
+
+                    // fill in the node
+                    {
+                        node->token; // do we want this as a pointer
+
+                        node->flags                  = TokenNodeFlags::ChildNode; // @TODO: no flags yet
+                        node->file_reference.reference_to_root_node = tree->root; // case: we are not the root node so we reference to it to find out in which file we are
+                        node->previous = tree->current;
+                        node->parent = node->previous->parent;
+
+                        FillTokenNodeFieldWithNilNode(last);
+                        FillTokenNodeFieldWithNilNode(first);
+                        FillTokenNodeFieldWithNilNode(child);
+                        FillTokenNodeFieldWithNilNode(next);
+                    }
+
+                } else {
+                    //
+                    // @TODO: the last node is not a  nil node and we should fill it up.
+                    // this is kind of a weird scenario though. because when working whild children nods you should always have a next node.
+                    //
+
+                }
+            }
 
         } else if(buffer->data[index] == '(') {
         } else if(buffer->data[index] == ')') {
@@ -350,10 +389,16 @@ lex(MemArena *arena, String8 *buffer) {
             // @TODO: Logging
         }
 
+        //- end fo file
 
-        //-
+
     }
+#define backupflags flags
+#undef flags
 
+    tree->root->flags |= TokenNodeFlags::Eof;
+
+#define flags backupflags
     return NULL ;
 }
 
