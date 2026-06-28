@@ -76,6 +76,7 @@ String8 nil_string = { NULL, 0};
 
 #endif /* BASE_STRING_H */
 
+
 #ifdef BASE_IMPLEMENTATION
 
 internal b32
@@ -101,6 +102,14 @@ is_newline(u8 point) {
 internal inline b32
 is_whitespace(u8 point) {
  return ( point == ' ' || point == '\t');
+}
+
+internal inline b32
+is_whitespace_or_delimiter(u8 point, u8* delimiter_table) {
+
+  for(u8 index = 0; delimiter_table[index]; ++index) if(is_whitespace(point) || delimiter_table[index]) return true;
+
+  return false;;
 }
 
 internal inline b32

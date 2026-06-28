@@ -56,10 +56,12 @@ struct TokenNode {
 
     TokenNodeFlags flag;
 
+#if 0
     union {
         TokenNode *reference_to_root_node; // case: we are not the root node so we reference to it to find out in which file we are
         String8 file_name;                 // case: we are the root node and we just store the name? @TODO of the file? the file or the path?
     } file_reference;
+#endif
 
     TokenNode *next;
     TokenNode *previous;
@@ -80,8 +82,9 @@ typedef  struct TokenTree {
     TokenNode *root;
     TokenNode *current;
 
-    String8 *text_buffer;    // @TODO: don't allocate this. it's a fixed sized buffer. but what we still take the reference of it instead of passing a copy?
+    String8 *buffer;    // @TODO: don't allocate this. it's a fixed sized buffer. but what we still take the reference of it instead of passing a copy?
     u8 *buffer_position;
+    u64 index;
 } TokenTree;
 
 //- nil variables
@@ -113,7 +116,9 @@ ReadOnly global_variable TokenNode
 nil_token_node = {
 
     TokenNodeFlags::None,
-    &nil_token_node,        // file_root_refernece
+#if 0
+    &nil_token_node,        // file_reference
+#endif
     &nil_token_node,        // next
     &nil_token_node,        // previous
     &nil_token_node,        // child
@@ -129,7 +134,6 @@ internal void
 fill_in_nil_token_node(TokenNode *nil_node) {
 
 #if 0
-    nil_node->file_reference =  {&nil_token_node},    // nill referecnce for *reference_to_root_node
     nil_node->next           =  &nil_token_node;      // next
     nil_node->previous       =  &nil_token_node;      // previous
     nil_node->child          =  &nil_token_node;      // child
@@ -182,6 +186,73 @@ tokens_handle_cpp_style_comments() {
     return;
 }
 
+
+
+#define PushTokenChildren(tree, delimiter, expected_delimiters) push_token_children(tree, tree->buffer, tree->index, (u8 *)delimiter, expected_delimiters)
+
+// create tokens and push them onto the tree
+internal void
+push_token_children(TokenTree *tree, String8 *buffer, u64 index, u8 *delimiter, String8 expected_delimiters) {
+
+
+
+
+
+  for(u64 temp_index = index; buffer->data[temp_index] != *delimiter; ++temp_index) { // @TODO: iterate until we get the token with the inner loop and when necesary jump the outerloop to the position
+
+
+
+    TokenNode *node = {0};
+
+
+
+      // consume the token 
+      // consume while the buffer[index] is not a while space or delimiter i guess
+      {
+
+
+	for(u64 temp_index = index; !is_whitespace_or_delimiter(buffer->data[temp_index], expected_delimiters.data); ++temp_index) { 
+
+	  for(u8 index = 0; index < expected_delimiters.size; ++index) {
+
+
+	  }
+
+
+
+
+	}
+
+      }
+
+      TokenNode *current = tree->current;
+
+        if(!is_token_node_nil(current->first)) { // @note: we can assume that if the first node is nil that the last node will be nill aswell
+            current->first = node;
+            current->last  = node;
+        } else {
+
+            current->last->next = node;
+
+            node->previous = current->last;
+            node->parent = current->parent;
+
+            current->last = node;
+
+
+            // @TODO: i think this is good but have to check again
+            // 1. fix the next on the last one
+            // 2. make the last point to that node
+
+        }
+
+
+        // @TODO: find a mechenism to make sure we aren't going to far.
+    }
+
+    return;
+}
+
 internal void
 push_token_node(TokenTree *tree, TokenNode *node) {
 
@@ -206,6 +277,9 @@ push_token_node(TokenTree *tree, TokenNode *node) {
     }
     return;
 }
+
+
+#define TokenNodeContainsFlag(node, flag) if(((node->flags) & (flag)) != (0)) return false
 
 //- lexer
 
@@ -233,10 +307,16 @@ lex(MemArena *arena, String8 *buffer) {
         tree->root->parent   = &nil_token_node;
 #endif
 
+	// @NOTE: but we can still initalize the rest of the tree here
+
+    tree->buffer = buffer;    // @TODO: don't allocate this. it's a fixed sized buffer. but what we still take the reference of it instead of passing a copy?
+    // @TODO: watch out for buffer overflows that can overflow in the next data members i guess
+    tree->index = 0;
+    
     }
 
     // nasr: using a unsinged integer index to crash on a negative number
-    for (u64 index = 0; index < buffer->size; ++index) {
+    for (u64 index = *(&tree->index) ; index < buffer->size; ++tree->index) {
 
         //- skip stuff
         // skip while the current character is classified as whitespace
@@ -315,7 +395,11 @@ lex(MemArena *arena, String8 *buffer) {
         } else if(buffer->data[index] == '\'') {
             tokens_handle_cpp_style_comments();
         } else if(buffer->data[index] == '{') {
+
+            // an open brace defined a new scope within the thing
+            tree->current->next = node;
             node->token.type  = (enum TokenType)'{';
+
         } else if(buffer->data[index] == '}') {
 
             if(node->first->token.type != (enum TokenType)'{') {
@@ -341,7 +425,9 @@ lex(MemArena *arena, String8 *buffer) {
                         node->token; // do we want this as a pointer
 
                         node->flag                  = TokenNodeFlags::Child; // @TODO: no flags yet
+#if 0
                         node->file_reference.reference_to_root_node = tree->root; // case: we are not the root node so we reference to it to find out in which file we are
+#endif
                         node->previous = tree->current;
                         node->parent = node->previous->parent;
 
@@ -363,7 +449,24 @@ lex(MemArena *arena, String8 *buffer) {
 
         } else if(buffer->data[index] == '(') {
 
+	  String8 expected_delimiters = ToString8(')' , 1); 
+
+	  // @TODO: we should also have someting for legal delimiters and illegal delimiters.
+	  // so that we can build a recursive tokenizer based on the fact that we get a delimiter or not
+
+
+	  PushTokenChildren(tree, ')', expected_delimiters);
+
+
         } else if(buffer->data[index] == ')') {
+
+	  if((u8)tree->current->first->token.value.string_value.data != (u8)')') { // @TODO: fix this ugly thing
+
+	    // TODO: Logging
+	  } else {
+
+	    // TODO: Nothign
+	  }
 
         } else if(buffer->data[index] == '[') {
         } else if(buffer->data[index] == ']') {
@@ -392,27 +495,6 @@ lex(MemArena *arena, String8 *buffer) {
     return tree;
 }
 
-internal void
-push_token_children(TokenNode *current_node, String8 buffer, u64 index, TokenNode *node) {
-
-    for(;buffer.data[index] != ';';) {
-
-        if(!is_token_node_nil(current_node->first)) { // @note: we can assume that if the first node is nil that the last node will be nill aswell
-            current_node->first = node;
-            current_node->last  = node;
-        } else {
-
-            current_node->last->next = node;
-            current_node->last = node;
-            // @TODO: i think this is good but have to check again
-        }
-
-
-        // @TODO: find a mechenism to make sure we aren't going to far.
-    }
-
-    return;
-}
 
 
 #endif /* LEXER_H */

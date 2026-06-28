@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
 
     String8 path = {0};
 
+
     if(argc > 0) {
         path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
 
