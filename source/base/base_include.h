@@ -1,6 +1,16 @@
 #ifndef BASE_INCLUDE_H
 #define BASE_INCLUDE_H
 
+//- platform definitios
+
+#if defined(__linux__)
+#define PLATFORM_LINUX
+#elif defined(_WIN32) || defined(_WIN64)
+#define PLATFORM_WINDOWS
+#else
+#define PLATFORM_UNKNOWN
+#endif
+
 
 #if defined(__linux__) //- linux stuff
 

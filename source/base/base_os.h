@@ -17,20 +17,21 @@
 #define Log(format, ...) os_write_stdout((char *)((format), ##__VA_ARGS__)
 #define LogS8(buffer)    os_write_stdout(buffer.data, buffer.size);
 #else
-#define Log(buffer)   // stub
-#define LogS8(buffer) // stub
+#define Log(buffer)
+#define LogS8(buffer)
 #endif
 
-// @TODO: this should be put in a platform guard
-#define FileLoad(arena, path) _file_load_into_memory_win32(arena, path)
-#define FileWrite(data, path) _file_write_win32(data, path)
-#define FileExists(path)      _file_exists_win32(path)
+#ifdef
+// TODO: this should be put in a platform guard
+#define FileLoad(arena, path) win32_file_load(arena, path)
+#define FileWrite(data, path) win32_file_write(data, path)
+#define FileExists(path)      win32_file_exists(path)
 
 //- file reading, writing and checking
 #if defined(__linux__)
-// @TODO:
+// TODO:
 #elif defined(_WIN32) || defined(_WIN64)
-// @TODO:
+// TODO:
 #endif // defined(__linux__)
 
 #endif /* BASE_OS_H */
