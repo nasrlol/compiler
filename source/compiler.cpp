@@ -13,39 +13,38 @@
 //- entry point
 int main(int argc, char **argv) {
 
-    #ifdef  BASE_LOGGING
-    #define BASE_LOGGING
-    printf("nil_token_node address: %p\n", &nil_token_node);
-    printf("next pointer: %p\n", nil_token_node.next);
-    printf("Are they equal? %d\n", nil_token_node.next == &nil_token_node);
-    #endif
+#ifdef  BASE_LOGGING
+#define BASE_LOGGING
+ Log("nil_token_node address: %p\n", &nil_token_node);
+ Log("next pointer: %p\n", nil_token_node.next);
+ Log("Are they equal? %d\n", nil_token_node.next == &nil_token_node);
+#endif
 
-    String8 path = {0};
+ String8 path = {0};
 
+ if(argc > 0) {
+  path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
 
-    if(argc > 0) {
-    path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
+ } else {
+  // no input file
+  // @TODO: Logging
+  return 1;
+ }
 
-    } else {
-    // no input file
-    // @TODO: Logging
-    return 1;
-    }
+ MemArena *global_arena = ArenaCreate(MiB(100));
 
-    MemArena *global_arena = ArenaCreate(MiB(100));
+ fill_in_nil_token_node(&nil_token_node); // @DEBUG: this can be removed this was for testing the read only section with msvc
 
-    fill_in_nil_token_node(&nil_token_node); // @debugging: this can be removed this was for testing the read only section with msvc
+ // read the file into a buffer
+ String8 buffer =  FileLoad(global_arena, path.data);
 
-    // read the file into a buffer
-    String8 buffer =  FileLoad(global_arena, path.data);
+ // parse the buffer into a token tree
 
-    // parse the buffer into a token tree
-
-    breakpoint();
-    TokenTree *tree =  lex(global_arena, &path);
-    Ast* ast = parse(global_arena, tree);
-
+ breakpoint();
+ TokenTree *tree =  lex(global_arena, &path);
+ Ast* ast = parse(global_arena, tree);
 
 
-    return 0;
+
+ return 0;
 }

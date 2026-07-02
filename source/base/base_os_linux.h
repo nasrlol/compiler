@@ -1,21 +1,32 @@
 #ifndef BASE_OS_LINUX_H
 #define BASE_OS_LINUX_H
 
+//-
+
+internal b32 unix_file_exists(String8 path);
+internal String8 unix_file_write(String path);
+
+
+//- implementations
+internal b32 unix_file_exists(String8 path) {
+
+}
+
 //- file stuff
 internal String8
-_file_load_linux(MemArena *arena, const u8 *path) {
+unix_file_load(MemArena *arena, String8 path) {
     String8 result = {0};
     struct stat sbuf = {0};
 
     s32 file = open(path, O_RDONLY);
     if(file == -1) {
-    Log("file not loaded");
-    return (String8){0};
+        Log("file not loaded");
+        return (String8){0};
     }
 
     if(fstat(file, &sbuf) == -1) {
-    close(file);
-    return zero_string8;
+        close(file);
+        return zero_string8;
     }
 
     result = PushString8(arena, sbuf.st_size);
@@ -25,42 +36,42 @@ _file_load_linux(MemArena *arena, const u8 *path) {
 
     close(file);
     return result;
-    }
+}
 
-    internal String8
-    _file_write_linux(const u8 *path, String8 data) {
+internal String8
+unix_file_write(String8 path, String8 data) {
 
     String8 result = {0};
     s32 file = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if(file == -1) { return (String8){0};
 
 
-    u64 written = 0;
-    while(written < data.size) {
-    s64 err = write(file, data.data + written, data.size - written);
-    if(err == -1)
-    {
-    close(file);
-    return zero_string8();
-    }
-    }
-    written += err;
+        u64 written = 0;
+        while(written < data.size) {
+            s64 err = write(file, data.data + written, data.size - written);
+            if(err == -1)
+            {
+                close(file);
+                return zero_string8();
+            }
+        }
+        written += err;
     }
 
     close(file);
     result = data;
     return result;
-    }
+}
 
-    //- stdout stuff etc
+//- stdout stuff etc
 
-    //
-    // TODO: improve the API interface for a better linux logging system
-    // and prepare to seperate it from the windows api system
-    //
+//
+// TODO: improve the API interface for a better linux logging system
+// and prepare to seperate it from the windows api system
+//
 
-    internal s64
-    unix_read(int fd, const void *buf, u64 count) {
+internal s64
+unix_read(int fd, const void *buf, u64 count) {
     return (u64)syscall(SYS_read, fd, buf, count);
 }
 

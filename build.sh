@@ -1,7 +1,8 @@
 #!/bin/bash
 
 code="$PWD"
-opts=-g
-cd build > /dev/null
-g++ $opts $code/compiler -o compiler
+echo $code
+opts=-g -I$code/source/base
+cd $code/build > /dev/null
+g++ $opts $code/source/compiler.cpp -o compiler
 cd $code > /dev/null

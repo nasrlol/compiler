@@ -21,17 +21,16 @@
 #define LogS8(buffer)
 #endif
 
-#ifdef
-// TODO: this should be put in a platform guard
+
+//- file reading, writing and checking
+#if PLATFORM_LINUX
 #define FileLoad(arena, path) win32_file_load(arena, path)
 #define FileWrite(data, path) win32_file_write(data, path)
 #define FileExists(path)      win32_file_exists(path)
-
-//- file reading, writing and checking
-#if defined(__linux__)
-// TODO:
-#elif defined(_WIN32) || defined(_WIN64)
-// TODO:
-#endif // defined(__linux__)
+#elif PLATFORM_WINDOWS
+#define FileLoad(arena, path) unix_file_load(arena, path)
+#define FileWrite(data, path) unix_file_write(data, path)
+#define FileExists(path)      unix_file_exists(path)
+#endif // PLATFORM IO
 
 #endif /* BASE_OS_H */
