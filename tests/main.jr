@@ -5,6 +5,7 @@
 /* 
    this is also a comment
  */ 
+
 func main(x : s32, y: s32, z s64) (int, string, float)  {
 
 	result: u64 = x + y + z;

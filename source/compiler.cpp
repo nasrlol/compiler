@@ -1,34 +1,26 @@
-// compiler
-
-//- base stuff
-// #define BASE_LOGGING
-#define BASE_INCLUDE
-#define BASE_IMPLEMENTATION
+#define DEV
 #include "base/base_include.h"
 
 //- compiler includes
 #include "lexer.h"
-#include "parser.h"
+ #include "parser.h"
 
-//- entry point
-int main(int argc, char **argv) {
+ //- entry point
+ int main(int argc, char **argv) {
 
-#ifdef  BASE_LOGGING
-#define BASE_LOGGING
  Log("nil_token_node address: %p\n", &nil_token_node);
  Log("next pointer: %p\n", nil_token_node.next);
  Log("Are they equal? %d\n", nil_token_node.next == &nil_token_node);
-#endif
 
  String8 path = {0};
 
  if(argc > 0) {
-  path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
+ path = ToString8((u8 *)&argv[1], sizeof(&argv[1]));
 
  } else {
-  // no input file
-  // @TODO: Logging
-  return 1;
+ // no input file
+ // @TODO: Logging
+ return 1;
  }
 
  MemArena *global_arena = ArenaCreate(MiB(100));
