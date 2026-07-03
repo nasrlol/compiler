@@ -10,24 +10,12 @@
 #define COMPILER_CLANG
 #endif
 
-#ifndef COMPILER_CLANG
-#define COMPILER_CLANG
-#endif
-
-#ifndef COMPILER_GCC
-#define COMPILER_GCC
-#endif
-
-#ifndef COMPILER_MSVC
-#define COMPILER_MSVC
-#endif
-
 //- architecture definitions
 
 #if defined(__arm__) || defined(__aarch64__)
 #define ARCH_ARM
 #elif defined(__i386__) || defined(__x86_64__)
-#define ARCH_x84_64
+#define ARCH_x86_64
 #endif
 
 
@@ -51,18 +39,17 @@
 #define deprecated __attribute__((__deprecated__))
 
 //- brakpoints
-#if defined(__arm__) || defined(__aarch64__)
-#define breakpoint __asm__ volatile("brk #0");
-#define temp_breakpoint __asm__ volatile("udf #0");
+#if defined(ARCH_ARM)
+#define breakpoint() __asm__ volatile("brk #0");
+// #define temp_breakpoint() __asm__ volatile("udf #0"); // TODO: I don't remember what the issue with this was for
+#elif defined(ARCH_x86_64)
 
-#elif defined(__i386__) || defined(__x86_64__)
-
-#ifdef COMPILER_GCC
-#define breakpoint __asm__ volatile("int3"); // TODO: put this in the architecture guard
+#if defined(COMPILER_GCC)
+#define breakpoint() __asm__ volatile("int3"); // TODO: put this in the architecture guard
+#endif
 #endif
 
-
-#ifdef COMPILER_MSVC
+#if defined(COMPILER_MSVC)
 #include <intrin.h>
 #define breakpoint() __debugbreak()
 #endif
@@ -71,8 +58,8 @@
 //-
 
 #define MemCpy(dest, src, len) memcpy((dest), (src), (len))
+#define MemSet(dest, len) memset((dest), (1), (len))
 #define MemSetZero(dest, len) memset((dest), (0), (len))
-#define MemSetZero(dest, len) memset((dest), (1), (len))
 
 #pragma section("read_only",read)
 
