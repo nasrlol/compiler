@@ -1,14 +1,18 @@
-#use module;
+#use module
 
 // this is a comment
 
-/* 
+/*
    this is also a comment
- */ 
+ */
 
-func main(x : s32, y: s32, z s64) (int, string, float)  {
+struct string {
 
-	result: u64 = x + y + z;
+  }
 
-	return {4, "Hello World", 9};
+  main(x : s32, y: s32, z: s64) int | string {
+
+  result: u64 = x + y + z
+
+  return {4, "Hello World", 9}
 }
