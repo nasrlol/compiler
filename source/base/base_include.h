@@ -4,6 +4,7 @@
 #ifdef DEV
 #define BASE_IMPLEMENTATION
 #define BASE_LOGGING
+#define BASE_MISC
 #endif
 
 #ifdef RELEASE
@@ -66,8 +67,6 @@
 
 //- Arena Allocator
 
-#define BASE_ARENA_IMPLEMENTATION
-#ifdef BASE_ARENA_IMPLEMENTATION
 
 #include "base_arena.h"
 
@@ -77,8 +76,6 @@
 #elif defined(PLATFORM_LINUX)
 #include "base_arena_linux.h"
 #endif // PLATFORM
-
-#endif // BASE_ARENA_IMPLEMENTATION
 
 //- stack includes
 
@@ -94,13 +91,14 @@
 
 #include "base_string.h"
 
+//- platform stuff
+#include "base_os.h"
 #if defined(PLATFORM_LINUX)
 #include "base_os_linux.h"
 #elif defined(PLATFORM_WINDOWS)
 #include "base_os_windows.h"
 #endif // PLATFORM_LINUX || PLATFORM_WINDOWS
 
-#include "base_os.h"
 
 //- misc.
 
