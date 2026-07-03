@@ -11,17 +11,19 @@
 #define MiB(n) (((u64)(n)) << 20)
 #define GiB(n) (((u64)(n)) << 30)
 
-
 //- helper functions
 
 internal inline b32
-is_pow(umm x) {
+is_pow(umm x)
+{
  return (x & (x - 1)) == 0;
 }
 
 internal inline u64
-align(u64 pointer, umm alignment) {
- if ((alignment & (alignment - 1)) == 0) {
+align(u64 pointer, umm alignment)
+{
+ if((alignment & (alignment - 1)) == 0)
+ {
   return pointer;
  }
  return (pointer + alignment - 1) & ~(alignment - 1);
@@ -29,8 +31,9 @@ align(u64 pointer, umm alignment) {
 
 //-
 
-typedef struct MemArena  MemArena;
-struct MemArena {
+typedef struct MemArena MemArena;
+struct MemArena
+{
  u64 current_position;
  u64 previous_position;
  u64 capacity;
@@ -38,23 +41,25 @@ struct MemArena {
 };
 
 typedef struct TempArena TempArena;
-struct TempArena {
+struct TempArena
+{
  MemArena *arena;
- u64 start_position;
+ u64       start_position;
 };
 
 #define ArenaCreate(capacity) _arena_create(capacity)
 #define ArenaDestroy(arena) _arena_destroy(arena)
 
 internal void *
-arena_alloc(MemArena *arena, u64 size, b32 zero) {
- if (!arena)
+arena_alloc(MemArena *arena, u64 size, b32 zero)
+{
+ if(!arena)
  {
   return NULL;
  }
  u64 aligned = Align(arena->current_position, arena_align);
  u64 new_pos = aligned + size;
- if (new_pos > arena->capacity)
+ if(new_pos > arena->capacity)
  {
   return NULL;
  }
@@ -64,54 +69,66 @@ arena_alloc(MemArena *arena, u64 size, b32 zero) {
  arena->previous_position = arena->current_position;
  arena->current_position  = aligned + size;
 
- if (zero) MemSet(out, size);
+ if(zero)
+  MemSet(out, size);
 
  return out;
 }
 
 internal void
-arena_pop(MemArena *arena, u64 size) {
+arena_pop(MemArena *arena, u64 size)
+{
  size = MIN(size, arena->current_position);
  arena->current_position -= size;
 }
 
 internal void
-arena_pop_to(MemArena *arena, u64 pos) {
+arena_pop_to(MemArena *arena, u64 pos)
+{
  u64 size = pos < arena->current_position ? arena->current_position - pos : 0;
  arena_pop(arena, size);
 }
 
 internal void
-arena_clear(MemArena *arena) {
+arena_clear(MemArena *arena)
+{
  arena->current_position = 0;
 }
 
 internal MemArena *
-arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size, umm alignment) {
+arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size, umm alignment)
+{
  u8 *old_mem = (u8 *)old_memory;
 
- if (!is_pow(alignment)) {
+ if(!is_pow(alignment))
+ {
   Align(arena->current_position, alignment);
  }
 
- if (old_memory == NULL || old_size == 0) {
+ if(old_memory == NULL || old_size == 0)
+ {
   return (MemArena *)arena_alloc(arena, new_size, 0);
  }
- else if ((old_mem >= arena->base_position && old_mem < arena->base_position + arena->capacity)) {
-  if ((arena->base_position + arena->previous_position) == old_memory) {
+ else if((old_mem >= arena->base_position && old_mem < arena->base_position + arena->capacity))
+ {
+  if((arena->base_position + arena->previous_position) == old_memory)
+  {
    arena->current_position = arena->previous_position + new_size;
-   if (new_size > old_size) {
+   if(new_size > old_size)
+   {
     MemSet(&arena->current_position, new_size - old_size);
    }
    return (MemArena *)old_memory;
   }
-  else {
+  else
+  {
    void *new_memory = arena_alloc(arena, new_size, 0);
    umm   copy_size  = old_size < new_size ? old_size : new_size;
    memmove(new_memory, old_mem, copy_size);
   }
  }
- else {
+ else
+ {
   // warn(0);
  }
 
@@ -119,12 +136,14 @@ arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size
 }
 
 internal MemArena *
-arena_resize(MemArena *arena, void *old_memory, u64 new_size, u64 old_size) {
+arena_resize(MemArena *arena, void *old_memory, u64 new_size, u64 old_size)
+{
  return arena_resize_align(arena, old_memory, new_size, old_size, arena_align);
 }
 
 internal TempArena
-temp_arena_begin(MemArena *arena) {
+temp_arena_begin(MemArena *arena)
+{
  TempArena temp;
  temp.arena          = arena;
  temp.start_position = arena->current_position;
@@ -133,7 +152,8 @@ temp_arena_begin(MemArena *arena) {
 }
 
 internal void
-temp_arena_end(TempArena temp) {
+temp_arena_end(TempArena temp)
+{
  temp.arena->current_position = temp.start_position;
 }
 

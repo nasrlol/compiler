@@ -12,3 +12,5 @@ CppProperties.json
 /compiler.vcxproj.user
 /x64/Debug/compiler.pdb
 /compiler.10x
+.clang-format
+*un*

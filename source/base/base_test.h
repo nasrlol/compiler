@@ -4,34 +4,38 @@
 #define _stringify(x) #x
 #define _str(x) _stringify(x)
 
-#define Error(msg)                                                   \
-do {                                                                \
-  _write("[ERROR] " __FILE__ ":" _str(__LINE__) ":");                \
-  _write(__func__);                                                  \
-  _write(": ");                                                      \
-  _write((msg));                                                     \
-  _write("\n");                                                      \
-  } while (0)
+#define Error(msg) \
+ do \
+ { \
+  _write("[ERROR] " __FILE__ ":" _str(__LINE__) ":"); \
+  _write(__func__); \
+  _write(": "); \
+  _write((msg)); \
+  _write("\n"); \
+ } while(0)
 
+#define Test(expr, msg) \
+ do \
+ { \
+  if(!(expr)) \
+  { \
+   _write("[ASSERT] " __FILE__ ":" _str(__LINE__) ":"); \
+   _write(__func__); \
+   _write(": "); \
+   _write((msg)); \
+   _write("\n"); \
+   breakpoint; \
+  } \
+ } while(0)
 
-  #define Test(expr, msg)                                         \
-  do {                                                           \
-  if (!(expr)) {                                                \
-  _write("[ASSERT] " __FILE__ ":" _str(__LINE__) ":");         \
-  _write(__func__);                                            \
-  _write(": ");                                                \
-  _write((msg));                                               \
-  _write("\n");                                                \
-  breakpoint;                                                  \
-  }                                                             \
-  } while (0)
-
-  #define Assert(expr)                                             \
-  do {                                                            \
-  if ((expr) != 0) {                                             \
-  _write("[FAILED] " __FILE__ ":" _str(__LINE__) ":");          \
-  _exit(1);                                                     \
-  }                                                              \
- } while (0)
+#define Assert(expr) \
+ do \
+ { \
+  if((expr) != 0) \
+  { \
+   _write("[FAILED] " __FILE__ ":" _str(__LINE__) ":"); \
+   _exit(1); \
+  } \
+ } while(0)
 
 #endif /* BASE_ERROR_H */

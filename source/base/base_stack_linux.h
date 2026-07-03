@@ -4,7 +4,7 @@
 internal MemStack *
 unix_stack_create(u64 capacity)
 {
- MemStack*stack = (MemStack *)mmap(
+ MemStack *stack = (MemStack *)mmap(
  0,
  capacity + sizeof(MemStack),
  PROT_READ | PROT_WRITE,
@@ -12,9 +12,9 @@ unix_stack_create(u64 capacity)
  -1,
  0);
 
- if (stack == MAP_FAILED)
+ if(stack == MAP_FAILED)
  {
- return NULL;
+  return NULL;
  }
 
  stack->capacity       = capacity;
@@ -22,14 +22,14 @@ unix_stack_create(u64 capacity)
  stack->current_offset = 0;
 
  return stack;
- }
+}
 
- internal void
- unix_stack_destroy(MemStack *stack)
+internal void
+unix_stack_destroy(MemStack *stack)
+{
+ if(!stack)
  {
- if (!stack)
- {
- return;
+  return;
  }
 
  munmap(stack, stack->capacity + sizeof(MemStack));

@@ -2,7 +2,7 @@
 #define BASE_CORE_H
 
 //- compiler definitions
-#if   defined(_MSC_VER)
+#if defined(_MSC_VER)
 #define COMPILER_MSVC
 #elif defined(__GNUC__)
 #define COMPILER_GCC
@@ -18,15 +18,14 @@
 #define ARCH_x86_64
 #endif
 
-
 //- compiler definitions
 
 //- core stuff
 
 /* assert an expression and output the file and the line */
-#define internal        static
+#define internal static
 #define global_variable static
-#define local_persist   static
+#define local_persist static
 
 #define arena_align (2 * sizeof(void *))
 
@@ -54,14 +53,13 @@
 #define breakpoint() __debugbreak()
 #endif
 
-
 //-
 
 #define MemCpy(dest, src, len) memcpy((dest), (src), (len))
 #define MemSet(dest, len) memset((dest), (1), (len))
 #define MemSetZero(dest, len) memset((dest), (0), (len))
 
-#pragma section("read_only",read)
+#pragma section("read_only", read)
 
 #if defined(_MSC_VER)
 #define ReadOnly __declspec(allocate("read_only"))

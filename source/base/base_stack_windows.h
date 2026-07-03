@@ -5,35 +5,31 @@
 internal MemStack *
 _stack_create_windows(u64 capacity)
 {
-    MemStack *stack = (MemStack*)VirtualAlloc(
-                                              NULL,
-                                              capacity + sizeof(MemStack),
-                                              MEM_COMMIT | MEM_RESERVE,
-                                              PAGE_READWRITE);
+ MemStack *stack = (MemStack *)VirtualAlloc(
+ NULL,
+ capacity + sizeof(MemStack),
+ MEM_COMMIT | MEM_RESERVE,
+ PAGE_READWRITE);
 
-    return stack;
+ return stack;
 }
 
 internal void *
-_stack_destroy_windows(MemStack* stack) {
+_stack_destroy_windows(MemStack *stack)
+{
+ b32 result = VirtualFree(stack,
+ 0, // stands for the byte of commited pages
+ MEM_RELEASE);
 
-    b32 result = VirtualFree(stack,
-                             0, // stands for the byte of commited pages
-                             MEM_RELEASE);
-
-    if (!result) {
-        // TODO: Logging
-    }
-
+ if(!result)
+ {
+  // TODO: Logging
+ }
 }
-
 
 internal void
-_stack_create_arena_windows(MemArena *arena, u64 capacity) {
-
-
-
+_stack_create_arena_windows(MemArena *arena, u64 capacity)
+{
 }
-
 
 #endif /* BASE_STACK_WINDOWS_H  */

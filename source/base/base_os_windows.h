@@ -2,33 +2,34 @@
 #ifndef BASE_OS_WINDOWS_H
 #define BASE_OS_WINDOWS_H
 
-internal inline
-s32 safe_truncate_64(u64 value) {
+internal inline s32
+safe_truncate_64(u64 value)
+{
 #if 0
   Assert(value <= (u64)~0);
   return (u32)value;
 
 #endif
-  return 0;
+ return 0;
 }
 
 internal b32
-win32_file_exists(u8 *path) {
-
+win32_file_exists(u8 *path)
+{
 #if 0
   DWORD attributes = GetFileAttributes(path);
   return ( attributes != INVALID_FILE_ATTRIBUTES || !(Attributes & FILE_ATTRIBUTES_DIRECTORY));
 #endif
 
-  return false;
+ return false;
 }
 
 //- file stuff
 
 // TODO: fix
 internal b32
-win32_file_write(MemArena *arena, String8 file) {
-
+win32_file_write(MemArena *arena, String8 file)
+{
 #if 0
   b32 result = false;
 
@@ -46,17 +47,16 @@ win32_file_write(MemArena *arena, String8 file) {
     // TODO: Logging
   }
 
-
 #endif
 
-  return false;
-
+ return false;
 }
 
 // IN: MemArena, u8 *
 // OUT: String8
 internal String8
-win32_file_load (MemArena *arena, u8 *file) {
+win32_file_load(MemArena *arena, u8 *file)
+{
 #if 0
 
   String8 result = {0};
@@ -102,22 +102,17 @@ win32_file_load (MemArena *arena, u8 *file) {
   return result;
 #endif
 
-
-  return {0};
-}
-
-
-internal void
-win32_log_with_args(char *format, ...) {
-
-
+ return {0};
 }
 
 internal void
-win32_log() {
-
-
+win32_log_with_args(char *format, ...)
+{
 }
 
+internal void
+win32_log()
+{
+}
 
 #endif
