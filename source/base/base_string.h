@@ -17,142 +17,152 @@ typedef struct String32List String32List;
 //- strings
 
 struct String8 {
- u8  *data;
- u64  size;
- };
+	u8* data;
+	u64  size;
+};
 
- struct String16 {
- u16  *data;
- u64  size;
- };
+struct String16 {
+	u16* data;
+	u64  size;
+};
 
- struct String32 {
- u32  *data;
- u64  size;
- };
+struct String32 {
+	u32* data;
+	u64  size;
+};
 
- //- nodes
- struct String8Node {
- String8Node *next;
- String8 value;
+//- nodes
+struct String8Node {
+	String8Node* next;
+	String8 value;
 
- };
+};
 
- struct String16Node {
- String16Node *next;
- String8 string;
+struct String16Node {
+	String16Node* next;
+	String8 string;
 
- };
+};
 
- struct String32Node {
- String32Node *next;
- String32     value;
- };
-
-
- //- lists
- struct String8List {
- String8Node *first;
- String8Node *last;
- u64 count;
- };
-
- struct String16List {
- String16Node *next;
- String16Node string;
- };
-
- struct string32_list {
- String32Node *first;
- String32Node *last;
- u64 count;
- };
-
- //- string tools
-
- internal inline b8
- str8_match(String8 a, String8 b) {
- if (a.size != b.size) return 0;
- return (b8)(memcmp(a.data, b.data, a.size) == 0);
- }
-
- internal inline void
- str8_append_u8_element(String8 *buf, u8 c) {
- buf->data[buf->size] = c;
- buf->size += 1;
- }
+struct String32Node {
+	String32Node* next;
+	String32     value;
+};
 
 
- internal inline String8
- str8_zero() {
- return String8{0};
- }
+//- lists
+struct String8List {
+	String8Node* first;
+	String8Node* last;
+	u64 count;
+};
 
- //- cstring implementations
+struct String16List {
+	String16Node* next;
+	String16Node string;
+};
 
- internal inline  b32
- cstring_is_digit(u8 point) {
- return (point >= '0' && point <= '9');
- }
+struct string32_list {
+	String32Node* first;
+	String32Node* last;
+	u64 count;
+};
 
- internal inline b32
- cstring_is_alpha(u8 point) {
- return ((point >= 'a' && point <= 'z') || (point >= 'A' && point <= 'Z') || (point == '_'));
- }
+//- string tools
 
- internal inline b32
- cstring_is_alnum(u8 point) {
- return (cstring_is_alpha(point) || cstring_is_digit(point));
- }
+internal inline b8
+str8_match(String8 a, String8 b) {
+	if (a.size != b.size) return 0;
+	return (b8)(memcmp(a.data, b.data, a.size) == 0);
+}
 
- internal inline b32
- cstring_is_nl(u8 point) {
- return (point == '\n' || point == '\r' );
+internal inline void
+str8_append_u8_element(String8* buf, u8 c) {
+	buf->data[buf->size] = c;
+	buf->size += 1;
+}
 
- }
 
- internal inline b32
- cstring_is_whitespace(u8 point) {
- return ( point == ' ' || point == '\t');
- }
+internal inline String8
+str8_zero() {
+	return String8{ 0 };
+}
 
- internal inline b32
- cstring_is_slash(u8 point) {
- return (point == '/' || point == '\\');
- }
+//- cstring implementations
 
- internal inline b32
- cstring_is_newline(u8 point) {
- return (point == '\n');
- }
+internal inline  b32
+cstring_is_digit(u8 point) {
+	return (point >= '0' && point <= '9');
+}
 
- //-
+internal inline b32
+cstring_is_alpha(u8 point) {
+	return ((point >= 'a' && point <= 'z') || (point >= 'A' && point <= 'Z') || (point == '_'));
+}
 
- internal b32
- cstring_is_match(u8 *a, u8 *b) {
+internal inline b32
+cstring_is_alnum(u8 point) {
+	return (cstring_is_alpha(point) || cstring_is_digit(point));
+}
 
- u64 a_size = sizeof(a);
- u64 b_size = sizeof(b);
+internal inline b32
+cstring_is_nl(u8 point) {
+	return (point == '\n' || point == '\r');
 
- if(a_size != b_size) return false;
+}
 
- for(s32 idx = 0; idx < a_size; ++idx) {
- if(a[idx] != b[idx]) return false;
- }
+internal inline b32
+cstring_is_whitespace(u8 point) {
+	return (point == ' ' || point == '\t');
+}
 
- return true;
- }
+internal inline b32
+cstring_is_slash(u8 point) {
+	return (point == '/' || point == '\\');
+}
 
- internal u64
- cstring_find_u8_character(u8* buffer, u64 start_pos, u8 element ) {
- u8 *data = buffer;
- u64 offset;
- while(!cstring_is_match(data, &element)) {
- ++offset;
- ++data;
- }
+internal inline b32
+cstring_is_newline(u8 point) {
+	return (point == '\n');
+}
 
- return offset + start_pos;
+//-
+
+internal b32
+cstring_is_match(u8* a, u8* b) {
+
+	u64 a_size = sizeof(a);
+	u64 b_size = sizeof(b);
+
+	if (a_size != b_size) return false;
+
+	for (s32 idx = 0; idx < a_size; ++idx) {
+		if (a[idx] != b[idx]) return false;
+	}
+
+	return true;
+}
+
+internal u64
+cstring_find_u8_character(u8* buffer, u64 start_pos, u8 element) {
+	u8* data = buffer;
+	u64 offset;
+	while (!cstring_is_match(data, &element)) {
+		++offset;
+		++data;
+	}
+
+	return offset + start_pos;
+}
+
+internal inline u64
+cstring_find_element(u8* buffer, u64 start_pos, u8 element) {
+	for (u64 idx = start_pos; buffer[idx]; ++idx) {
+		if (buffer[idx] == element) {
+			return true;
+		}
+	}
+	return false;
 }
 
 //- cstring implementations
@@ -164,17 +174,20 @@ internal inline b32 cstring_is_slash(u8 point);
 internal inline b32 cstring_is_alpha(u8 point);
 internal inline b32 cstring_is_digit(u8 point);
 internal inline b32 cstring_is_newline(u8 point);
+internal        b32 cstring_is_match(u8* a, u8* b);
+internal inline u64 cstring_find_element(u8* buffer, u64 start_pos, u8 element);
 
-internal b32 cstring_is_match(u8 *a, u8 *b);
 
 //- string8 implementations
 
 internal inline String8 str8_set_zero();
 internal inline b8      str8_is_match(String8 a, String8 b);
-internal inline void    str8_append_u8_element(String8 *buf, u8 c);
-internal inline u64     str8_find_element(u8 buffer, u64 start_pos, u8 element);
-internal inline u64     str8_skip_element(String8 buffer, u64 start_pos, String8 element);
-internal inline u64     str8_find_element(String8 buffer, u64 start_pos, String8 element);
+
+internal inline void    str8_append_u8_element(String8* buf, u8* c);
+internal inline void    str8_append_str8_element(String8* a, String8* b);
+
+internal inline u64     str8_skip_element(String8* buffer, u64 start_pos, String8* element);
+internal inline u64     str8_find_element(String8* buffer, u64 start_pos, String8* element);
 
 //- macros
 
@@ -195,11 +208,11 @@ internal inline u64     str8_find_element(String8 buffer, u64 start_pos, String8
 
 //-
 
-ReadOnly global_variable String8  str8_nil           = { NULL, 0 };
-ReadOnly global_variable String16 str16_nil          = { NULL, 0 };
-ReadOnly global_variable String32 str32_nil          = { NULL, 0 };
+ReadOnly global_variable String8  str8_nil = { NULL, 0 };
+ReadOnly global_variable String16 str16_nil = { NULL, 0 };
+ReadOnly global_variable String32 str32_nil = { NULL, 0 };
 
-ReadOnly global_variable String8Node str8_nil_node   = { NULL, NULL };
+ReadOnly global_variable String8Node str8_nil_node = { NULL, NULL };
 ReadOnly global_variable String16Node str16_nil_node = { NULL, NULL };
 ReadOnly global_variable String32Node str32_nil_node = { NULL, NULL };
 

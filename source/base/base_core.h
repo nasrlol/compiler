@@ -91,7 +91,4 @@ typedef s8  b8;
 typedef uintptr_t umm;
 typedef intptr_t  smm;
 
-#define True    (1 == 1)
-#define False   (1 != 1)
-
 #endif //  BASE_CORE_H
