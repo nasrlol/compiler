@@ -1,18 +1,40 @@
-#use module
+//- I don't know
 
 // this is a comment
-
-/*
-   this is also a comment
- */
+/* this is also a comment */
 
 struct string {
+ value: string
+ size : u64
 
-  }
+ metadata: {
+   score: s8
+ }
+}
 
-  main(x : s32, y: s32, z: s64) int | string {
+bar(point: s32) int | ! {
 
+ numbers: s32[5] = [1, 3, 5, 6]
+
+ for x in numbers {
+   if x == point {
+    print(x)
+   }
+ }
+
+ while true {
+  point += 1
+ }
+}
+
+main(x : s32, y: s32, z: s64) int | string {
+
+  foo(4, 5);
   result: u64 = x + y + z
-
   return {4, "Hello World", 9}
+}
+
+foo(x: s32, y: s32) ! {
+ x += 5;
+ return !;
 }

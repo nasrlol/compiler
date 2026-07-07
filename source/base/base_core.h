@@ -25,17 +25,17 @@
 /* assert an expression and output the file and the line */
 #define internal static
 #define global_variable static
-#define local_persist static
+#define local_persist  static
 
 #define arena_align (2 * sizeof(void *))
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define Min(a, b) (((a) < (b)) ? (a) : (b))
+#define Max(a, b) (((a) > (b)) ? (a) : (b))
 
-#define unused(x) (void)(x)
-#define NIL 0
+#define Unused(x) (void)(x)
+#define Nil 0
 
-#define deprecated __attribute__((__deprecated__))
+#define Deprecated __attribute__((__deprecated__))
 
 //- brakpoints
 #if defined(ARCH_ARM)
@@ -67,7 +67,7 @@
 #define ReadOnly __attribute__((section(".rodata")))
 #endif
 
-//- core types
+//- types
 
 typedef uint64_t u64;
 typedef uint32_t u32;

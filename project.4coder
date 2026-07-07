@@ -1,39 +1,48 @@
 version(2);
 project_name = "compiler";
 patterns = {
-  "*.c",
-  "*.cpp",
-  "*.h",
-  "*.m",
-  "*.bat",
-  "*.sh",
-  "*.4coder",
-  "*.fajr",
-};
-blacklist_patterns = {
-  ".*",
-};
-load_paths_base = {
-  { ".", .relative = true, .recursive = true, },
-  { "./source", .relative = true, .recursive = true, },
-  { "./source/base", .relative = true, .recursive = true, },
-  { "./source/compiler", .relative = true, .recursive = true, },
-};
-load_paths = {
-  .win = load_paths_base,
-  .linux = load_paths_base,
-  .mac = load_paths_base,
+    "*.c",
+    "*.cpp",
+    "*.h",
+    "*.m",
+    "*.bat",
+    "*.sh",
+    "*.4coder",
+    "*.jr",
 };
 
-commands = {
-  .build = { .out = "*compilation*", .footer_panel = false, .save_dirty_files = true,
-    .win = "build.bat",
-    .linux = "./build.sh",
-    .mac = "./build.sh", },
-  .run = { .out = "*run*", .footer_panel = false, .save_dirty_files = false,
-    .win = "build\\compiler",
-    .linux = "build/compiler",
-    .mac = "build/compiler", },
+blacklist_patterns = {
+    ".*",
+};
+
+load_paths_base = {
+    { ".",                 .relative = true, .recursive = true, },
+    { "./source",          .relative = true, .recursive = true, },
+    { "./source/base",     .relative = true, .recursive = true, },
+    { "./source/compiler", .relative = true, .recursive = true, },
+    };
+
+    load_paths = {
+    .win = load_paths_base,
+    .linux = load_paths_base,
+    .mac = load_paths_base,
+    };
+
+    commands = {
+    .build =
+    {
+        .out  = "*compilation*", .footer_panel = false, .save_dirty_files = true,
+        .win   = "build.bat",
+        .linux = "./build.sh",
+        .mac   = "./build.sh",
+    },
+    .run =
+    {
+        .out   = "*run*", .footer_panel = false, .save_dirty_files = false,
+        .win   = "build\\compiler",
+        .linux = "build/compiler",
+        .mac   = "build/compiler",
+    },
 };
 fkey_command[1] = "build";
 fkey_command[2] = "run";
