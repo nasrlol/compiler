@@ -119,55 +119,70 @@ str8_chop_right(String8 buffer, u64 count)
 }
 
 
-//- cstring implementations
+internal String8
+                 str8_list_push_node(String8List *list, String8Node *node)
+            {
 
-internal b32
-cstring_is_digit(u8 point)
-{
-    return (point >= '0' && point <= '9');
-}
+            // TODO: i can't think anymroe im tired
+            if(list->first)
+            {
+            list->first = node;
+            } else
+            {
+            list->last->next = node;
+            }
 
-internal b32
-cstring_is_alpha(u8 point)
-{
-    return ((point >= 'a' && point <= 'z') || (point >= 'A' && point <= 'Z') || (point == '_'));
-}
+            }
 
-internal b32
-cstring_is_alnum(u8 point)
-{
-    return (cstring_is_alpha(point) || cstring_is_digit(point));
-}
+            //- cstring implementations
 
-internal b32
-cstring_is_nl(u8 point)
-{
-    return (point == '\n' || point == '\r');
-}
+            internal b32
+            cstring_is_digit(u8 point)
+            {
+            return (point >= '0' && point <= '9');
+            }
 
-internal b32
-cstring_is_whitespace(u8 point)
-{
-    return (point == ' ' || point == '\t');
-}
+            internal b32
+            cstring_is_alpha(u8 point)
+            {
+            return ((point >= 'a' && point <= 'z') || (point >= 'A' && point <= 'Z') || (point == '_'));
+            }
 
-internal b32
-cstring_is_slash(u8 point)
-{
-    return (point == '/' || point == '\\');
-}
+            internal b32
+            cstring_is_alnum(u8 point)
+            {
+            return (cstring_is_alpha(point) || cstring_is_digit(point));
+            }
 
-internal b32
-cstring_is_newline(u8 point)
-{
-    return (point == '\n');
-}
+            internal b32
+            cstring_is_nl(u8 point)
+            {
+            return (point == '\n' || point == '\r');
+            }
 
-internal b32
-cstring_is_match(u8 *a, u8 *b)
-{
-    u64 a_size = CStringLen(a);
-    u64 b_size = CStringLen(b);
+            internal b32
+            cstring_is_whitespace(u8 point)
+            {
+            return (point == ' ' || point == '\t');
+            }
+
+            internal b32
+            cstring_is_slash(u8 point)
+            {
+            return (point == '/' || point == '\\');
+            }
+
+            internal b32
+            cstring_is_newline(u8 point)
+            {
+            return (point == '\n');
+            }
+
+            internal b32
+            cstring_is_match(u8 *a, u8 *b)
+            {
+            u64 a_size = CStringLen(a);
+            u64 b_size = CStringLen(b);
 
             if(a_size != b_size)
             {
@@ -183,7 +198,6 @@ cstring_is_match(u8 *a, u8 *b)
             }
             return true;
             }
-
 
             internal u64
             cstring_find_u8_character(u8 *buffer, u64 start_pos, u8 element)
