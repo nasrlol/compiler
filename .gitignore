@@ -1,7 +1,5 @@
 .idea
-/build/compiler
 .vs/
-.vs
 CppProperties.json
 /build
 /vc140.pdb
@@ -13,4 +11,3 @@ CppProperties.json
 /x64/Debug/compiler.pdb
 /compiler.10x
 .clang-format
-*un*

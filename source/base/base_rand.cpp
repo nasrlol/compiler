@@ -1,10 +1,6 @@
-#ifndef BASE_RAND_H
-#define BASE_RAND_H
-
-// source: https://rosettacode.org/wiki/Pseudo-random_numbers/Splitmix64
-
 #define RAND_CONSTANT 6364136223846793005
-#define GEN_RAND() _generate_random_u64(RAND_CONSTANT)
+internal u64 rand_u64(u64 constant);
+
 
 internal u64
 rand_u64(u64 constant)
@@ -22,4 +18,4 @@ rand_u64(u64 constant)
     return z;
 }
 
-#endif
+// TODO: bah i don't know if this is good

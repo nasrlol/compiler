@@ -37,7 +37,7 @@
 
 #define Deprecated __attribute__((__deprecated__))
 
-//- brakpoints
+//- breakpoints
 #if defined(ARCH_ARM)
 #define breakpoint() __asm__ volatile("brk #0");
 // #define temp_breakpoint() __asm__ volatile("udf #0"); // TODO: I don't remember what the issue with this was for

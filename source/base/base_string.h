@@ -44,7 +44,7 @@ struct String8Node
 struct String16Node
 {
     String16Node *next;
-    String8       string;
+    String16      string;
 };
 
 struct String32Node
@@ -63,225 +63,74 @@ struct String8List
 
 struct String16List
 {
-    String16Node *next;
-    String16Node  string;
+    String16Node *first;
+    String16Node *last;
+    u64           count;
 };
 
-struct string32_list
+struct String32List
 {
     String32Node *first;
     String32Node *last;
     u64           count;
 };
 
-//- string tools
+//- cstring implementations
 
-internal b32
-str8_match(String8 a, String8 b)
-{
-    if(a.size != b.size)
-    {
-        return 0;
-    }
-    return (b8)(memcmp(a.data, b.data, a.size) == 0);
+internal b32 cstring_is_alnum(u8 point);
+internal b32 cstring_is_nil(u8 point);
+internal b32 cstring_is_whitespace(u8 point);
+internal b32 cstring_is_slash(u8 point);
+internal b32 cstring_is_alpha(u8 point);
+internal b32 cstring_is_digit(u8 point);
+internal b32 cstring_is_newline(u8 point);
+internal b32 cstring_is_match(u8 *a, u8 *b);
+internal u64 cstring_find_element(u8 *buffer, u64 start_pos, u8 element);
+
+//- string8 implementations
+
+internal b32     str8_match(String8 a, String8 b);
+internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
+internal u64     str8_find_element(String8 *buffer, u64 start_pos, String8 *element);
+internal void    str8_append_u8_element(String8 *buf, u8 c);
+internal void    str8_append_str8_element(String8 *a, String8 *b);
+internal String8 str8_chop_left(String8 buffer, u64 count);
+internal String8 str8_chop_right(String8 buffer, u64 count);
+internal String8 str8_zero();
+
+//- macros
+
+#define PushString8(arena, count) \
+String8 \
+{ \
+(u8 *)(PushArrayZero(arena, u8, (count))), (u64)(count) \
+}
+#define PushString16(arena, count) \
+String16 \
+{ \
+(u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count) \
+}
+#define PushString32(arena, count) \
+String32 \
+{ \
+(u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count) \
 }
 
-internal void
-str8_append_u8_element(String8 *buf, u8 c)
-{
-    buf->data[buf->size] = c;
-    buf->size += 1;
+#define ToString8(data, size) \
+String8 \
+{ \
+(u8 *)(data), (u64)(size) \
 }
-
-internal String8
-str8_zero()
-{
-    return String8{0};
+#define ToString16(data, size) \
+String16 \
+{ \
+(u16 *)(data), (u64)(size) \
 }
-
-internal String8
-str8_chop_left(String8 buffer, u64 count)
-{
-    Assert(buffer.size < count);
-    for(u64 idx = 0; idx < count; ++idx)
-    {
-        buffer.data++;
-    }
-    return buffer;
+#define ToString32(data, size) \
+String32 \
+{ \
+(u32 *)(data), (u64)(size) \
 }
-
-internal String8
-str8_chop_right(String8 buffer, u64 count)
-{
-    Assert(buffer.size < count);
-    buffer.size -= count;
-    return buffer;
-}
-
-
-internal String8
-                 str8_list_push_node(String8List *list, String8Node *node)
-            {
-
-            // TODO: i can't think anymroe im tired
-            if(list->first)
-            {
-            list->first = node;
-            } else
-            {
-            list->last->next = node;
-            }
-
-            }
-
-            //- cstring implementations
-
-            internal b32
-            cstring_is_digit(u8 point)
-            {
-            return (point >= '0' && point <= '9');
-            }
-
-            internal b32
-            cstring_is_alpha(u8 point)
-            {
-            return ((point >= 'a' && point <= 'z') || (point >= 'A' && point <= 'Z') || (point == '_'));
-            }
-
-            internal b32
-            cstring_is_alnum(u8 point)
-            {
-            return (cstring_is_alpha(point) || cstring_is_digit(point));
-            }
-
-            internal b32
-            cstring_is_nl(u8 point)
-            {
-            return (point == '\n' || point == '\r');
-            }
-
-            internal b32
-            cstring_is_whitespace(u8 point)
-            {
-            return (point == ' ' || point == '\t');
-            }
-
-            internal b32
-            cstring_is_slash(u8 point)
-            {
-            return (point == '/' || point == '\\');
-            }
-
-            internal b32
-            cstring_is_newline(u8 point)
-            {
-            return (point == '\n');
-            }
-
-            internal b32
-            cstring_is_match(u8 *a, u8 *b)
-            {
-            u64 a_size = CStringLen(a);
-            u64 b_size = CStringLen(b);
-
-            if(a_size != b_size)
-            {
-            return false;
-            }
-
-            for(s32 idx = 0; idx < a_size; ++idx)
-            {
-            if(a[idx] != b[idx])
-            {
-            return false;
-            }
-            }
-            return true;
-            }
-
-            internal u64
-            cstring_find_u8_character(u8 *buffer, u64 start_pos, u8 element)
-            {
-            u8 *data = buffer;
-            u64 offset;
-            while(!cstring_is_match(data, &element))
-            {
-            ++offset;
-            ++data;
-            }
-
-            return offset + start_pos;
-            }
-
-            internal u64
-            cstring_find_element(u8 *buffer, u64 start_pos, u8 element)
-            {
-            for(u64 idx = start_pos; buffer[idx]; ++idx)
-            {
-            if(buffer[idx] == element)
-            {
-            return idx;
-            }
-            }
-            return 0;
-            }
-
-            //- cstring implementations
-
-            internal b32 cstring_is_alnum(u8 point);
-            internal b32 cstring_is_nil(u8 point);
-            internal b32 cstring_is_whitespace(u8 point);
-            internal b32 cstring_is_slash(u8 point);
-            internal b32 cstring_is_alpha(u8 point);
-            internal b32 cstring_is_digit(u8 point);
-            internal b32 cstring_is_newline(u8 point);
-            internal b32 cstring_is_match(u8 *a, u8 *b);
-            internal u64 cstring_find_element(u8 *buffer, u64 start_pos, u8 element);
-
-            //- string8 implementations
-
-            internal b32     str8_is_match(String8 a, String8 b);
-            internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
-            internal u64     str8_find_element(String8 *buffer, u64 start_pos, String8 *element);
-            internal void    str8_append_u8_element(String8 *buf, u8 *c);
-            internal void    str8_append_str8_element(String8 *a, String8 *b);
-            internal String8 str8_chop_left(String8  *buffer, u64 count);
-            internal String8 str8_chop_right(String8 *buffer, u64 count);
-            internal String8 str8_set_zero();
-
-            //- macros
-
-            #define PushString8(arena, count) \
-            (String8) \
-            { \
-            .data = (PushArrayZero(arena, u8, (count))), .size = (count) \
-            }
-            #define PushString16(arena, count) \
-            (String16) \
-            { \
-            .data = (PushArrayZero(arena, u16, (count))), .size = (count) \
-            }
-            #define PushString32(arena, count) \
-            (String32) \
-            { \
-            .data = (PushArrayZero(arena, u32, (count))), .size = (count) \
-            }
-
-            #define ToString8(data, size) \
-            String8 \
-            { \
-            (u8 *)(data), (u64)(size) \
-            }
-            #define ToString16(data, size) \
-            String16 \
-            { \
-            (u16 *)(data), (u64)(size) \
-            }
-            #define ToString32(data, size) \
-            String32 \
-            { \
-            (u32 *)(data), (u64)(size) \
-    }
 
 #define StringFmt "%.*s"
 #define ULongFmt "%lu"
