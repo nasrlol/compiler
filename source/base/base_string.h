@@ -97,40 +97,41 @@ internal void    str8_append_str8_element(String8 *a, String8 *b);
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
 internal String8 str8_zero();
+internal void    str8_trim_right();
 
 //- macros
 
 #define PushString8(arena, count) \
-String8 \
-{ \
-(u8 *)(PushArrayZero(arena, u8, (count))), (u64)(count) \
-}
+    String8 \
+    { \
+        (u8 *)(PushArrayZero(arena, u8, (count))), (u64)(count) \
+    }
 #define PushString16(arena, count) \
-String16 \
-{ \
-(u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count) \
-}
+    String16 \
+    { \
+        (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count) \
+    }
 #define PushString32(arena, count) \
-String32 \
-{ \
-(u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count) \
-}
+    String32 \
+    { \
+        (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count) \
+    }
 
 #define ToString8(data, size) \
-String8 \
-{ \
-(u8 *)(data), (u64)(size) \
-}
+    String8 \
+    { \
+        (u8 *)(data), (u64)(size) \
+    }
 #define ToString16(data, size) \
-String16 \
-{ \
-(u16 *)(data), (u64)(size) \
-}
+    String16 \
+    { \
+        (u16 *)(data), (u64)(size) \
+    }
 #define ToString32(data, size) \
-String32 \
-{ \
-(u32 *)(data), (u64)(size) \
-}
+    String32 \
+    { \
+        (u32 *)(data), (u64)(size) \
+    }
 
 #define StringFmt "%.*s"
 #define ULongFmt "%lu"

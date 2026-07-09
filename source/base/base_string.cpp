@@ -1,6 +1,3 @@
-//- string tools
-
-
 internal void
 str8_trim_left(String8 *buffer)
 {
@@ -10,7 +7,7 @@ str8_trim_left(String8 *buffer)
     ++index;
     }
 
-    str8_chop_left(buffer, index);
+    str8_chop_left(*buffer, index);
     }
 
     internal void
@@ -22,11 +19,9 @@ str8_trim_left(String8 *buffer)
     --index;
     }
 
-    str8_chop_right(buffer, index);
+    str8_chop_right(*buffer, index);
     }
 
-    internal void
-    str8_trim_right();
 
     internal b32
     str8_match(String8 a, String8 b)
@@ -38,11 +33,12 @@ str8_trim_left(String8 *buffer)
     return (b8)(memcmp(a.data, b.data, a.size) == 0);
     }
 
-    internal void
-    str8_append_u8_element(String8 *buf, u8 c)
+    internal String8
+    str8_append_u8_element(String8 buffer, u8 c)
     {
-    buf->data[buf->size] = c;
-    buf->size += 1;
+    buffer.data[buffer.size] = c;
+    buffer.size += 1;
+    return buffer;
     }
 
     internal String8
@@ -140,7 +136,7 @@ str8_trim_left(String8 *buffer)
 
 
     internal b32
-    cstring_is_match(u8 *a, u8 *b)
+    cstring_is_match(void *a, void *b)
     {
     u64 a_size = CStringLen(a);
     u64 b_size = CStringLen(b);
