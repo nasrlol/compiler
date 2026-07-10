@@ -8,9 +8,15 @@
 
 
 //-
-#if defined(PLATFORM_WINDOWS)
+#if PLATFORM_WINDOWS
 
-internal void win32_log_with_args(char *format, ...);
+#if COMPILER_GCC | COMPILER_CLANG
+internal void win32_log_with_args(const char *mmessage, ...); __attributes__((format(printf, 2, 3))
+#elif COMPILER_MSVC
+internal void win32_log_with_args(_Printf_format_string_ const char *message, ...);
+#endif
+
+
 internal void win32_log(String8List messages);
 internal b32 win32_os_exit();
 internal b32 win32_file_exists(u8 *path);
@@ -23,13 +29,12 @@ internal String8 win32_file_load(MemArena *arena, u8 *file);
 #define FileExists(path) win32_file_exists(path)
 #define OSExit() win32_os_exit();
 
-#if defined(BASE_LOGGING)
-#define Log(format, ...)      win32_log_with_args((char *)(format), ##__VA_ARGS__)
-#else
-#define Log(format, ...)
-#endif
+#if COMPILER_GCC | COMPILER_CLANG
+#define Log(message, ...)      win32_log_with_args((const char *) message, ...)  __attributes__((format(printf, 2, 3))
+#elif COMPILER_MSVC
+#define Log(message, ...)      win32_log_with_args(_Printf_format_string_ message, ...)
 
-#elif defined(PLATFORM_LINUX) // PLATFORM_WINDOWS
+#if PLATFORM_LINUX
 
 internal String8   unix_file_write(String8 data, String8 path);
 internal String8   unix_file_load(MemArena *arena, String8 path);
@@ -48,12 +53,11 @@ internal void      unix_log_with_args(char *format, ...);
 
 #define OSExit() unix_os_exit();
 
-#if defined(BASE_LOGGING)
-#define Log(format, ...) unix_log_with_args((char *)(format), ##__VA_ARGS__)
-#else
-#define Log(format, ...)
-#endif // BASE_LOGGING
-
+#if COMPILER_GCC |  COMPILER_CLANG
+#define Log(message, __VA_ARGS) unix_log_with_args(message, ... ) __attributes__((format(printf, 2, 3)) // TODO: I know that the __VA_ARGS ar ethe correct ones for gcc but also check them out for clang
+#elif COMPILER_MSVC
+#define Log(message, ...) unix_log_with_args(_Printf_format_string_ message, ...) // TODO: __VA_ARGS what is the implementation for msvc
+// TODO: for this to wwork we need the /analyze argument
 #endif // File I/O
 
 #endif /* BASE_IO_H */
