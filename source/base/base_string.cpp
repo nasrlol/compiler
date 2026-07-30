@@ -43,7 +43,7 @@ str8_trim_left(String8 *buffer)
     u64 index = 0;
     while(cstring_is_whitespace(buffer->data[index]))
     {
-    ++index;
+        ++index;
     }
 
     str8_chop_left(*buffer, index);
@@ -64,8 +64,8 @@ str8_trim_left(String8 *buffer)
     internal b32
     str8_any_match(String8 a, String8 b)
     {
-
-
+    b32 result = (memcmp(a.data, b.data, b.size) == 0);
+    return false;
     }
 
     internal b32
@@ -308,4 +308,12 @@ str8_trim_left(String8 *buffer)
 
 
     return c;
+    }
+
+    internal b32
+    str8_first_character_is_match(String8 buffer, u8 character)
+    {
+    buffer.size = 0;
+
+    return str8_is_match(buffer, str8(character));
 }

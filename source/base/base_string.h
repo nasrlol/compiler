@@ -117,16 +117,23 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 #define PushString16(arena, count) String16 { (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count)}
 #define PushString32(arena, count) String32 { (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count)}
 
-
 #define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data) - 1)}
 #define ToString16(data) String16 { (u16 *)(data), (u64)(sizeof(data) - 1)}
 #define ToString32(data) String32 { (u32 *)(data), (u64)(sizeof(data) - 1)}
 
 #define str8(buffer) ToString8(buffer)
+#define str16(buffer) ToString16(buffer)
+#define str32(buffer) ToString32(buffer)
+
+#define ToString8Size(data, size)  String8  {(u8 *)(data), (u64)(size)}
+#define ToString16Size(data, size) String16 {(u16 *)(data), (u64)(size)}
+#define ToString32Size(data, size) String32 {(u32 *)(data), (u64)(size)}
 
 #define ToString8Node(string)  String8Node  {&nil_str8_node, string}
 #define ToString16Node(string) String16Node {&nil_str8_node, string}
 #define ToString32Node(string) String32Node {&nil_str8_node, string}
+
+#define FORCHOP(buffer, size, function, count) for(; size >= count ; function(buffer, count) )
 
 internal b32 is_nil_str8(String8 *a);
 internal b32 is_nil_str8_node(String8Node *a);
