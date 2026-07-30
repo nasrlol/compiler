@@ -1,3 +1,42 @@
+internal b32
+is_nil_str8(String8 *a)
+{
+    return (a == &nil_str8);
+}
+
+internal b32
+is_nil_str8_node(String8Node *a)
+{
+    return (a == &nil_str8_node);
+}
+
+internal b32
+is_nil_str16(String16 *a)
+{
+    return (a == &nil_str16);
+}
+
+internal b32
+is_nil_str16_node(String16Node *a)
+{
+    return (a == &nil_str16_node);
+}
+
+internal b32
+is_nil_str32(String32 *a)
+{
+    return (a == &nil_str32);
+}
+
+internal b32
+is_nil_str32_node(String32Node *a)
+{
+    return (a == &nil_str32_node);
+}
+
+
+
+
 internal void
 str8_trim_left(String8 *buffer)
 {
@@ -22,15 +61,51 @@ str8_trim_left(String8 *buffer)
     str8_chop_right(*buffer, index);
     }
 
+    internal b32
+    str8_any_match(String8 a, String8 b)
+    {
+
+
+    }
 
     internal b32
-    str8_match(String8 a, String8 b)
+    str8_is_match(String8 a, String8 b)
     {
     if(a.size != b.size)
     {
     return 0;
     }
-    return (b8)(memcmp(a.data, b.data, a.size) == 0);
+    return (b32)(memcmp(a.data, b.data, a.size) == 0);
+    }
+
+    internal u64
+    str8_find(String8 *buffer, u64 start_pos, String8 element)
+    {
+
+    b32 result = false;
+    for(u64 index = start_pos; index < buffer->size - element.size; ++index)
+    {
+    String8 view = str8_chop_left(*buffer, index);
+    result = str8_is_match(element, view);
+    if(result)
+    {
+    return index;
+    }
+    }
+
+    return 0;
+    }
+
+
+    internal b32
+    str8_is_digit(String8 a, u64 start_pos)
+    {
+    for(u64 index = start_pos; index < a.size; ++index)
+    {
+    if(!cstring_is_digit(a.data[index])) return false;
+    }
+
+    return true;
     }
 
     internal String8
@@ -40,6 +115,23 @@ str8_trim_left(String8 *buffer)
     buffer.size += 1;
     return buffer;
     }
+
+    internal b32
+    str8_append(String8 *a, String8 *b)
+    {
+    if(is_nil_str8(a) || is_nil_str8(b) || a == NULL || b == NULL)
+    {
+    breakpoint();
+    return false;
+    }
+
+    MemCpy(a->data + a->size, b->data, b->size);
+    a->size += b->size;
+
+    return true;
+
+    }
+
 
     internal String8
     str8_zero()
@@ -136,17 +228,17 @@ str8_trim_left(String8 *buffer)
 
 
     internal b32
-    cstring_is_match(void *a, void *b)
+    cstring_is_match(u8 *a, u8 *b)
     {
-    u64 a_size = CStringLen(a);
-    u64 b_size = CStringLen(b);
+    u64 as = cstring8_length(a);
+    u64 bs = cstring8_length(b);
 
-    if(a_size != b_size)
+    if(as != bs)
     {
     return false;
     }
 
-    for(s32 idx = 0; idx < a_size; ++idx)
+    for(u64 idx = 0; idx < as; ++idx)
     {
     if(a[idx] != b[idx])
     {
@@ -157,28 +249,63 @@ str8_trim_left(String8 *buffer)
     }
 
     internal u64
-    cstring_find_u8_character(u8 *buffer, u64 start_pos, u8 element)
+    cstring8_length(u8 *c)
     {
-    u8 *data   = buffer;
-    u64 offset = 0;
-    while(!cstring_is_match(data, &element))
-    {
-    ++offset;
-    ++data;
+    u8 *p = c;
+
+    if(!c) return 0;
+    for(; *c != 0; ++c);
+    return (u64)(c - p);
+
     }
 
-    return offset + start_pos;
-}
 
-internal u64
-cstring_find_element(u8 *buffer, u64 start_pos, u8 element)
-{
-    for(u64 idx = start_pos; buffer[idx]; ++idx)
+    internal u64
+    cstring16_length(u16 *c)
     {
-        if(buffer[idx] == element)
-        {
-            return idx;
-        }
+    u16  *p = c;
+
+    if(!c) return 0;
+    for(; *c != 0; ++c);
+    return (u64)(p - c);
+
     }
-    return 0;
+
+    internal u64
+    cstring32_length(u32 *c)
+    {
+
+    u32  *p = c;
+
+    if(!c) return 0;
+    for(; *c != 0; ++c);
+    return (u64)(p - c);
+
+    }
+
+
+    internal const char *
+    null_terminate(MemArena *arena, String8 *c)
+    {
+    ScratchArena scratch = scratch_start(arena);
+    char *cstring = (char *)arena_alloc(scratch.arena, c->size + 1, 0);
+    MemCpy(cstring, c->data, c->size);
+    cstring[c->size] = '\0';
+    scratch_end(&scratch);
+
+    return (const char *)cstring;
+    }
+
+
+    internal String8
+    remove_null_terminator(MemArena *arena, String8 c)
+    {
+    if ((c.size > 0) && (c.data[c.size - 1] == '\0'))
+    {
+    String8 chopped = {c.data, c.size - 1};
+    return chopped;
+    }
+
+
+    return c;
 }

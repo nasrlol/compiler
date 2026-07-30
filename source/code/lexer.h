@@ -199,7 +199,7 @@ enum struct TokenType
     {
     if(cstring_is_slash(buffer->data[idx]) && cstring_is_slash(buffer->data[idx + 1]))
     {
-    cstring_find_element(buffer->data, idx, (u8)"\n");
+    str8_find(buffer, idx, str8("\n"));
     }
     }
     return;
@@ -210,18 +210,17 @@ enum struct TokenType
     internal void
     push_token_children(TokenTree *tree, u64 index, String8List delimiters)
     {
-    b32 found_end = false;
-    u8 *buffer    = tree->buffer->data;
-    while(!found_end)
-    {
-    for(u64 buffer_idx = index; cstring_is_match(&buffer[buffer_idx], &delimiters); ++buffer_idx)
+    String8 *buffer    = tree->buffer;
+
+    for(String8Node *current_delim = delimiters.first;  !is_nil_str8_node(current_delim); current_delim = current_delim->next)
+    for(u64 buffer_idx = index; str8_is_match(buffer, current_delim); ++buffer_idx)
     {
     TokenNode *node = {0};
     // consume the token
     // consume while the buffer[index] is not a white space or delimiinter i guess
-    for(u8 sub_delim_idx = 0; sub_delim_idx < delimiters->size; ++sub_delim_idx)
+    for(u8 sub_delim_idx = 0; sub_delim_idx < delimiters.size; ++sub_delim_idx)
     {
-    if(cstring_is_match(&sub_delim_idx->data[delimiters], &delimiter))
+    if(str8_is_match(current_delim, delimiter))
     {
     found_end = true;
     }
@@ -242,7 +241,6 @@ enum struct TokenType
     node->parent   = current->parent;
 
     current->last = node;
-    }
     }
     }
     }

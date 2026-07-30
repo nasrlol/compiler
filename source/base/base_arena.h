@@ -6,7 +6,6 @@
 typedef struct MemArena MemArena;
 typedef struct ScratchArena ScratchArena;
 
-
 struct MemArena
 {
     u64 current_position;
@@ -23,7 +22,7 @@ struct ScratchArena
 
 //-
 
-#if defined(PLATFORM_LINUX)
+#if defined(PLATFORM_UNIX)
 #define ArenaCreate(capacity) unix_arena_create(capacity)
 #define ArenaDestroy(arena)   unix_arena_destroy(arena)
 #elif defined(PLATFORM_WINDOWS)
@@ -34,8 +33,10 @@ internal void *arena_alloc(MemArena *arena, u64 size, b32 zero);
 internal void arena_pop(MemArena *arena, u64 size);
 internal void arena_pop_to(MemArena *arena, u64 pos);
 internal void arena_clear(MemArena *arena);
-internal void scratch_end(ScratchArena *temp);
+
 internal ScratchArena scratch_start(MemArena *arena);
+internal void scratch_end(ScratchArena *temp);
+
 internal MemArena *arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size, umm alignment);
 internal MemArena *arena_resize(MemArena *arena, void *old_memory, u64 new_size, u64 old_size);
 
@@ -45,9 +46,9 @@ internal MemArena *arena_resize(MemArena *arena, void *old_memory, u64 new_size,
 #define PushArray(arena, type, len) (type *)arena_alloc((arena), sizeof(type) * (len), 0)
 #define PushArrayZero(arena, type, len) (type *)arena_alloc((arena), sizeof(type) * (len), 1)
 
-#define Kib(n) (((u64)(n)) << 10)
-#define Mib(n) (((u64)(n)) << 20)
-#define Gib(n) (((u64)(n)) << 30)
+#define KiB(n) (((u64)(n)) << 10)
+#define MiB(n) (((u64)(n)) << 20)
+#define GiB(n) (((u64)(n)) << 30)
 
 internal b32 is_pow(umm x);
 internal u64 align(u64 pointer, umm alignment);

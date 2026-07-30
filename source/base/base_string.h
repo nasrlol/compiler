@@ -75,8 +75,7 @@ struct String32List
     u64           count;
 };
 
-//- cstring implementations
-
+//- cstring
 internal b32 cstring_is_alnum(u8 point);
 internal b32 cstring_is_nil(u8 point);
 internal b32 cstring_is_whitespace(u8 point);
@@ -85,69 +84,66 @@ internal b32 cstring_is_alpha(u8 point);
 internal b32 cstring_is_digit(u8 point);
 internal b32 cstring_is_newline(u8 point);
 internal b32 cstring_is_match(u8 *a, u8 *b);
-internal u64 cstring_find_element(u8 *buffer, u64 start_pos, u8 element);
 
-//- string8 implementations
-
-internal b32     str8_match(String8 a, String8 b);
+//- string8
 internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
 internal u64     str8_find_element(String8 *buffer, u64 start_pos, String8 *element);
+internal b32     str8_is_match(String8 a, String8 b);
 internal void    str8_append_u8_element(String8 *buf, u8 c);
-internal void    str8_append_str8_element(String8 *a, String8 *b);
+internal int     str8_append(String8 *a, String8 *b);
+internal void    str8_trim_right();
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
 internal String8 str8_zero();
-internal void    str8_trim_right();
 
-//- macros
+#if COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
-#define PushString8(arena, count) \
-    String8 \
-    { \
-        (u8 *)(PushArrayZero(arena, u8, (count))), (u64)(count) \
-    }
-#define PushString16(arena, count) \
-    String16 \
-    { \
-        (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count) \
-    }
-#define PushString32(arena, count) \
-    String32 \
-    { \
-        (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count) \
-    }
-
-#define ToString8(data, size) \
-    String8 \
-    { \
-        (u8 *)(data), (u64)(size) \
-    }
-#define ToString16(data, size) \
-    String16 \
-    { \
-        (u16 *)(data), (u64)(size) \
-    }
-#define ToString32(data, size) \
-    String32 \
-    { \
-        (u32 *)(data), (u64)(size) \
-    }
-
-#define StringFmt "%.*s"
-#define ULongFmt "%lu"
-#define ULLongFmt "%llu"
-
-#define CStringLen(s) (sizeof(s) - 1) // minus null terminator
-#define String8Len(s) (s.size)
 
 //-
+ReadOnly global_variable String8  nil_str8  = {NULL, 0};
+ReadOnly global_variable String16 nil_str16 = {NULL, 0};
+ReadOnly global_variable String32 nil_str32 = {NULL, 0};
 
-ReadOnly global_variable String8  str8_nil  = {NULL, 0};
-ReadOnly global_variable String16 str16_nil = {NULL, 0};
-ReadOnly global_variable String32 str32_nil = {NULL, 0};
+ReadOnly global_variable String8Node  nil_str8_node  = {NULL, {NULL}};
+ReadOnly global_variable String16Node nil_str16_node = {NULL, {NULL}};
+ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 
-ReadOnly global_variable String8Node  str8_nil_node  = {NULL, NULL};
-ReadOnly global_variable String16Node str16_nil_node = {NULL, NULL};
-ReadOnly global_variable String32Node str32_nil_node = {NULL, NULL};
+
+//- macros
+#define PushString8(arena, count)  String8 { (u8 *)(PushArrayZero(arena, u8, (count))), (u64)(count)}
+#define PushString16(arena, count) String16 { (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count)}
+#define PushString32(arena, count) String32 { (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count)}
+
+
+#define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data) - 1)}
+#define ToString16(data) String16 { (u16 *)(data), (u64)(sizeof(data) - 1)}
+#define ToString32(data) String32 { (u32 *)(data), (u64)(sizeof(data) - 1)}
+
+#define str8(buffer) ToString8(buffer)
+
+#define ToString8Node(string)  String8Node  {&nil_str8_node, string}
+#define ToString16Node(string) String16Node {&nil_str8_node, string}
+#define ToString32Node(string) String32Node {&nil_str8_node, string}
+
+internal b32 is_nil_str8(String8 *a);
+internal b32 is_nil_str8_node(String8Node *a);
+internal b32 is_nil_str16(String16 *a);
+internal b32 is_nil_str16_node(String16Node *a);
+internal b32 is_nil_str32(String32 *a);
+internal b32 is_nil_str32_node(String32Node *a);
+
+#if COMPILER_GCC
+#pragma GCC diagnostic pop
+#endif
+
+#define Str8Fmt    "%.*s"
+#define Str8Arg(buffer) (unsigned int)((buffer).size), (char *)((buffer).data)
+
+internal u64 cstring8_length(u8 *c);
+internal u64 cstring16_length(u16 *c);
+internal u64 cstring32_length(u32 *c);
 
 #endif /* BASE_STRING_H */

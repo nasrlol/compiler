@@ -3,19 +3,21 @@
 
 //- compiler definitions
 #if defined(_MSC_VER)
-#define COMPILER_MSVC
-#elif defined(__GNUC__)
-#define COMPILER_GCC
+#    define COMPILER_MSVC 1
 #elif defined(__clang__)
-#define COMPILER_CLANG
+#    define COMPILER_CLANG 1
+#elif defined(__GNUC__)
+#    define COMPILER_GCC 1
+#else
+#    error Unsupported compiler
 #endif
 
 //- architecture definitions
 
 #if defined(__arm__) || defined(__aarch64__)
-#define ARCH_ARM
+#define ARCH_ARM 1
 #elif defined(__i386__) || defined(__x86_64__)
-#define ARCH_x86_64
+#define ARCH_x86_64 1
 #endif
 
 //- compiler definitions
@@ -25,7 +27,7 @@
 /* assert an expression and output the file and the line */
 #define internal static
 #define global_variable static
-#define local_persist  static
+#define local_persist static
 
 #define arena_align (2 * sizeof(void *))
 
@@ -38,34 +40,53 @@
 #define Deprecated __attribute__((__deprecated__))
 
 //- breakpoints
-#if defined(ARCH_ARM)
+#if ARCH_ARM
 #define breakpoint() __asm__ volatile("brk #0");
 // #define temp_breakpoint() __asm__ volatile("udf #0"); // TODO: I don't remember what the issue with this was for
-#elif defined(ARCH_x86_64)
+#elif ARCH_x86_64
 
-#if defined(COMPILER_GCC)
+#if COMPILER_GCC
 #define breakpoint() __asm__ volatile("int3"); // TODO: put this in the architecture guard
 #endif
 #endif
 
-#if defined(COMPILER_MSVC)
+#if COMPILER_MSVC
 #include <intrin.h>
 #define breakpoint() __debugbreak()
 #endif
 
 //-
-
 #define MemCpy(dest, src, len) memcpy((dest), (src), (len))
 #define MemSet(dest, len) memset((dest), (1), (len))
 #define MemSetZero(dest, len) memset((dest), (0), (len))
 
+//-
+#if COMPILER_MSVC
 #pragma section("read_only", read)
-
-#if defined(_MSC_VER)
 #define ReadOnly __declspec(allocate("read_only"))
-#elif defined(__GNUC__) || defined(__clang__)
-#define ReadOnly __attribute__((section(".rodata")))
+#elif COMPILER_GCC || COMPILER_CLANG
+
+#if PLATFORM_APPLE
+#define ReadOnly __attribute__((section(".const")))
+#else
+#define ReadOnly __attribute__((section("__TEXT,__const")))
+#endif // PLATFORM_APPLE
+
 #endif
+
+
+//-
+typedef enum Result Result;
+enum Result
+{
+  Success,
+  Fail,
+  Warning,
+  Error,
+};
+
+//-
+#define Assert(x) do{if(!(x)) {breakpoint();}}while(0)
 
 //- types
 
@@ -76,6 +97,7 @@ typedef uint8_t  u8;
 
 typedef int8_t  s8;
 typedef int16_t s16;
+
 typedef int32_t s32;
 typedef int64_t s64;
 

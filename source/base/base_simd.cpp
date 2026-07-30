@@ -1,5 +1,7 @@
-#ifdef ARCH_ARM
-#ifdef BASE_SIMD
+#if 0
 #include <arm_neon.h>
-#endif // BASE_SIMD
 #endif // ARCH_ARM
+
+#if 0
+#include <intrin.h>
+#endif

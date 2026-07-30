@@ -1,21 +1,21 @@
-//- per platform allocations
-
-#if defined(PLATFORM_LINUX)
+#if PLATFORM_UNIX
 
 internal MemArena *
 unix_arena_create(u64 capacity)
 {
     MemArena *arena = (MemArena *)mmap(
-                                       /* kernel decides where to throw the arena */
-                                       NULL,
-                                       capacity + sizeof(MemArena),
-                                       PROT_READ | PROT_WRITE,
-                                       MAP_SHARED | MAP_ANONYMOUS,
-                                       -1,
-                                       0);
+	/* kernel decides where to throw the arena */
+	NULL,
+	capacity + sizeof(MemArena),
+	PROT_READ | PROT_WRITE,
+	MAP_SHARED | MAP_ANONYMOUS,
+	-1,
+	0);
 
     if(arena == MAP_FAILED)
-        return NULL;
+    {
+	return NULL;
+    }
 
     arena->capacity          = capacity;
     arena->base_position     = (u8 *)arena + sizeof(MemArena);
@@ -30,25 +30,25 @@ unix_arena_destroy(MemArena *arena)
 {
     if(!arena)
     {
-        return;
+	return;
     }
 
     munmap(arena, arena->capacity + sizeof(MemArena));
 }
 
-#elif defined(PLATFORM_WINDOWS)
+#elif PLATFORM_WINDOWS
 
 internal MemArena *
 win32_arena_create(u64 capacity)
 {
     MemArena *arena = (MemArena *)VirtualAlloc(
-                                                NULL,
-                                                capacity + sizeof(MemArena),
-                                                MEM_COMMIT | MEM_RESERVE,
-                                                PAGE_READWRITE);
+	NULL,
+	capacity + sizeof(MemArena),
+	MEM_COMMIT | MEM_RESERVE,
+	PAGE_READWRITE);
     if(!arena)
     {
-        return NULL;
+	return NULL;
     }
 
     arena->capacity          = capacity;
@@ -63,7 +63,7 @@ win32_arena_destroy(MemArena *arena)
 {
     if(!arena)
     {
-        return;
+	return;
     }
 
     VirtualFree(arena, 0, MEM_RELEASE);
@@ -77,13 +77,13 @@ arena_alloc(MemArena *arena, u64 size, b32 zero)
 {
     if(!arena)
     {
-        return NULL;
+	return NULL;
     }
     u64 aligned = Align(arena->current_position, arena_align);
     u64 new_pos = aligned + size;
     if(new_pos > arena->capacity)
     {
-        return NULL;
+	return NULL;
     }
 
     void *out = arena->base_position + aligned;
@@ -93,7 +93,7 @@ arena_alloc(MemArena *arena, u64 size, b32 zero)
 
     if(zero)
     {
-        MemSetZero(out, size);
+	MemSetZero(out, size);
     }
 
     return out;
@@ -126,35 +126,35 @@ arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size
 
     if(is_pow(alignment))
     {
-        arena->current_position = Align(arena->current_position, alignment);
+	arena->current_position = Align(arena->current_position, alignment);
     }
 
     if(old_memory == NULL || old_size == 0)
     {
-        return (MemArena *)arena_alloc(arena, new_size, 0);
+	return (MemArena *)arena_alloc(arena, new_size, 0);
     }
     else if((old_mem >= arena->base_position && old_mem < arena->base_position + arena->capacity))
     {
-        if((arena->base_position + arena->previous_position) == old_memory)
-        {
-            arena->current_position = arena->previous_position + new_size;
-            if(new_size > old_size)
-            {
-                MemSet(&arena->current_position, new_size - old_size);
-            }
+	if((arena->base_position + arena->previous_position) == old_memory)
+	{
+	    arena->current_position = arena->previous_position + new_size;
+	    if(new_size > old_size)
+	    {
+		MemSet(&arena->current_position, new_size - old_size);
+	    }
 
-            return (MemArena *)old_memory;
-        }
-        else
-        {
-            void *new_memory = arena_alloc(arena, new_size, 0);
-            umm   copy_size  = old_size < new_size ? old_size : new_size;
-            memmove(new_memory, old_mem, copy_size);
-        }
+	    return (MemArena *)old_memory;
+	}
+	else
+	{
+	    void *new_memory = arena_alloc(arena, new_size, 0);
+	    umm   copy_size  = old_size < new_size ? old_size : new_size;
+	    memmove(new_memory, old_mem, copy_size);
+	}
     }
     else
     {
-        Log("yeah something in the mem allocator failed i guess");
+	// Log("yeah something in the mem allocator failed i guess"); // TODO: find a way to properly include the logging
     }
 
     return NULL;
@@ -195,14 +195,7 @@ align(u64 pointer, umm alignment)
 {
     if((alignment & (alignment - 1)) == 0)
     {
-        return pointer;
+	return pointer;
     }
     return (pointer + alignment - 1) & ~(alignment - 1);
 }
-
-
-
-
-
-
-
