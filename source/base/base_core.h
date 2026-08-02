@@ -111,4 +111,11 @@ typedef s8  b8;
 typedef uintptr_t umm;
 typedef intptr_t  smm;
 
+
+
+//- disable certain msvc errors
+#if COMPILER_MSVC
+    #pragma warning(disable : 6246)  // disable the same name within a certain scope
+#endif
+
 #endif //  BASE_CORE_H

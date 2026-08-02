@@ -34,9 +34,6 @@ is_nil_str32_node(String32Node *a)
     return (a == &nil_str32_node);
 }
 
-
-
-
 internal void
 str8_trim_left(String8 *buffer)
 {

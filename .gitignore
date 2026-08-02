@@ -11,3 +11,5 @@ CppProperties.json
 /x64/Debug/compiler.pdb
 /compiler.10x
 .clang-format
+/compiler.nativecodeanalysis.xml
+/compiler.obj

@@ -113,9 +113,9 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 
 
 //- macros
-#define PushString8(arena, count)  String8 { (u8 *)(PushArrayZero(arena, u8, (count))), (u64)(count)}
-#define PushString16(arena, count) String16 { (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count)}
-#define PushString32(arena, count) String32 { (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count)}
+#define PushString8(arena, count)  { (u8 *) (PushArrayZero(arena, u8,  (count))), (u64)(count)}
+#define PushString16(arena, count) { (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count)}
+#define PushString32(arena, count) { (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count)}
 
 #define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data) - 1)}
 #define ToString16(data) String16 { (u16 *)(data), (u64)(sizeof(data) - 1)}
@@ -137,6 +137,8 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 // arbitratry amount of parameters can be passed to this function
 #define FOR_STR8_CHOP(buffer, size, function, count) for(; size >= count ; function(*buffer, count))
 #define FOR_STR8_ARB_FN(eval, function, ...) for(; (eval); function(__VA_ARGS__))
+#define FOR_STR8_MATCH(first_buffer, second_buffer) for(; str8_is_match(first_buffer, second_buffer); str8_chop_left(first_buffer, 1))
+#define FOR_STR8_NODE(str8_node_list, current) for(String8Node *current = str8_node_list->first; !is_nil_str8_node(current); current = current->next)
 
 internal b32 is_nil_str8(String8 *a);
 internal b32 is_nil_str8_node(String8Node *a);

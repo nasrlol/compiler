@@ -11,4 +11,4 @@ if not exist %BUILD_DIR% mkdir %BUILD_DIR%
 
 echo Building %BUILD_DIR%\program.exe...
 
-cl %INCLUDES% %CFLAGS%  %SOURCE_DIR%\code\compiler.cpp  /Fe%BUILD_DIR%\compiler.exe %LIBS%
+cl %INCLUDES% %CFLAGS% %SOURCE_DIR%\code\compiler.cpp  /Fe%BUILD_DIR%\compiler.exe %LIBS%
