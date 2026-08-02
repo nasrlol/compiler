@@ -89,11 +89,11 @@ win32_logf(const char *fmt, ...) PRINTF_FORMAT
     }
 
     internal String8
-    win32_file_load(MemArena *arena, u8 *file)
+    win32_file_load(MemArena *arena, String8 file)
     {
     String8 result = {0};
 
-    HANDLE file_handle = CreateFileA((LPCSTR)file, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    HANDLE file_handle = CreateFileA((LPCSTR)file.data ,GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if(file_handle != INVALID_HANDLE_VALUE)   // success
     {
 

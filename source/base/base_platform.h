@@ -73,7 +73,7 @@ internal b32  win32_os_exit();
 internal b32  win32_file_exists(u8 *path);
 internal b32  win32_file_write(String8 data, String8 path);
 internal u64  safe_truncate_64(u64 value);
-internal String8 win32_file_load(MemArena *arena, u8 *file);
+internal String8 win32_file_load(MemArena *arena, String8 file);
 
 #define FileLoad(arena, path) win32_file_load(arena, path)
 #define FileWrite(data, path) win32_file_write(data, path)

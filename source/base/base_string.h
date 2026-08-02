@@ -133,7 +133,10 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 #define ToString16Node(string) String16Node {&nil_str8_node, string}
 #define ToString32Node(string) String32Node {&nil_str8_node, string}
 
-#define FORCHOP(buffer, size, function, count) for(; size >= count ; function(buffer, count) )
+
+// arbitratry amount of parameters can be passed to this function
+#define FOR_STR8_CHOP(buffer, size, function, count) for(; size >= count ; function(*buffer, count))
+#define FOR_STR8_ARB_FN(eval, function, ...) for(; (eval); function(__VA_ARGS__))
 
 internal b32 is_nil_str8(String8 *a);
 internal b32 is_nil_str8_node(String8Node *a);

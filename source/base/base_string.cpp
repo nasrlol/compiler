@@ -197,7 +197,7 @@ str8_trim_left(String8 *buffer)
     }
 
     internal b32
-    cstring_is_alnum(u8 point)
+    cstring_is_alpha_num(u8 point)
     {
     return (cstring_is_alpha(point) || cstring_is_digit(point));
     }
