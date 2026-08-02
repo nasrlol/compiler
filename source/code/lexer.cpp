@@ -38,34 +38,39 @@
 
     // create tokens, from a certain starting position until a certain
     // delimiter. build the tokens and push them onto the tree
-    internal void
-    push_token_children(TokenTree *tree, u64 index, String8List delimiters)
-    {
-    String8 *buffer    = tree->buffer;
 
-    for(String8Node *current_delim = delimiters.first;  !is_nil_str8_node(current_delim); current_delim = current_delim->next)
+
+    internal void
+push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
     {
-    for(u64 buffer_idx = index; str8_any_match(*buffer, current_delim->value); ++buffer_idx)
+ScratchArena scratch = scratch_start(arena);
+    String8 *temp_buffer = PushStruct(arena, String8);
+MemCpy(temp_buffer, tree->buffer, tree->buffer->size);
+
+FOR_STR8_NODE(delimiters, curr_delimiter)
     {
-    TokenNode *node = {0};
+    FOR_STR8_MATCH(*temp_buffer, curr_delimiter->value)
+    {
+    TokenNode *node = PushStruct(arena, TokenNode);
     TokenNode *current = tree->current;
 
+    // NOTE: we can assume that if the first node is nil that the last node will be nill aswell
     if(!is_token_node_nil(current->first))
-    { // NOTE: we can assume that if the first node is nil that the last node will be nill aswell
+    {
     current->first = node;
     current->last  = node;
     }
     else
     {
-    current->last->next = node;
-
     node->previous = current->last;
     node->parent   = current->parent;
-
+    current->last->next = node;
     current->last = node;
     }
     }
     }
+
+scratch_end(&scratch);
     }
 
     internal void
@@ -153,14 +158,11 @@
     // stand for the translation units. and therefor allow the multiple notes to interact with each other.
     // initialize root node
     #if 0
-    if(is_token_node_nil(tree->root))
-    {
-    tree->root->child = node;
-    }
-
+    if(is_token_node_nil(tree->root)) tree->root->child = node;
     #endif
+    ////////////////////////////////
 
-    token->value.string_value = str8_chop_left(*tree->buffer, index);
+    token->value.str_v = str8_chop_left(*tree->buffer, index);
     token->type = TokenType::Identifier;
     }
 
@@ -169,10 +171,10 @@
     // TODO: Error unless the previous token was a declaration token and thus this needs to be handled
     // as a value intead of a declaration
 
-    if(node->parent->token.type == TokenType::Identifier)
+    if(node->parent->token->type == TokenType::Identifier)
     {
-    node->parent->flag       = TokenNodeFlags::None;
-    node->parent->token.type = TokenType::Identifier;
+    node->parent->flag = TokenNodeFlags::None;
+    node->parent->token->type = TokenType::Identifier;
     }
     else
     {
@@ -181,14 +183,11 @@
     }
     else if(str8_is_match(*tree->buffer, str8('"')))
     {
-    token->type = TokenType::Identifier;
-
     // TODO: find the closing quote
-
+    token->type = TokenType::Identifier;
     }
     else if(str8_is_match(*tree->buffer,  str8('\'')))
     {
-
     // TODO: start pos for handling cpp style comments index handling
     // change the function signature because the current position of the buffer.
     // is the positoin of the '/'. because we chop the str8
@@ -198,38 +197,33 @@
     }
     else if(str8_is_match(*tree->buffer, str8('{')))
     {
-    String8 closed_param_delim = ToString8("}", 1);
+    String8 closed_param_delim = str8("}");
 
     // NOTE: an open brace defines a new scope
+// TODO: push token children. using the new function signature
     tree->current->next = node;
-    node->token.type    = (enum TokenType)'{';
-
-    #if 0
-    push_token_children(tree, index, '}', &closed_param_delim);
-    #endif
-
+    node->token->type    = (enum TokenType)'{';
     }
-    else if(str8_is_match(tree->buffer, str8('}')))
+    else if(str8_is_match(*tree->buffer, str8('}')))
     {
-    if(node->first->token.type != (enum TokenType)'{')
+    if(node->first->token->type != (enum TokenType)'{')
     {
     Log("Error: closing brace not matching opening brace");
     }
     else
     {
-    Token token         = {};
+    Token *token = PushStruct(arena, Token);
     tree->current->last = node;
 
     // TODO: extract into function later
     {
-    token.type               = TokenType::Param;
-    token.line               = amount_of_newlines;
-    token.value.string_value = ToString8('}', 1);
+    token->type = TokenType::Param;
+    token->line = tree->amount_of_new_lines;
+    token->value.str_v = str8("}");
     }
 
     if(is_token_node_nil(tree->current->last))
     {
-
     // TODO: Fill in the token
     node->token;
     node->flag = TokenNodeFlags::Child;
@@ -243,52 +237,71 @@
     }
     else
     {
-    TokenNode *temp_current_token_node                                   = tree->current->last->next;
-    temp_current_token_node->token                                = token;
-    temp_current_token_node->flag                                 = (enum TokenType)TokenType::Identifier;
-    temp_current_token_node->previous                             = tree->current->last;
-    temp_current_token_node->parent                               = tree->current->last->parent;
+    TokenNode *temp_current_token_node = tree->current->last->next;
+    temp_current_token_node->token = token;
+    temp_current_token_node->flag =  TokenNodeFlags::None;
+    temp_current_token_node->previous = tree->current->last;
+    temp_current_token_node->parent = tree->current->last->parent;
     }
     }
     }
-    else if(tree->buffer->data[index] == '(')
+    else if(str8_is_match(*tree->buffer, str8('(')))
     {
     if(tree->current->parent)
     {
-    push_token_children(tree, index, ,ToString8(')', 1), {0});
+String8List *delimiters = PushStruct(arena, String8List);
+				String8Node node =
+{
+NULL,
+str8(')'),
+};
+
+    str8_list_push_node(delimiters, &node);
+					push_token_children(arena, tree,delimiters);
     }
     }
-    else if(str8_is_match(tree->buffer,str8(')')))
+    else if(str8_is_match(*tree->buffer, str8(')')))
     {
-    if(cstring_is_match(tree->current->first->token.value.string_value.data, ')'))
-    { // TODO: fix this ugly thing
-    Log("Error: No closing brace found on line  %d amount_of_newlines");
+// TODO: fix this ugly thing
+    if(str8_is_match(tree->current->first->token->value.str_v, str8(')')))
+    {
+    Log("Error: No closing brace found on line  %llu amount_of_newlines", tree->amount_of_new_lines);
     }
     else
     {
     // TODO: Something I forgot what
     }
     }
-    // handle arrayselse if(str8_is_match(buffer, str8('[')))
+    // handle arrays
+    else if(str8_is_match(*tree->buffer, str8("[")))
     {
-    //
     // an array consists of children of the variable name
     // so we just do a children until we hit the delimiter
-    //
 
-    push_token_children(tree, index, delimiter);
+String8List *delimiters = PushStruct(arena, String8List);
+String8Node node =
+{
+NULL,
+str8("]"),
+};
+
+str8_list_push_node(delimiters, &node);
+    push_token_children(arena, tree, delimiters);
     }
-    else if(str8_is_match(buffer, str8(']')))
+    else if(str8_is_match(*tree->buffer, str8("]")))
     {
-    if(tree->current->first->type != (TokenType)'[') Error("didn't close the bracket you moron");
+    if(tree->current->first->token->type != (enum TokenType)'[')
+{
+    Log("didn't close the bracket you moron");
     }
-    else if(str8_is_match(buffer, str8('#')))
+}
+    else if(str8_is_match(*tree->buffer, str8("#")))
     {
     // TODO HANDLE MODULE
     }
-    else if(str8_is_match(buffer, str8(':')))
+    else if(str8_is_match(*tree->buffer, str8(':')))
     {
-    if(tree->current->parent->token.type  == TokenType::Identifier)
+    if(tree->current->parent->token->type  == TokenType::Identifier)
     {
 
     String8List *sub_delimiters = PushStruct(arena, String8List);
@@ -299,9 +312,10 @@
     str8_list_push_node(sub_delimiters, sub_colon_node);
     str8_list_push_node(sub_delimiters, sub_komma_node);
 
-    push_token_children(tree, index, delimiter, sub_delimiters);
-
-
+// TODO: use the new function signature for push_token_children
+#if 0
+    push_token_children(tree, delimiter, sub_delimiters);
+#endif
     }
     }
     else
@@ -310,8 +324,6 @@
 
     }
     }
-
-
 
     return tree;
 }
