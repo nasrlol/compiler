@@ -14,15 +14,13 @@
 typedef struct MemStackHeader MemStackHeader;
 typedef struct MemStack MemStack;
 
-struct MemStackHeader
-{
+struct MemStackHeader {
     u8 padding;
     u8 previous_offset;
 };
 
 // TODO: fix all this dumb mem stack include issues where is it even coming from
-struct MemStack
-{
+struct MemStack {
     MemStackHeader *header;
     u64             current_offset;
     u64             capacity;

@@ -3,8 +3,7 @@
 
 
 typedef struct PlatformWindow PlatformWindow;
-struct PlatformWindow
-{
+struct PlatformWindow {
     void *window_handle;
     int width;
     int height;
@@ -29,39 +28,38 @@ struct PlatformWindow
 #endif
 
 #define PlatformCreateWindow(arena, height, width, display_x, display_y)
-                                                                         LinuxCreateWindow(arena, height, width, display_x, display_y)
+LinuxCreateWindow(arena, height, width, display_x, display_y)
 
-    #define PlatformGetDisplayWidth(display, screen_num ) \
+#define PlatformGetDisplayWidth(display, screen_num ) \
     LinuxDisplayWdith(display, screen_num)
-    #define PlatformGetDisplayHeight(display, screen_num) LinuxDisplayHeight(display, screen_num)
-    #define PlatformLoadBitmapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y) LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)
+#define PlatformGetDisplayHeight(display, screen_num) LinuxDisplayHeight(display, screen_num)
+#define PlatformLoadBitmapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y) LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)
 
-    //- windows layer
-    #elif PLATFORM_WINDOWS
+//- windows layer
+#elif PLATFORM_WINDOWS
 
-    //- global variables
+//- global variables
 
-    global_variable b32 Win32Running = true;
+global_variable b32 Win32Running = true;
 
-    //-
-    #if COMPILER_MSVC
-    #pragma warning(disable : 28251) // disabled the annotations warning that are defined in winbase.h
-    #define  ENTRYPOINT(hinstance, prev_instance, cmd_line, show_cmd) int WINAPI WinMain(hinstance, prev_instance, cmd_line, show_cmd)
+//-
+#if COMPILER_MSVC
+#pragma warning(disable : 28251) // disabled the annotations warning that are defined in winbase.h
+#define  ENTRYPOINT(hinstance, prev_instance, cmd_line, show_cmd) int WINAPI WinMain(hinstance, prev_instance, cmd_line, show_cmd)
 
-    #endif // COMPIPILER_MSVC DISABLE WARNING
-    #define PlatformCreateWindow(instance, height, width, display_x, display_y) Win32CreateWindow(instance, height, width, display_x, display_y)
-    #endif // PLATFORM_UNIX && PLATFORM_LINUX
+#endif // COMPIPILER_MSVC DISABLE WARNING
+#define PlatformCreateWindow(instance, height, width, display_x, display_y) Win32CreateWindow(instance, height, width, display_x, display_y)
+#endif // PLATFORM_UNIX && PLATFORM_LINUX
 
-    #define STDIN  0
-    #define STDOUT 1
-    #define STDERR 2
+#define STDIN  0
+#define STDOUT 1
+#define STDERR 2
 
-    //-
-    #if PLATFORM_WINDOWS
+//-
+#if PLATFORM_WINDOWS
 
-    typedef enum KeyboardCode KeyboardCode;
-    enum KeyboardCode
-    {
+typedef enum KeyboardCode KeyboardCode;
+enum KeyboardCode {
 
 
 };

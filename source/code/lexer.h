@@ -3,51 +3,46 @@
 
 //-
 
-enum TokenType : int
-{
+enum TokenType : int {
     Undefined = 256,
-    Identifier, // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
-    Value,      // because an identfier could really be anything from a value, variable or function.
-    String,
-    Number,
-    Double_Equal,
-    Greater_Equal,
-    Lesser_Equal,
-    Param,
-    Right_Shift,
-    Left_Shift,
-    Asterisk,
-    Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
-    C_Style_Comment_Start,
-    C_Style_Comment_End,
-    };
+	Identifier, // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
+	Value,      // because an identfier could really be anything from a value, variable or function.
+	String,
+	Number,
+	Double_Equal,
+	Greater_Equal,
+	Lesser_Equal,
+	Param,
+	Right_Shift,
+	Left_Shift,
+	Asterisk,
+	Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
+	C_Style_Comment_Start,
+	C_Style_Comment_End,
+};
 
-    enum TokenNodeFlags : int
-    {
-    None  = (1 << 0),
-    Root  = (1 << 11),
-    Child = (1 << 12),
-    Eof   = (1 << 13),
-    Bad   = (1 << 14),
-    };
+enum TokenNodeFlags : int {
+        None  = (1 << 0),
+	Root  = (1 << 11),
+	Child = (1 << 12),
+	Eof   = (1 << 13),
+	Bad   = (1 << 14),
+};
 
-    typedef struct Token Token;
-    struct Token
-    {
+typedef struct Token Token;
+struct Token {
     enum TokenType type;
     u64 line;
 
-    union
-    {
-    String8 str_v;
-    f64 f64_v; // this is a seperate type because floats have a different notation than integers do
-    u64 int_v;
+    union {
+        String8 str_v;
+        f64 f64_v; // this is a seperate type because floats have a different notation than integers do
+        u64 int_v;
     } value;
-    };
+};
 
-    typedef struct TokenNode TokenNode;
-    struct TokenNode
-    {
+typedef struct TokenNode TokenNode;
+struct TokenNode {
     TokenNodeFlags flag;
     TokenNode *next;
     TokenNode *previous;
@@ -56,32 +51,38 @@ enum TokenType : int
     TokenNode *first;
     TokenNode *last;
     Token     *token;
-    };
+};
 
-    // Find a way to do this without allocating the tokens on the heap. It's a huge toll on the performance of the program
-    typedef struct TokenTree TokenTree;
-    struct TokenTree
-    {
+typedef struct Lexeme Lexeme;
+struct Lexeme
+{
+
+    String8 *buffer;
+    u64 index;
+
+};
+
+// Find a way to do this without allocating the tokens on the heap. It's a huge toll on the performance of the program
+typedef struct TokenTree TokenTree;
+struct TokenTree {
     TokenNode *root;
     TokenNode *current;
     String8 *buffer;
-    u8 *buffer_position;
     u64 amount_of_new_lines;
     u64 index;
-    };
+};
 
-    //- nil variables
-    ReadOnly global_variable
+//- nil variables
+ReadOnly global_variable
 Token nil_token =
 {
     TokenType::Undefined,
     0,
     { NULL }
-    };
+};
 
-    ReadOnly global_variable
-TokenNode nil_token_node =
-{
+ReadOnly global_variable
+TokenNode nil_token_node = {
     TokenNodeFlags::None,
     &nil_token_node, // next
     &nil_token_node, // previous
@@ -90,24 +91,24 @@ TokenNode nil_token_node =
     &nil_token_node, // first
     &nil_token_node, // last
     {}
-    };
+};
 
-    #define TokenNodeContainsFlag(node, flag) \
-    if(((node->flags) & (flag)) != (0)) \
-    return false
+#define TokenNodeContainsFlag(node, flag)	\
+    if(((node->flags) & (flag)) != (0))		\
+	return false
 
-    #define FillTokenNodeFieldWithNilNode(field) \
+#define FillTokenNodeFieldWithNilNode(field)		\
     if(node->field == NULL || !is_token_node_nil(node)) \
-    node->field = &nil_token_node;
+	node->field = &nil_token_node;
 
 
 // - functions
 internal b32 is_token_node_nil(TokenNode *node);
 internal b32 is_token_nil(Token *token);
 internal u64 handle_c_style_comments(TokenTree *tree, u64 start_pos);
-internal void handle_cpp_style_comments(String8 *buffer, u64 start_pos);
+internal void handle_cpp_style_comments(TokenTree *tree);
 internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
 internal void push_token_node(TokenTree *tree, TokenNode * node);
-internal TokenTree * tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
+internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
 
 #endif /* LEXER_H */

@@ -6,16 +6,14 @@
 typedef struct MemArena MemArena;
 typedef struct ScratchArena ScratchArena;
 
-struct MemArena
-{
+struct MemArena {
     u64 current_position;
     u64 previous_position;
     u64 capacity;
     u8 *base_position;
 };
 
-struct ScratchArena
-{
+struct ScratchArena {
     MemArena *arena;
     u64       start_position;
 };

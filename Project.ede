@@ -1,0 +1,10 @@
+;; Object compiler
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "compiler"
+  :file "Project.ede"
+  :name "compiler"
+  :targets nil
+  :configurations '("debug" "release")
+  :object-name "compiler"
+  :makefile-type Makefile
+  :configuration-variables '("debug" (("DEBUG" . "1"))))

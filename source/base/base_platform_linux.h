@@ -4,9 +4,8 @@
 #define X11 1
 
 typedef struct LinuxWindowHandle LinuxWindowHandle;
-struct LinuxWindowHandle
-{
-    Display *display; 
+struct LinuxWindowHandle {
+    Display *display;
     Window   window;
 };
 
@@ -23,8 +22,7 @@ internal s32 x11_read_input();
 #define LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)    XReadBitmapFile(display, window, )
 
 typedef struct Library Library;
-struct Library
-{
+struct Library {
     u64 data;
 };
 

@@ -3,8 +3,7 @@
 #define BASE_RENDER
 
 typedef struct Engine Engine;
-struct Engine
-{
+struct Engine {
     const char *name;
     int width;
     int height;

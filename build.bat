@@ -1,5 +1,6 @@
 @echo off
 setlocal
+time /t
 
 set BUILD_DIR=build
 set SOURCE_DIR=source

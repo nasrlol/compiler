@@ -77,12 +77,11 @@
 
 //-
 typedef enum Result Result;
-enum Result
-{
-  Success,
-  Fail,
-  Warning,
-  Error,
+enum Result {
+    Success,
+    Fail,
+    Warning,
+    Error,
 };
 
 //-
@@ -115,7 +114,7 @@ typedef intptr_t  smm;
 
 //- disable certain msvc errors
 #if COMPILER_MSVC
-    #pragma warning(disable : 6246)  // disable the same name within a certain scope
+#pragma warning(disable : 6246)  // disable the same name within a certain scope
 #endif
 
 #endif //  BASE_CORE_H

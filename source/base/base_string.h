@@ -16,60 +16,51 @@ typedef struct String32List String32List;
 
 //- strings
 
-struct String8
-{
+struct String8 {
     u8 *data;
     u64 size;
 };
 
-struct String16
-{
+struct String16 {
     u16 *data;
     u64  size;
 };
 
-struct String32
-{
+struct String32 {
     u32 *data;
     u64  size;
 };
 
 //- nodes
-struct String8Node
-{
+struct String8Node {
     String8Node *next;
     String8      value;
 };
 
-struct String16Node
-{
+struct String16Node {
     String16Node *next;
     String16      string;
 };
 
-struct String32Node
-{
+struct String32Node {
     String32Node *next;
     String32      value;
 };
 
 //- lists
-struct String8List
-{
+struct String8List {
     String8Node *first;
     String8Node *last;
     u64          count;
 };
 
-struct String16List
-{
+struct String16List {
     String16Node *first;
     String16Node *last;
     u64           count;
 };
 
-struct String32List
-{
+struct String32List {
     String32Node *first;
     String32Node *last;
     u64           count;
@@ -84,6 +75,9 @@ internal b32 cstring_is_alpha(u8 point);
 internal b32 cstring_is_digit(u8 point);
 internal b32 cstring_is_newline(u8 point);
 internal b32 cstring_is_match(u8 *a, u8 *b);
+internal u64 cstring8_length(u8 *c);
+internal u64 cstring16_length(u16 *c);
+internal u64 cstring32_length(u32 *c);
 
 //- string8
 internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
@@ -117,7 +111,9 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 #define PushString16(arena, count) { (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count)}
 #define PushString32(arena, count) { (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count)}
 
-#define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data) - 1)}
+// TODO: is this null terminated? this is generally a concept i struggle with. when is the string null terminated and when not. because in thi case I am the one passing a string "/" or something like that. is that null terminated or not?
+#define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data))} 
+
 #define ToString16(data) String16 { (u16 *)(data), (u64)(sizeof(data) - 1)}
 #define ToString32(data) String32 { (u32 *)(data), (u64)(sizeof(data) - 1)}
 
@@ -135,7 +131,7 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 
 
 // arbitratry amount of parameters can be passed to this function
-#define FOR_STR8_CHOP(buffer, size, function, count) for(; size >= count ; function(*buffer, count))
+#define FOR_STR8_CHOP(buffer, function, c) for(u64 index = 0; index < buffer->size ; buffer = (&function(*buffer, c)), ++index)
 #define FOR_STR8_ARB_FN(eval, function, ...) for(; (eval); function(__VA_ARGS__))
 #define FOR_STR8_MATCH(first_buffer, second_buffer) for(; str8_is_match(first_buffer, second_buffer); str8_chop_left(first_buffer, 1))
 #define FOR_STR8_NODE(str8_node_list, current) for(String8Node *current = str8_node_list->first; !is_nil_str8_node(current); current = current->next)
@@ -154,8 +150,5 @@ internal b32 is_nil_str32_node(String32Node *a);
 #define Str8Fmt    "%.*s"
 #define Str8Arg(buffer) (unsigned int)((buffer).size), (char *)((buffer).data)
 
-internal u64 cstring8_length(u8 *c);
-internal u64 cstring16_length(u16 *c);
-internal u64 cstring32_length(u32 *c);
 
 #endif /* BASE_STRING_H */

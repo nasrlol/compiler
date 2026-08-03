@@ -6,8 +6,8 @@
 #include "lexer.cpp"
 #include "parser.cpp"
 
- int main(int argc, char **argv)
-    {
+int main(int argc, char **argv)
+{
     String8 path;
 
     if(argc > 0) path = str8(argv[1]);
@@ -15,13 +15,11 @@
 
     MemArena *global_arena = ArenaCreate(MiB(100));
 
+    String8 buffer = FileLoad(global_arena, path);
+    Log("buffer ");
+    Log(Str8Fmt, Str8Arg(buffer));
 
-    breakpoint();
-String8 buffer = FileLoad(global_arena, path);
-Log("buffer ");
-Log(Str8Fmt, Str8Arg(buffer));
-
-    TokenTree *tree = tokenize_tree_fmt(global_arena, &path);
+    TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);
     Ast *ast = parse_tokenized_tree_fmt(global_arena, tree);
 
     return 0;
