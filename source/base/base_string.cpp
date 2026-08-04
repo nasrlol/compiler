@@ -56,11 +56,13 @@ str8_trim_right(String8 *buffer)
     str8_chop_right(*buffer, index);
 }
 
+// the first the element is the buffer you are searching in and the second buffer is the element you are matching for.
+// it's important not to mess this up because it messes with the memcpy size
 internal b32
 str8_any_match(String8 a, String8 b)
 {
     b32 result = (memcmp(a.data, b.data, b.size) == 0);
-    return false;
+    return result;
 }
 
 internal b32
@@ -72,14 +74,14 @@ str8_is_match(String8 a, String8 b)
     return (b32)(memcmp(a.data, b.data, a.size) == 0);
 }
 
+
 internal u64
 str8_find(String8 *buffer, u64 start_pos, String8 element)
 {
-
     b32 result = false;
     for(u64 index = start_pos; index < buffer->size - element.size; ++index) {
         String8 view = str8_chop_left(*buffer, index);
-        result = str8_is_match(element, view);
+        result = str8_any_match(view, element);
         if(result) {
             return index;
         }
@@ -214,9 +216,8 @@ cstring_is_slash(u8 point)
 internal b32
 cstring_is_newline(u8 point)
 {
-    return (point == '\n');
+    return (point == '\n' || point == '\r');
 }
-
 
 internal b32
 cstring_is_match(u8 *a, u8 *b)
@@ -302,3 +303,72 @@ str8_first_character_is_match(String8 buffer, u8 character)
 
     return str8_is_match(buffer, str8(character));
 }
+
+internal void str8_chop_left_ptr(String8 *buffer, u64 count)
+{
+    if(buffer->size < count) return;
+
+    for(u64 idx = 0; idx < count; ++idx) {
+        buffer->data++;
+    }
+}
+
+internal void
+str8_chop_right_ptr(String8 *buffer, u64 count)
+{
+    if(buffer->size < count) return;
+    buffer->size -= count;
+}
+
+// returns the index of where to find it. if not found returns 0.
+internal u64
+cstring8_find(u8 *buffer, u8 *element)
+{
+    u8* c = buffer;
+    while(c != 0) {
+	if(!cstring_is_match(buffer, element)) {
+	    return c - buffer;
+	} else {
+	    ++c;
+	}
+    }
+
+    return 0;
+}
+
+// returns the index of where to find it. if not found returns 0.
+internal u64
+cstring8_find_new_line(u8 *buffer)
+{
+    u8* c = buffer;
+    while(*c != 0) {
+	if(cstring_is_nl(*c)) {
+	    return c - buffer;
+	} else {
+	    ++c;
+	}
+    }
+
+    return 0;
+}
+
+
+
+// returns the index of where to find it. if not found returns 0.
+internal u64
+cstring8_find_needle(u8 *buffer, u8 needle)
+{
+
+    u8* c = buffer;
+    while(*c != 0) {
+	if(*c == needle) {
+	    return c - buffer;
+	} else {
+	    ++c;
+	}
+    }
+
+    return 0;
+
+}
+

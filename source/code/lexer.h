@@ -56,10 +56,8 @@ struct TokenNode {
 typedef struct Lexeme Lexeme;
 struct Lexeme
 {
-
     String8 *buffer;
     u64 index;
-
 };
 
 // Find a way to do this without allocating the tokens on the heap. It's a huge toll on the performance of the program
@@ -93,11 +91,11 @@ TokenNode nil_token_node = {
     {}
 };
 
-#define TokenNodeContainsFlag(node, flag)	\
+#define TokenNodeContainsFlag(node, flag)	  \
     if(((node->flags) & (flag)) != (0))		\
 	return false
 
-#define FillTokenNodeFieldWithNilNode(field)		\
+#define FillTokenNodeFieldWithNilNode(field)		    \
     if(node->field == NULL || !is_token_node_nil(node)) \
 	node->field = &nil_token_node;
 
@@ -105,8 +103,6 @@ TokenNode nil_token_node = {
 // - functions
 internal b32 is_token_node_nil(TokenNode *node);
 internal b32 is_token_nil(Token *token);
-internal u64 handle_c_style_comments(TokenTree *tree, u64 start_pos);
-internal void handle_cpp_style_comments(TokenTree *tree);
 internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
 internal void push_token_node(TokenTree *tree, TokenNode * node);
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);

@@ -81,13 +81,18 @@ internal u64 cstring32_length(u32 *c);
 
 //- string8
 internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
-internal u64     str8_find_element(String8 *buffer, u64 start_pos, String8 *element);
+internal u64 str8_find(String8 *buffer, u64 start_pos, String8 element);
 internal b32     str8_is_match(String8 a, String8 b);
 internal void    str8_append_u8_element(String8 *buf, u8 c);
 internal int     str8_append(String8 *a, String8 *b);
 internal void    str8_trim_right();
+
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
+
+internal void str8_chop_left_ptr(String8 *buffer, u64 count);
+internal void str8_chop_right_ptr(String8 *buffer, u64 count);
+
 internal String8 str8_zero();
 
 #if COMPILER_GCC

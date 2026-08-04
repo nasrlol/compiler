@@ -1,5 +1,5 @@
 //- nil variable functions
-internal b32
+ internal b32
 is_token_node_nil(TokenNode *node)
 {
     return (node == &nil_token_node);
@@ -13,30 +13,48 @@ is_token_nil(Token *token)
 
 //- token tree helper functions
 
-// NOTE: I"m thinking this should return a handle to the position after skipping the comments
-internal u64
-handle_c_style_comments(TokenTree *tree, u64 start_pos)
+#define DEBUG_STR8_DIFF(tree, arena, diff_size)  \
+debug_str8_diff(tree, arena, diff_size, __FUNCTION__)
+
+internal void
+debug_str8_diff(TokenTree *tree, MemArena *arena, u64 diff_size, const char *function_name)
 {
-    // TODO: Handle c style comment
-    return 0;
+ScratchArena scratch = scratch_start(arena);
+		String8 debug_log = PushString8(arena, diff_size);
+		debug_log.data = tree->buffer->data;
+		debug_log.size = diff_size;
+		Log("call: %s \t" Str8Fmt "\n", function_name, Str8Arg(debug_log));
+scratch_end(&scratch);
+}
+
+internal void
+handle_c_style_comments(TokenTree *tree, MemArena *arena)
+{
+
+    u64 offset = str8_find(tree->buffer, 0,str8("*/"));
+breakpoint();
+DEBUG_STR8_DIFF(tree, arena, offset);
+str8_chop_right_ptr(tree->buffer, offset);
 }
 
 // TODO: change the signature return a handle to where we skipped with the comments
 internal void
-handle_cpp_style_comments(TokenTree *tree)
+handle_cpp_style_comments(TokenTree *tree, MemArena *arena)
 {
     u64 start_pos = tree->index;
     String8 *buffer = tree->buffer;
+    u64 offset = cstring8_find_needle(tree->buffer->data, '\n');
+    tree->index += offset;
 
-    u8 current_character = tree->buffer->data[0];
-    b32 is_newline = cstring_is_newline(current_character);
+DEBUG_STR8_DIFF(tree, arena, offset);
+    str8_chop_left_ptr(tree->buffer, offset);
+}
 
-    for(u64 idx = start_pos; buffer->data[idx] != '\n'; ++idx) {
-        if(cstring_is_slash(buffer->data[idx]) && cstring_is_slash(buffer->data[idx + 1])) {
-            str8_find(buffer, idx, str8("\n"));
-        }
-    }
-
+internal u64
+get_eol(String8 *buffer, u64 index)
+{
+    u64 offset = str8_find(buffer, index, str8("\n"));
+    return offset;
 }
 
 // create tokens, from a certain starting position until a certain
@@ -96,7 +114,6 @@ push_token_node(TokenTree *tree, TokenNode *node)
 internal TokenTree *
 tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 {
-
 // initializations
     b32 is_empty = str8_is_empty(buffer_from_file);
     Assert(!is_empty);
@@ -105,8 +122,6 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
     MemCpy(tree->buffer, buffer_from_file, buffer_from_file->size);
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
-
-
 
     breakpoint();
     FOR_STR8_CHOP(tree->buffer, str8_chop_left, 1) {
@@ -173,16 +188,19 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 		// TODO: make an panic function for the lexer.
                 node->parent->flag = TokenNodeFlags::Bad;
             }
-        } else if(str8_is_match(*tree->buffer, str8("\""))) {
+        } else if(current_character ==  '\"') {
             token->type = TokenType::Identifier;
-        } else if(str8_is_match(*tree->buffer,  str8("/"))) {
-            handle_cpp_style_comments(tree);
-        } else if(str8_is_match(*tree->buffer, str8("{"))) {
+        } else if(str8_any_match(*tree->buffer,str8("//"))) {
+            handle_cpp_style_comments(tree, arena);
+	} else if(str8_any_match(*tree->buffer, str8("/*"))) {
+	    breakpoint();
+	    handle_c_style_comments(tree, arena);
+        } else if(current_character == '{') {
 // NOTE: an open brace defines a new scope
 // TODO: push token children. using the new function signature
             tree->current->next = node;
             node->token->type = (enum TokenType)'{';
-        } else if(str8_is_match(*tree->buffer, str8("}"))) {
+        } else if(current_character ==  '}') {
             if(node->first->token->type != (enum TokenType)'{') {
                 Log("Error: closing brace not matching opening brace");
             } else {
@@ -215,7 +233,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                     temp_current_token_node->parent = tree->current->last->parent;
                 }
             }
-        } else if(str8_is_match(*tree->buffer, str8("("))) {
+        } else if(current_character == '(') {
             if(tree->current->parent) {
                 String8List *delimiters = PushStruct(arena, String8List);
                 String8Node node = {
@@ -226,7 +244,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                 str8_list_push_node(delimiters, &node);
                 push_token_children(arena, tree,delimiters);
             }
-        } else if(str8_is_match(*tree->buffer, str8(")"))) {
+        } else if(current_character == ')') {
 // TODO: fix this ugly thing
             if(str8_is_match(tree->current->first->token->value.str_v, str8(")"))) {
                 Log("Error: No closing brace found on line  %llu amount_of_newlines", tree->amount_of_new_lines);
@@ -235,7 +253,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             }
         }
         // handle arrays
-        else if(str8_is_match(*tree->buffer, str8("["))) {
+        else if(current_character == '[') {
             // an array consists of children of the variable name
             // so we just do a children until we hit the delimiter
 
@@ -247,13 +265,13 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 
             str8_list_push_node(delimiters, &node);
             push_token_children(arena, tree, delimiters);
-        } else if(str8_is_match(*tree->buffer, str8("]"))) {
+        } else if(current_character == ']') {
             if(tree->current->first->token->type != (enum TokenType)'[') {
                 Log("didn't close the bracket you moron");
             }
-        } else if(str8_is_match(*tree->buffer, str8("#"))) {
+        } else if(current_character == '#') {
             // TODO HANDLE MODULE
-        } else if(str8_is_match(*tree->buffer, str8(":"))) {
+        } else if(current_character == ':') {
             if(tree->current->parent->token->type  == TokenType::Identifier) {
 
                 String8List *sub_delimiters = PushStruct(arena, String8List);
