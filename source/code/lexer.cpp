@@ -14,7 +14,7 @@ is_token_nil(Token *token)
 //- token tree helper functions
 
 #define DEBUG_STR8_DIFF(tree, arena, diff_size)  \
-debug_str8_diff(tree, arena, diff_size, __FUNCTION__)
+debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
 internal void
 debug_str8_diff(TokenTree *tree, MemArena *arena, u64 diff_size, const char *function_name)
@@ -30,10 +30,11 @@ scratch_end(&scratch);
 internal void
 handle_c_style_comments(TokenTree *tree, MemArena *arena)
 {
-
-    u64 offset = str8_find(tree->buffer, 0,str8("*/"));
+String8 element = str8("*/");
+    u64 offset = str8_find(tree->buffer, 0, element);
 breakpoint();
-DEBUG_STR8_DIFF(tree, arena, offset);
+u64 total_offset = offset + element.size; // calculate in the size of the element. [ */ ]. the exact reason don't care to explain
+DEBUG_STR8_DIFF(tree, arena, total_offset);
 str8_chop_right_ptr(tree->buffer, offset);
 }
 
