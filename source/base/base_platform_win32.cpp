@@ -62,7 +62,6 @@ win32_handle_error(MemArena *arena, DWORD error)
 	
 	Log("Error code: %lu\n", error_result);
 	Log("Error formatted message: %.*s\n", Str8Arg(error_buffer));
-	breakpoint();
 	scratch_end(&scratch);
 }
 
@@ -225,3 +224,9 @@ win32_create_window(HINSTANCE instance, int height, int width, int display_x, in
     return window_handle;
 }
 
+internal String8List
+open_directory(String8 name)
+{
+
+
+}

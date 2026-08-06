@@ -110,6 +110,10 @@ ReadOnly global_variable String8Node  nil_str8_node  = {NULL, {NULL}};
 ReadOnly global_variable String16Node nil_str16_node = {NULL, {NULL}};
 ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 
+ReadOnly global_variable String8List  nil_str8_list  = {NULL, {NULL}};
+ReadOnly global_variable String16List nil_str16_list = {NULL, {NULL}};
+ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
+
 
 //- macros
 #define PushString8(arena, count)  { (u8 *) (PushArrayZero(arena, u8,  (count))), (u64)(count)}
@@ -117,10 +121,9 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 #define PushString32(arena, count) { (u32 *)(PushArrayZero(arena, u32, (count))), (u64)(count)}
 
 // TODO: is this null terminated? this is generally a concept i struggle with. when is the string null terminated and when not. because in thi case I am the one passing a string "/" or something like that. is that null terminated or not?
-#define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data))} 
-
-#define ToString16(data) String16 { (u16 *)(data), (u64)(sizeof(data) - 1)}
-#define ToString32(data) String32 { (u32 *)(data), (u64)(sizeof(data) - 1)}
+#define ToString8(data)  String8  { (u8 *)(data),  (u64)(cstring8_length((u8 *)data))}
+#define ToString16(data) String16 { (u16 *)(data), (u64)(cstring16_length((u16 *) data))}
+#define ToString32(data) String32 { (u32 *)(data), (u64)(cstring32_length((u32 *) data))}
 
 #define str8(buffer) ToString8(buffer)
 #define str16(buffer) ToString16(buffer)
@@ -134,12 +137,16 @@ ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
 #define ToString16Node(string) String16Node {&nil_str8_node, string}
 #define ToString32Node(string) String32Node {&nil_str8_node, string}
 
+#define str8_node(text) ToString8Node(str8(text))
+#define str16_node(text) ToString16Node(str16(text))
+#define str32_node(text) ToString32Node(str32(text))
 
 // arbitratry amount of parameters can be passed to this function
 #define FOR_STR8_CHOP(buffer, function, c) for(u64 index = 0; index < buffer->size ; buffer = (&function(*buffer, c)), ++index)
 #define FOR_STR8_ARB_FN(eval, function, ...) for(; (eval); function(__VA_ARGS__))
 #define FOR_STR8_MATCH(first_buffer, second_buffer) for(; str8_is_match(first_buffer, second_buffer); str8_chop_left(first_buffer, 1))
 #define FOR_STR8_NODE(str8_node_list, current) for(String8Node *current = str8_node_list->first; !is_nil_str8_node(current); current = current->next)
+
 
 internal b32 is_nil_str8(String8 *a);
 internal b32 is_nil_str8_node(String8Node *a);

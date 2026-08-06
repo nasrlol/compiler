@@ -3,6 +3,15 @@
 // this is a comment
 /* this is also a comment */
 
+#import std
+
+enum colors
+{
+blue,
+green,
+yellow
+}
+
 struct string {
  value: string
  size : u64
@@ -32,6 +41,29 @@ main(x : s32, y: s32, z: s64) int | string {
   foo(4, 5);
   result: u64 = x + y + z
   return {4, "Hello World", 9}
+}
+
+
+baz(x: int) {
+
+switch x
+{
+case:
+{
+x = 1
+}
+   
+case:
+{
+x -= 1
+}
+case:
+{
+x += 1
+}
+}
+}
+
 }
 
 foo(x: s32, y: s32) ! {

@@ -50,5 +50,21 @@ Ast nil_concrete_syntax_tree = {
 //-
 internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);
 
+//- syntax
+global_variable
+String8 reserved_words[] = {
+
+	str8("struct"),
+	str8("while"),
+	str8("return"),
+	str8("for"),
+	str8("import"),
+	str8("switch"),
+	str8("case"),
+	str8("defer"),
+	str8("enum"),
+};
+
+
 
 #endif // EDITOR_PARSER_H

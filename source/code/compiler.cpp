@@ -1,10 +1,19 @@
 #include "base/base_include.h"
 
+#include "preproc.h"
 #include "lexer.h"
 #include "parser.h"
 
+#include "preproc.cpp"
 #include "lexer.cpp"
 #include "parser.cpp"
+
+internal void
+handle_params()
+{
+
+
+}
 
 int main(int argc, char **argv)
 {
@@ -18,6 +27,7 @@ int main(int argc, char **argv)
     String8 buffer = FileLoad(global_arena, path);
 
     TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);
+breakpoint();
     Ast *ast = parse_tokenized_tree_fmt(global_arena, tree);
 
     return 0;

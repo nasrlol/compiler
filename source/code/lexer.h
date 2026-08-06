@@ -2,6 +2,16 @@
 #define LEXER_H
 
 //-
+#define DEBUG_STR8_DIFF(tree, arena, diff_size)  \
+debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
+
+#define TokenNodeContainsFlag(node, flag)	  \
+    if(((node->flags) & (flag)) != (0))		\
+	return false
+
+#define FillTokenNodeFieldWithNilNode(field)		    \
+    if(node->field == NULL || !is_token_node_nil(node)) \
+	node->field = &nil_token_node;
 
 enum TokenType : int {
     Undefined = 256,
@@ -70,6 +80,7 @@ struct TokenTree {
     u64 index;
 };
 
+
 //- nil variables
 ReadOnly global_variable
 Token nil_token =
@@ -91,14 +102,6 @@ TokenNode nil_token_node = {
     {}
 };
 
-#define TokenNodeContainsFlag(node, flag)	  \
-    if(((node->flags) & (flag)) != (0))		\
-	return false
-
-#define FillTokenNodeFieldWithNilNode(field)		    \
-    if(node->field == NULL || !is_token_node_nil(node)) \
-	node->field = &nil_token_node;
-
 
 // - functions
 internal b32 is_token_node_nil(TokenNode *node);
@@ -106,5 +109,18 @@ internal b32 is_token_nil(Token *token);
 internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
 internal void push_token_node(TokenTree *tree, TokenNode * node);
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
+
+ internal b32
+is_token_node_nil(TokenNode *node)
+{
+    return (node == &nil_token_node);
+}
+
+internal b32
+is_token_nil(Token *token)
+{
+    return (token == &nil_token);
+}
+
 
 #endif /* LEXER_H */
