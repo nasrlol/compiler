@@ -40,6 +40,13 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
 }
 
 internal void
+lx_panic(TokenTree *tree, TokenNode *node)
+{
+Log("Error");
+OSExit();
+}
+
+internal void
 push_token_node(TokenTree *tree, TokenNode *node)
 {
     if(is_token_node_nil(tree->root)) {
@@ -81,27 +88,23 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
         u8 current_character = tree->buffer->data[0];
 
 	// handle skipping
-	{
-	    b32 is_whitespace = cstring_is_whitespace(current_character);
-
+	b32 is_whitespace = cstring_is_whitespace(current_character);
 	    if(is_whitespace) {
 		continue;
 	    }
 
 	    b32 is_newline = cstring_is_newline(current_character);
-
 	    if(is_newline) {
 		tree->amount_of_new_lines += 1;
 		continue;
-	    }
+	    
 	}
 
 
         TokenNode *node = PushStruct(arena, TokenNode);
         Token *token = PushStruct(arena, Token);
-                String8List *delimiters =
+                String8List *delimiters = PushStruct(arena, String8List);
 
-PushStruct(arena, String8List);
         if(cstring_is_alpha(current_character)) {
             u64 index = 0;
 
@@ -137,8 +140,8 @@ tree->root->child = node;
                 node->parent->flag = TokenNodeFlags::None;
                 node->parent->token->type = TokenType::Identifier;
             } else {
-		// TODO: make an panic function for the lexer.
                 node->parent->flag = TokenNodeFlags::Bad;
+break;
             }
         } else if(current_character ==  '\"') {
             token->type = TokenType::Identifier;
@@ -163,9 +166,8 @@ str8_chop_right_ptr(tree->buffer, offset);
 
             tree->current->next = node;
             node->token->type = (enum TokenType)'{';
-String8Node *right_paran_delim = str8_node("}");
+String8Node right_paran_delim = str8_node("}");
 str8_list_push_node(delimiters, &right_paran_delim);
-
 
         } else if(current_character ==  '}') {
             if(node->first->token->type != (enum TokenType)'{') {
@@ -182,7 +184,7 @@ str8_list_push_node(delimiters, &right_paran_delim);
                     node->token = token;
                     node->flag = TokenNodeFlags::Child;
                     node->previous = tree->current;
-                    node->parent   = node->previous->parent;
+                    node->parent = node->previous->parent;
 
                     FillTokenNodeFieldWithNilNode(last);
                     FillTokenNodeFieldWithNilNode(first);
@@ -199,8 +201,9 @@ str8_list_push_node(delimiters, &right_paran_delim);
         } else if(current_character == '(') {
             if(tree->current->parent) {
                 str8_list_push_node(delimiters, &(str8_node(")")));
-                push_token_children(arena, tree,delimiters);
-            }
+                push_token_children(arena, tree, delimiters);
+            push_token_node(tree, node);
+}
         } else if(current_character == ')') {
 // TODO: fix this ugly thing
             if(str8_is_match(tree->current->first->token->value.str_v, str8(")"))) {
@@ -213,15 +216,17 @@ str8_list_push_node(delimiters, &right_paran_delim);
             // so we just do a children until we hit the delimiter
 else if(current_character == '[') {
             String8List *delimiters = PushStruct(arena, String8List);
-            str8_list_push_node(delimiters, (&str8_node("]")));
-        } else if(current_character == ']') {
+            str8_list_push_node(delimiters, &(str8_node("]")));
+push_token_node(tree, node);
+} else if(current_character == ']') {
             if(tree->current->first->token->type != (enum TokenType)'[') {
                 Log("didn't close the bracket you moron");
             }
 
 } else if(current_character == '#') {
-        // TODO: preprocessing
-        } else if(current_character == ':') {
+consume_token();
+create_module(arena, path);
+} else if(current_character == ':') {
             if(tree->current->parent && tree->current->parent->token->type  == TokenType::Identifier) {
 
                 String8List *delimiters = PushStruct(arena, String8List);
@@ -230,18 +235,16 @@ else if(current_character == '[') {
 
                 str8_list_push_node(delimiters, colon_node);
                 str8_list_push_node(delimiters, komma_node);
+
+            push_token_children(arena, tree, delimiters);
 } else {
 Log("syntax error. Issue with the previous token. Unexpected token.");
 }
         } else {
 Log("symbol not recognized");
-        }
+        lx_panic(tree, node);
+}
 
-next:
-push_token_node(tree, node);
-
-children:
-            push_token_children(arena, tree, delimiters);
 
     }
 

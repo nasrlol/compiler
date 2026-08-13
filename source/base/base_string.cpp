@@ -167,6 +167,49 @@ str8_list_push_node(String8List *list, String8Node *node)
     list->count += 1;
 }
 
+internal String8
+str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+{
+ return str8_chop_left(str8_chop_right(buffer, end_idx), (start_idx - current_idx));
+}
+
+
+internal String8
+str16_chop_left(String8 buffer, u64 count)
+{
+
+    if(buffer.size < count) {
+        return buffer;
+    }
+
+    for(u64 idx = 0; idx < count; ++idx) {
+        buffer.data++;
+    }
+    return buffer;
+}
+
+internal String8
+str32_chop_right(String32 buffer, u64 count)
+{
+    if(buffer.size < count) {
+        return buffer;
+    }
+
+    buffer.size -= count;
+    return buffer;
+}
+
+internal String16
+str16_create_substr(String16 *buffer, u64 start_idx, u64 end_idx)
+{
+	 return str16_chop_left(str16_chop_right(buffer, end_idx), (start_idx - current_idx));
+}
+
+internal String32
+str32_create_substr(String32 *buffer, u64 start_idx, u64 end_idx)
+{
+	 return str32_chop_left(str32_chop_right(buffer, end_idx), (start_idx - current_idx));
+}
 
 internal b32
 str8_is_empty(String8 *buffer)

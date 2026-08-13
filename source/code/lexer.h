@@ -109,6 +109,8 @@ internal b32 is_token_nil(Token *token);
 internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
 internal void push_token_node(TokenTree *tree, TokenNode * node);
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
+internal Token consume_token();
+internal TokenNode create_node_from_token();
 
  internal b32
 is_token_node_nil(TokenNode *node)
