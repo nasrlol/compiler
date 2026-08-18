@@ -1,8 +1,15 @@
 #!/bin/bash
+set -e
 
-code="$PWD"
-echo $code
-opts=-g -I$code/source/base -fpermissive  -Wunused-function
-cd $code/build > /dev/null
-g++ $opts $code/source/compiler.cpp -o compiler
-cd $code > /dev/null
+date +"%T"
+
+BUILD_DIR=build
+SOURCE_DIR=source
+INCLUDES="-I${SOURCE_DIR}/code -I${SOURCE_DIR} -I${SOURCE_DIR}/base"
+CFLAGS="-g -fno-rtti -fno-exceptions -Wall -Werror -fanalyzer -no-pie -Wno-unused-function"
+LIBS="-luser32 -lgdi32 -lkernel32 -lshell32"
+
+mkdir -p "$BUILD_DIR"
+
+echo "Building ${BUILD_DIR}/program.exe..."
+g++ $INCLUDES $CFLAGS "${SOURCE_DIR}/code/compiler.cpp" -o "${BUILD_DIR}/compiler.exe" $LIBS

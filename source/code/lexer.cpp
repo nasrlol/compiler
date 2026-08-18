@@ -1,12 +1,12 @@
 internal void
 debug_str8_diff(TokenTree *tree, MemArena *arena, u64 diff_size, const char *function_name)
 {
-ScratchArena scratch = scratch_start(arena);
-		String8 debug_log = PushString8(arena, diff_size);
-		debug_log.data = tree->buffer->data;
-		debug_log.size = diff_size;
-		Log("call: %s \t" Str8Fmt "\n", function_name, Str8Arg(debug_log));
-scratch_end(&scratch);
+    ScratchArena scratch = scratch_start(arena);
+    String8 debug_log = PushString8(arena, diff_size);
+    debug_log.data = tree->buffer->data;
+    debug_log.size = diff_size;
+    Log("call: %s \t" Str8Fmt "\n", function_name, Str8Arg(debug_log));
+    scratch_end(&scratch);
 }
 
 // create tokens, from a certain starting position until a certain
@@ -17,12 +17,12 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
     ScratchArena scratch = scratch_start(arena);
     String8 *temp_buffer = PushStruct(arena, String8);
     MemCpy(temp_buffer, tree->buffer, tree->buffer->size);
-
+    
     FOR_STR8_NODE(delimiters, curr_delimiter) {
         FOR_STR8_MATCH(*temp_buffer, curr_delimiter->value) {
             TokenNode *node = PushStruct(arena, TokenNode);
             TokenNode *current = tree->current;
-
+            
             // NOTE: we can assume that if the first node is nil that the last node will be nill aswell
             if(!is_token_node_nil(current->first)) {
                 current->first = node;
@@ -35,15 +35,15 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
             }
         }
     }
-
+    
     scratch_end(&scratch);
 }
 
 internal void
 lx_panic(TokenTree *tree, TokenNode *node)
 {
-Log("Error");
-OSExit();
+    Log("Error");
+    OSExit();
 }
 
 internal void
@@ -56,7 +56,7 @@ push_token_node(TokenTree *tree, TokenNode *node)
     } else {
         tree->current->next = node;
         node->parent        = tree->current;
-
+        
         // Fill the token node with nil nodes if they are not empty
         {
             FillTokenNodeFieldWithNilNode(next);
@@ -73,7 +73,7 @@ push_token_node(TokenTree *tree, TokenNode *node)
 internal TokenTree *
 tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 {
-// initializations
+    // initializations
     b32 is_empty = str8_is_empty(buffer_from_file);
     Assert(!is_empty);
     TokenTree *tree = PushStruct(arena, TokenTree);
@@ -81,111 +81,109 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
     MemCpy(tree->buffer, buffer_from_file, buffer_from_file->size);
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
-
+    
     FOR_STR8_CHOP(tree->buffer, str8_chop_left, 1) {
         ScratchArena cycle_scratch = scratch_start(arena);
-
+        
         u8 current_character = tree->buffer->data[0];
-
-	// handle skipping
-	b32 is_whitespace = cstring_is_whitespace(current_character);
+        
+        // handle skipping
+        b32 is_whitespace = cstring_is_whitespace(current_character);
 	    if(is_whitespace) {
-		continue;
+            continue;
 	    }
-
+        
 	    b32 is_newline = cstring_is_newline(current_character);
 	    if(is_newline) {
-		tree->amount_of_new_lines += 1;
-		continue;
-	    
-	}
-
-
+            tree->amount_of_new_lines += 1;
+            continue;
+        }
+        
         TokenNode *node = PushStruct(arena, TokenNode);
         Token *token = PushStruct(arena, Token);
-                String8List *delimiters = PushStruct(arena, String8List);
-
+        String8List *delimiters = PushStruct(arena, String8List);
+        
         if(cstring_is_alpha(current_character)) {
             u64 index = 0;
-
+            
             String8 *temp_buffer = PushStructZero(arena, String8);
-
+            
             b32 is_alpha = cstring_is_alpha_num(current_character);
             FOR_STR8_ARB_FN(is_alpha, str8_chop_left, *temp_buffer, 1)
-	    {
+            {
                 ++index;
             }
-
-
+            
+            
             // 8/2/2026 TODO: but we don"t initialize the root node at all?
             // we talk about the children but we ignore the root node
             // and what is the point of focussing on this here when we have a function that handles this?
-
+            
             // the tree root only takes children. because when we take a look at the tree. the root having a next node means that something is on the same height
             // as that root node. this is only appropriate when working with translation units. i think we could have a forest of trees. where the root nodes/
             // stand for the translation units. and therefor allow the multiple notes to interact with each other.
             // initialize root node
             if(is_token_node_nil(tree->root))
-{
-tree->root->child = node;
-}
+            {
+                tree->root->child = node;
+            }
             ////////////////////////////////
-
+            
             token->value.str_v = str8_chop_left(*tree->buffer, index);
             token->type = TokenType::Identifier;
         }
-
+        
         else if(cstring_is_digit(current_character)) {
             if(node->parent->token->type == TokenType::Identifier) {
                 node->parent->flag = TokenNodeFlags::None;
                 node->parent->token->type = TokenType::Identifier;
             } else {
                 node->parent->flag = TokenNodeFlags::Bad;
-break;
+                break;
             }
         } else if(current_character ==  '\"') {
             token->type = TokenType::Identifier;
         } else if(str8_any_match(*tree->buffer,str8("//"))) {
-				u64 start_pos = tree->index;
-				String8 *buffer = tree->buffer;
-				u64 offset = cstring8_find_needle(tree->buffer->data, '\n');
-				tree->index += offset;
-				
-				DEBUG_STR8_DIFF(tree, arena, offset);
-				str8_chop_left_ptr(tree->buffer, offset);
-
-	} else if(str8_any_match(*tree->buffer, str8("/*"))) {
-
-String8 element = str8("*/");
-    u64 offset = str8_find(tree->buffer, 0, element);
-u64 total_offset = offset + element.size; // calculate in the size of the element. [ */ ]. the exact reason don't care to explain
-DEBUG_STR8_DIFF(tree, arena, total_offset);
-str8_chop_right_ptr(tree->buffer, offset);
-
+            u64 start_pos = tree->index;
+            String8 *buffer = tree->buffer;
+            u64 offset = cstring8_find_needle(tree->buffer->data, '\n');
+            tree->index += offset;
+            
+            DEBUG_STR8_DIFF(tree, arena, offset);
+            str8_chop_left_ptr(tree->buffer, offset);
+            
+        } else if(str8_any_match(*tree->buffer, str8("/*"))) {
+            
+            String8 element = str8("*/");
+            u64 offset = str8_find(tree->buffer, 0, element);
+            u64 total_offset = offset + element.size; // calculate in the size of the element. [ */ ]. the exact reason don't care to explain
+            DEBUG_STR8_DIFF(tree, arena, total_offset);
+            str8_chop_right_ptr(tree->buffer, offset);
+            
         } else if(current_character == '{') {
-
+            
             tree->current->next = node;
             node->token->type = (enum TokenType)'{';
-String8Node right_paran_delim = str8_node("}");
-str8_list_push_node(delimiters, &right_paran_delim);
-
+            String8Node right_paran_delim = str8_node("}");
+            str8_list_push_node(delimiters, &right_paran_delim);
+            
         } else if(current_character ==  '}') {
             if(node->first->token->type != (enum TokenType)'{') {
                 Log("Error: closing brace not matching opening brace");
             } else {
                 Token *token = PushStruct(arena, Token);
                 tree->current->last = node;
-
-                    token->type = TokenType::Param;
-                    token->line = tree->amount_of_new_lines;
-                    token->value.str_v = str8("}");
-
+                
+                token->type = TokenType::Param;
+                token->line = tree->amount_of_new_lines;
+                token->value.str_v = str8("}");
+                
                 if(is_token_node_nil(tree->current->last)) {
                     node->token = token;
                     node->flag = TokenNodeFlags::Child;
                     node->previous = tree->current;
                     node->parent = node->previous->parent;
-
+                    
                     FillTokenNodeFieldWithNilNode(last);
                     FillTokenNodeFieldWithNilNode(first);
                     FillTokenNodeFieldWithNilNode(child);
@@ -202,10 +200,10 @@ str8_list_push_node(delimiters, &right_paran_delim);
             if(tree->current->parent) {
                 str8_list_push_node(delimiters, &(str8_node(")")));
                 push_token_children(arena, tree, delimiters);
-            push_token_node(tree, node);
-}
+                push_token_node(tree, node);
+            }
         } else if(current_character == ')') {
-// TODO: fix this ugly thing
+            // TODO: fix this ugly thing
             if(str8_is_match(tree->current->first->token->value.str_v, str8(")"))) {
                 Log("Error: No opening brace found on line  %llu amount_of_newlines", tree->amount_of_new_lines);
             } else {
@@ -213,40 +211,40 @@ str8_list_push_node(delimiters, &right_paran_delim);
             }
         }
         // handle arrays --  an array consists of children of the variable name
-            // so we just do a children until we hit the delimiter
-else if(current_character == '[') {
+        // so we just do a children until we hit the delimiter
+        else if(current_character == '[') {
             String8List *delimiters = PushStruct(arena, String8List);
             str8_list_push_node(delimiters, &(str8_node("]")));
-push_token_node(tree, node);
-} else if(current_character == ']') {
-            if(tree->current->first->token->type != (enum TokenType)'[') {
+            push_token_node(tree, node);
+        } else if(current_character == ']') {
+            if(tree->current->first->token->type != (enum TokenType)'['){
                 Log("didn't close the bracket you moron");
             }
-
-} else if(current_character == '#') {
-consume_token();
-create_module(arena, path);
-} else if(current_character == ':') {
+            
+        } else if(current_character == '#') {
+            consume_token();
+            create_module(arena, path);
+        } else if(current_character == ':') {
             if(tree->current->parent && tree->current->parent->token->type  == TokenType::Identifier) {
-
+                
                 String8List *delimiters = PushStruct(arena, String8List);
                 String8Node *colon_node = PushStruct(arena, String8Node);
                 String8Node *komma_node = PushStruct(arena, String8Node);
-
+                
                 str8_list_push_node(delimiters, colon_node);
                 str8_list_push_node(delimiters, komma_node);
-
-            push_token_children(arena, tree, delimiters);
-} else {
-Log("syntax error. Issue with the previous token. Unexpected token.");
-}
+                
+                push_token_children(arena, tree, delimiters);
+            } else {
+                Log("syntax error. Issue with the previous token. Unexpected token.");
+            }
         } else {
-Log("symbol not recognized");
-        lx_panic(tree, node);
-}
-
-
+            Log("symbol not recognized");
+            lx_panic(tree, node);
+        }
+        
+        
     }
-
+    
     return tree;
 }

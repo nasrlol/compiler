@@ -41,7 +41,7 @@ str8_trim_left(String8 *buffer)
     while(cstring_is_whitespace(buffer->data[index])) {
         ++index;
     }
-
+    
     str8_chop_left(*buffer, index);
 }
 
@@ -52,7 +52,7 @@ str8_trim_right(String8 *buffer)
     while(cstring_is_whitespace(buffer->data[index])) {
         --index;
     }
-
+    
     str8_chop_right(*buffer, index);
 }
 
@@ -86,7 +86,7 @@ str8_find(String8 *buffer, u64 start_pos, String8 element)
             return index;
         }
     }
-
+    
     return 0;
 }
 
@@ -97,7 +97,7 @@ str8_is_digit(String8 a, u64 start_pos)
     for(u64 index = start_pos; index < a.size; ++index) {
         if(!cstring_is_digit(a.data[index])) return false;
     }
-
+    
     return true;
 }
 
@@ -115,14 +115,13 @@ str8_append(String8 *a, String8 *b)
     if(is_nil_str8(a) || is_nil_str8(b) || a == NULL || b == NULL) {
         return false;
     }
-
+    
     MemCpy(a->data + a->size, b->data, b->size);
     a->size += b->size;
-
+    
     return true;
-
+    
 }
-
 
 internal String8
 str8_zero()
@@ -136,7 +135,7 @@ str8_chop_left(String8 buffer, u64 count)
     if(buffer.size < count) {
         return buffer;
     }
-
+    
     for(u64 idx = 0; idx < count; ++idx) {
         buffer.data++;
     }
@@ -149,7 +148,7 @@ str8_chop_right(String8 buffer, u64 count)
     if(buffer.size < count) {
         return buffer;
     }
-
+    
     buffer.size -= count;
     return buffer;
 }
@@ -170,31 +169,57 @@ str8_list_push_node(String8List *list, String8Node *node)
 internal String8
 str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
 {
- return str8_chop_left(str8_chop_right(buffer, end_idx), (start_idx - current_idx));
+    return str8_chop_left(str8_chop_right(*buffer, end_idx), (start_idx - current_idx));
 }
 
 
-internal String8
-str16_chop_left(String8 buffer, u64 count)
+internal String16
+str16_chop_left(String16 buffer, u64 count)
 {
-
+    
     if(buffer.size < count) {
         return buffer;
     }
-
+    
     for(u64 idx = 0; idx < count; ++idx) {
         buffer.data++;
     }
     return buffer;
 }
 
-internal String8
+internal String32
+str32_chop_left(String32 buffer, u64 count)
+{
+    
+    if(buffer.size < count) {
+        return buffer;
+    }
+    
+    for(u64 idx = 0; idx < count; ++idx) {
+        buffer.data++;
+    }
+    return buffer;
+}
+
+
+internal String16
+str16_chop_right(String16 buffer, u64 count)
+{
+    if(buffer.size < count) {
+        return buffer;
+    }
+    
+    buffer.size -= count;
+    return buffer;
+}
+
+internal String32
 str32_chop_right(String32 buffer, u64 count)
 {
     if(buffer.size < count) {
         return buffer;
     }
-
+    
     buffer.size -= count;
     return buffer;
 }
@@ -202,13 +227,17 @@ str32_chop_right(String32 buffer, u64 count)
 internal String16
 str16_create_substr(String16 *buffer, u64 start_idx, u64 end_idx)
 {
-	 return str16_chop_left(str16_chop_right(buffer, end_idx), (start_idx - current_idx));
+    return str16_chop_left(str16_chop_right(*buffer, end_idx), (start_idx));
+    // current idx should signify the calculation from the beginning of the string buffer
+    // until it's end
+    // but we know its beginnging because that's 0
+    // so basically the start idx is already the diff from the currentidx to the start_idx
 }
 
 internal String32
 str32_create_substr(String32 *buffer, u64 start_idx, u64 end_idx)
 {
-	 return str32_chop_left(str32_chop_right(buffer, end_idx), (start_idx - current_idx));
+    return str32_chop_left(str32_chop_right(*buffer, end_idx), (start_idx ));
 }
 
 internal b32
@@ -267,11 +296,11 @@ cstring_is_match(u8 *a, u8 *b)
 {
     u64 as = cstring8_length(a);
     u64 bs = cstring8_length(b);
-
+    
     if(as != bs) {
         return false;
     }
-
+    
     for(u64 idx = 0; idx < as; ++idx) {
         if(a[idx] != b[idx]) {
             return false;
@@ -294,23 +323,23 @@ internal u64
 cstring16_length(u16 *c)
 {
     u16  *p = c;
-
+    
     if(!c) return 0;
     for(; *c != 0; ++c);
     return (u64)(p - c);
-
+    
 }
 
 internal u64
 cstring32_length(u32 *c)
 {
-
+    
     u32  *p = c;
-
+    
     if(!c) return 0;
     for(; *c != 0; ++c);
     return (u64)(p - c);
-
+    
 }
 
 
@@ -322,7 +351,7 @@ null_terminate(MemArena *arena, String8 *c)
     MemCpy(cstring, c->data, c->size);
     cstring[c->size] = '\0';
     scratch_end(&scratch);
-
+    
     return (const char *)cstring;
 }
 
@@ -334,8 +363,8 @@ remove_null_terminator(MemArena *arena, String8 c)
         String8 chopped = {c.data, c.size - 1};
         return chopped;
     }
-
-
+    
+    
     return c;
 }
 
@@ -343,14 +372,14 @@ internal b32
 str8_first_character_is_match(String8 buffer, u8 character)
 {
     buffer.size = 0;
-
+    
     return str8_is_match(buffer, str8(character));
 }
 
 internal void str8_chop_left_ptr(String8 *buffer, u64 count)
 {
     if(buffer->size < count) return;
-
+    
     for(u64 idx = 0; idx < count; ++idx) {
         buffer->data++;
     }
@@ -369,13 +398,13 @@ cstring8_find(u8 *buffer, u8 *element)
 {
     u8* c = buffer;
     while(c != 0) {
-	if(!cstring_is_match(buffer, element)) {
-	    return c - buffer;
-	} else {
-	    ++c;
-	}
+        if(!cstring_is_match(buffer, element)) {
+            return c - buffer;
+        } else {
+            ++c;
+        }
     }
-
+    
     return 0;
 }
 
@@ -385,13 +414,13 @@ cstring8_find_new_line(u8 *buffer)
 {
     u8* c = buffer;
     while(*c != 0) {
-	if(cstring_is_nl(*c)) {
-	    return c - buffer;
-	} else {
-	    ++c;
-	}
+        if(cstring_is_nl(*c)) {
+            return c - buffer;
+        } else {
+            ++c;
+        }
     }
-
+    
     return 0;
 }
 
@@ -401,17 +430,17 @@ cstring8_find_new_line(u8 *buffer)
 internal u64
 cstring8_find_needle(u8 *buffer, u8 needle)
 {
-
+    
     u8* c = buffer;
     while(*c != 0) {
-	if(*c == needle) {
-	    return c - buffer;
-	} else {
-	    ++c;
-	}
+        if(*c == needle) {
+            return c - buffer;
+        } else {
+            ++c;
+        }
     }
-
+    
     return 0;
-
+    
 }
 
