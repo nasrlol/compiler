@@ -31,7 +31,7 @@ struct PlatformWindow {
 LinuxCreateWindow(arena, height, width, display_x, display_y)
 
 #define PlatformGetDisplayWidth(display, screen_num ) \
-    LinuxDisplayWdith(display, screen_num)
+LinuxDisplayWdith(display, screen_num)
 #define PlatformGetDisplayHeight(display, screen_num) LinuxDisplayHeight(display, screen_num)
 #define PlatformLoadBitmapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y) LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)
 
@@ -60,8 +60,8 @@ global_variable b32 Win32Running = true;
 
 typedef enum KeyboardCode KeyboardCode;
 enum KeyboardCode {
-
-
+    
+    
 };
 
 void win32_handle_keyboard_input_callback();
@@ -86,26 +86,25 @@ internal void  win32_logf(const char *fmt, ...) PRINTF_FORMAT;
 #elif COMPILER_MSVC
 internal void  win32_logf(_Printf_format_string_ const char *fmt, ...);
 
-#define Log(fmt, ...)      win32_logf(fmt, __VA_ARGS__)
+#define Log(fmt, ...) win32_logf(fmt, __VA_ARGS__)
 
 #endif // COMPILER_GCC || COMPILER_CLANG
 #endif // PLATFORM_WINDOWS
 
 #if PLATFORM_LINUX || PLATFORM_UNIX
 
-internal String8   unix_file_write(String8 data, String8 path);
-internal String8   unix_file_load(MemArena *arena, String8 path);
-internal b32       unix_file_exists(String8 path);
-internal b32       unix_os_exit();
-
-internal s64       unix_read(int fd, const void *buf, u64 count);
-internal s64       unix_log(int fd, const void *buf, u64 count);
-internal void      unix_log_with_args(const char *format, ...);
+internal String8 unix_file_write(String8 data, String8 path);
+internal String8 unix_file_load(MemArena *arena, String8 path);
+internal b32 unix_file_exists(String8 path);
+internal b32 unix_os_exit();
+internal s64 unix_read(int fd, const void *buf, u64 count);
+internal s64 unix_log(int fd, const void *buf, u64 count);
+internal void unix_log_with_args(const char *format, ...);
 
 //- File I/O
 #define FileLoad(arena, path) unix_file_load(arena, path)
 #define FileWrite(data, path) unix_file_write(data, path)
-#define FileExists(path)      unix_file_exists(path)
+#define FileExists(path) unix_file_exists(path)
 #define OSExit() unix_os_exit();
 
 #if COMPILER_GCC || COMPILER_CLANG

@@ -16,7 +16,7 @@ typedef struct AstNode AstNode;
 struct AstNode {
     AstNode *first;
     AstNode *last;
-
+    
     AstNode *parent;
     AstNode *next;
 };
@@ -43,9 +43,9 @@ Ast nil_concrete_syntax_tree = {
 };
 
 #define PeekForward(node, type, nil_node) \
-    for(; (node) && (node) != &(nil_node); (node) = (node)->next) \
-    if((node)->token->type == (type)) \
-    break;
+for(; (node) && (node) != &(nil_node); (node) = (node)->next) \
+if((node)->token->type == (type)) \
+break;
 
 //-
 internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);
@@ -53,7 +53,7 @@ internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);
 //- syntax
 global_variable
 String8 reserved_words[] = {
-
+    
 	str8("struct"),
 	str8("while"),
 	str8("return"),
@@ -64,7 +64,5 @@ String8 reserved_words[] = {
 	str8("defer"),
 	str8("enum"),
 };
-
-
 
 #endif // EDITOR_PARSER_H

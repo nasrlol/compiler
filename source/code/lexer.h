@@ -6,12 +6,12 @@
 debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
 #define TokenNodeContainsFlag(node, flag)	  \
-    if(((node->flags) & (flag)) != (0))		\
-	return false
+if(((node->flags) & (flag)) != (0))		\
+return false
 
 #define FillTokenNodeFieldWithNilNode(field)		    \
-    if(node->field == NULL || !is_token_node_nil(node)) \
-	node->field = &nil_token_node;
+if(node->field == NULL || !is_token_node_nil(node)) \
+node->field = &nil_token_node;
 
 enum TokenType : int {
     Undefined = 256,
@@ -32,7 +32,7 @@ enum TokenType : int {
 };
 
 enum TokenNodeFlags : int {
-        None  = (1 << 0),
+    None  = (1 << 0),
 	Root  = (1 << 11),
 	Child = (1 << 12),
 	Eof   = (1 << 13),
@@ -43,7 +43,7 @@ typedef struct Token Token;
 struct Token {
     enum TokenType type;
     u64 line;
-
+    
     union {
         String8 str_v;
         f64 f64_v; // this is a seperate type because floats have a different notation than integers do
@@ -80,7 +80,6 @@ struct TokenTree {
     u64 index;
 };
 
-
 //- nil variables
 ReadOnly global_variable
 Token nil_token =
@@ -109,20 +108,10 @@ internal b32 is_token_nil(Token *token);
 internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
 internal void push_token_node(TokenTree *tree, TokenNode * node);
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
-internal Token consume_token();
+internal Token consume_token(String8 *buffer);
 internal TokenNode create_node_from_token();
 
- internal b32
-is_token_node_nil(TokenNode *node)
-{
-    return (node == &nil_token_node);
-}
-
-internal b32
-is_token_nil(Token *token)
-{
-    return (token == &nil_token);
-}
-
+internal b32 is_token_node_nil(TokenNode *node) { return (node == &nil_token_node); }
+internal b32 is_token_nil(Token *token) { return (token == &nil_token); }
 
 #endif /* LEXER_H */

@@ -46,6 +46,77 @@ lx_panic(TokenTree *tree, TokenNode *node)
     OSExit();
 }
 
+internal Token
+consume_token(String8 *buffer)
+{
+    String8 temp_buffer = *buffer;
+    u64 start_index = 0;
+    u64 end_index   = 0;
+    String8 substr = {};
+    
+    // iterate the buffer and find the whitespaces
+    FOR_STR8_CHOP(temp_buffer, str8_chop_left, 1) {
+        b32 result = is_whitespace(temp_buffer->data);
+        if(result && start_index == 0) {
+            
+            continue;
+        } else if(start_index != 0) {
+            
+            end_index = index;
+        }
+        start_index = index;
+    }
+    
+    
+    if(start_index != 0 && end_index != 0)
+    {
+        subtr = str8_create_substr(buffer, start_index, end_index);
+        
+        
+        
+        
+        // TODO: guess the token type;
+        
+        if(str8_is_match(subtr)) {
+        } else if(str8_is_match(substr), ) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) {
+        } else if(str8_is_match(substr)) { }
+        
+        
+        return  {
+            
+            // just for reference for now
+#if 0
+            enum TokenType type;
+            u64 line;
+            
+            union {
+                String8 str_v;
+                f64 f64_v; // this is a seperate type because floats have a different notation than integers do
+                u64 int_v;
+            } value;
+            
+#endif
+            
+            
+            
+        };
+        
+    }
+    
+    return nil_token; // we return an invalid token if we can't find a token  to consume
+    
+}
+
 internal void
 push_token_node(TokenTree *tree, TokenNode *node)
 {
@@ -68,7 +139,6 @@ push_token_node(TokenTree *tree, TokenNode *node)
         }
     }
 }
-
 
 internal TokenTree *
 tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
