@@ -71,10 +71,6 @@ consume_token(String8 *buffer)
     if(start_index != 0 && end_index != 0)
     {
         subtr = str8_create_substr(buffer, start_index, end_index);
-        
-        
-        
-        
         // TODO: guess the token type;
         
         if(str8_is_match(subtr)) {
@@ -91,7 +87,6 @@ consume_token(String8 *buffer)
         } else if(str8_is_match(substr)) {
         } else if(str8_is_match(substr)) { }
         
-        
         return  {
             
             // just for reference for now
@@ -106,9 +101,6 @@ consume_token(String8 *buffer)
             } value;
             
 #endif
-            
-            
-            
         };
         
     }

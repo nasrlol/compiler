@@ -3,13 +3,13 @@
 
 // typedef enum AstNodeType AstNodeType;
 enum AstNodeType {
-    Ast_Node_Literal,
-    Ast_Node_Identifier,
-    Ast_Node_Binary,
-    Ast_Node_Assignment,
-    Ast_Node_Return,
-    Ast_Node_Function,
-    Ast_Node_Undefined,
+    Literal,
+    Identifier,
+    Binary,
+    Assignment,
+    Return,
+    Function,
+    Undefined,
 };
 
 typedef struct AstNode AstNode;
@@ -19,6 +19,7 @@ struct AstNode {
     
     AstNode *parent;
     AstNode *next;
+    AstNodeType *type;
 };
 
 typedef struct Ast Ast;
@@ -29,7 +30,7 @@ struct Ast {
 };
 
 ReadOnly global_variable
-AstNode nil_syntax_node = {
+AstNode nil_ast_node = {
     &nil_syntax_node, // first
     &nil_syntax_node, // last
     &nil_syntax_node, // parent
@@ -37,7 +38,7 @@ AstNode nil_syntax_node = {
 };
 
 ReadOnly global_variable
-Ast nil_concrete_syntax_tree = {
+Ast nil_ast = {
     &nil_syntax_node, // root
     &nil_syntax_node, // currrent
 };
@@ -64,5 +65,13 @@ String8 reserved_words[] = {
 	str8("defer"),
 	str8("enum"),
 };
+
+
+internal b32 is_ast_node_nil(AstNode *node);
+
+#define FillAstNodeFieldWIthNilNode(field)		    \
+if(node->field == NULL || !is_ast_node_nil(node)) \
+node->field = &nil_ast_node;
+
 
 #endif // EDITOR_PARSER_H
