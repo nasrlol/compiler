@@ -110,6 +110,7 @@ internal void push_token_node(TokenTree *tree, TokenNode * node);
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
 internal Token consume_token(String8 *buffer);
 internal TokenNode create_node_from_token();
+internal void adopt_ast_node(AstNode* node, AstNode *new_node);
 
 internal b32 is_token_node_nil(TokenNode *node) { return (node == &nil_token_node); }
 internal b32 is_token_nil(Token *token) { return (token == &nil_token); }

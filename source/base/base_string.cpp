@@ -368,14 +368,6 @@ remove_null_terminator(MemArena *arena, String8 c)
     return c;
 }
 
-internal b32
-str8_first_character_is_match(String8 buffer, u8 character)
-{
-    buffer.size = 0;
-    
-    return str8_is_match(buffer, str8(character));
-}
-
 internal void str8_chop_left_ptr(String8 *buffer, u64 count)
 {
     if(buffer->size < count) return;

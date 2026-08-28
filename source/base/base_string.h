@@ -143,7 +143,7 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
 
 // arbitratry amount of parameters can be passed to this function
 // TODO: put the index name as a paramter so that the reference can be made later without it being so hidden
-#define FOR_STR8_CHOP(buffer, function, count) for(u64 index = 0; index < buffer->size ; buffer = (&function(*buffer, count)), ++index)
+#define FOR_STR8_CHOP(buffer, function, count) for(u64 index = 0; index < buffer.size; buffer = (&function(*buffer, count)), ++index)
 #define FOR_STR8_ARB_FN(eval, function, ...) for(; (eval); function(__VA_ARGS__))
 #define FOR_STR8_MATCH(first_buffer, second_buffer) for(; str8_is_match(first_buffer, second_buffer); str8_chop_left(first_buffer, 1))
 #define FOR_STR8_NODE(str8_node_list, current) for(String8Node *current = str8_node_list->first; !is_nil_str8_node(current); current = current->next)

@@ -3,13 +3,13 @@
 
 // typedef enum AstNodeType AstNodeType;
 enum AstNodeType {
-    Literal,
-    Identifier,
-    Binary,
-    Assignment,
-    Return,
-    Function,
-    Undefined,
+    PLiteral,
+    PIdentifier,
+    PBinary,
+    // Assignment, // this needs to be in the eexpression eval uation
+    PReturn,
+    PFunction,
+    PUndefined,
 };
 
 typedef struct AstNode AstNode;
@@ -31,16 +31,16 @@ struct Ast {
 
 ReadOnly global_variable
 AstNode nil_ast_node = {
-    &nil_syntax_node, // first
-    &nil_syntax_node, // last
-    &nil_syntax_node, // parent
-    &nil_syntax_node, // next
+    &nil_ast_node, // first
+    &nil_ast_node, // last
+    &nil_ast_node, // parent
+    &nil_ast_node, // next
 };
 
 ReadOnly global_variable
 Ast nil_ast = {
-    &nil_syntax_node, // root
-    &nil_syntax_node, // currrent
+    &nil_ast_node, // root
+    &nil_ast_node, // currrent
 };
 
 #define PeekForward(node, type, nil_node) \
@@ -50,6 +50,8 @@ break;
 
 //-
 internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);
+internal b32 is_ast_node_nil(AstNode *node);
+internal void adopt_ast_node(AstNode *tree_node, AstNode *new_node);
 
 //- syntax
 global_variable
@@ -67,9 +69,8 @@ String8 reserved_words[] = {
 };
 
 
-internal b32 is_ast_node_nil(AstNode *node);
 
-#define FillAstNodeFieldWIthNilNode(field)		    \
+#define FillAstNodeFieldWIthNilNode(node, field)		    \
 if(node->field == NULL || !is_ast_node_nil(node)) \
 node->field = &nil_ast_node;
 

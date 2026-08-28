@@ -1,17 +1,18 @@
+// TODO: do we want a reference or copy fo the token we are working on?
 internal Ast *
 parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
 {
     ScratchArena *parse_scratch = scratch_start(arena);
-    MemStack *stack = StackCreate(100MiB);
+    MemStack *stack = StackCreate(MiB(100));
     Ast *ast = PushStruct(arena, Ast);
     
     for(TokenNode *cr = token_tree->current; !is_token_node_nil(cr); cr = cr->next)
     {
-        AstNode *new_node = PushStruct(arena);
-        FillAstNodeFieldWIthNilNode(first);
-        FillAstNodeFieldWIthNilNode(last);
-        FillAstNodeFieldWIthNilNode(parent);
-        FillAstNodeFieldWIthNilNode(next);
+        AstNode *new_node = PushStruct(arena, AstNode);
+        FillAstNodeFieldWIthNilNode(new_node, first);
+        FillAstNodeFieldWIthNilNode(new_node, last);
+        FillAstNodeFieldWIthNilNode(new_node, parent);
+        FillAstNodeFieldWIthNilNode(new_node, next);
         
         switch(cr->type)
         {
@@ -27,7 +28,7 @@ parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
             case TokenType::Value:
             {
                 if(is_ast_node_nil(ast->current->first)
-                   && ast->current->type == AstNodeType::Literal)
+                   && ast->current->type == AstNodeType::PLiteral)
                 {
                     ast->current = new_node;
                 }
@@ -35,14 +36,19 @@ parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
             
             case TokenType::String:
             {
-                
-                if(ast->current->type == ) =
+                if(ast->current->type == AstNodeType::PLiteral)
+                {
                     
                     
+                }
             } break;
             
             case TokenType::Number:
             {
+                if(ast->current->type == AstNodeType::PLiteral)
+                {
+                    
+                }
                 
             } break;
             
@@ -111,4 +117,11 @@ parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
     }
     
     return NULL;
+}
+
+internal void
+adopt_ast_node(Ast *ast, AstNode *node)
+{
+    node->parent = ast->current;
+    ast->current->next = node;
 }

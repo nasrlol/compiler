@@ -56,7 +56,7 @@ consume_token(String8 *buffer)
     
     // iterate the buffer and find the whitespaces
     FOR_STR8_CHOP(temp_buffer, str8_chop_left, 1) {
-        b32 result = is_whitespace(temp_buffer->data);
+        b32 result = cstring_is_whitespace(*temp_buffer.data);
         if(result && start_index == 0) {
             
             continue;
@@ -70,22 +70,22 @@ consume_token(String8 *buffer)
     
     if(start_index != 0 && end_index != 0)
     {
-        subtr = str8_create_substr(buffer, start_index, end_index);
+        substr = str8_create_substr(buffer, index, start_index, end_index);
         // TODO: guess the token type;
         
-        if(str8_is_match(subtr)) {
-        } else if(str8_is_match(substr), ) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) {
-        } else if(str8_is_match(substr)) { }
+        if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) {
+        } else if(str8_is_match(*buffer, substr)) { }
         
         return  {
             
@@ -284,8 +284,12 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             }
             
         } else if(current_character == '#') {
-            consume_token();
-            create_module(arena, path);
+            Token *pound_token = consume_token(tree->buffer);
+            if(str8_pound_token.str_value)
+            {
+                
+            }
+            create_module(arena, pound_token);
         } else if(current_character == ':') {
             if(tree->current->parent && tree->current->parent->token->type  == TokenType::Identifier) {
                 
