@@ -13,3 +13,4 @@ CppProperties.json
 .clang-format
 /compiler.nativecodeanalysis.xml
 /compiler.obj
+/.DS_Store

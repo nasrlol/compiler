@@ -27,8 +27,7 @@ parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
             
             case TokenType::Value:
             {
-                if(is_ast_node_nil(ast->current->first)
-                   && ast->current->type == AstNodeType::PLiteral)
+                if(is_ast_node_nil(ast->current->first) && ast->current->type == AstNodeType::PLiteral)
                 {
                     ast->current = new_node;
                 }

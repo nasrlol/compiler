@@ -72,20 +72,20 @@ consume_token(String8 *buffer)
     {
         substr = str8_create_substr(buffer, index, start_index, end_index);
         // TODO: guess the token type;
-        
-        if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) { }
+
+
+FOR_STR8_NODE(str8_node_list, current) {
+if(str8_is_match(current, substr))
+{
+TokenNode *new_node = PushStruct(arena,TokenNode);
+
+}
+ else
+{
+
+
+}
+
         
         return  {
             

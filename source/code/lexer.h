@@ -102,6 +102,16 @@ TokenNode nil_token_node = {
 };
 
 
+
+global_variable String8List *
+keyword_list = {
+ToString8("if"),
+ToString8("for"),
+ToString8("loop"),
+	ToString8("enum"),
+	qToString8("else"),
+};
+
 // - functions
 internal b32 is_token_node_nil(TokenNode *node);
 internal b32 is_token_nil(Token *token);
