@@ -1,10 +1,8 @@
-internal module *
-create_module(MemArena *arena, String8 path)
+internal module 
+create_module(MemArena *arena, Token token)
 {
 
-return NULL;
-
-
+    return {};
 }
 
 internal module_file_handle *

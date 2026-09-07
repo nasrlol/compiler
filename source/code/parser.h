@@ -3,23 +3,21 @@
 
 // typedef enum AstNodeType AstNodeType;
 enum AstNodeType {
-    PLiteral,
-    PIdentifier,
-    PBinary,
-    // Assignment, // this needs to be in the eexpression eval uation
-    PReturn,
-    PFunction,
-    PUndefined,
+    Literal,
+    IdentExpr, // TODO: evaluate this in an expression pass 
+    Binary,
+    Assignment,
+    Return,
+    Function,
 };
 
 typedef struct AstNode AstNode;
 struct AstNode {
     AstNode *first;
     AstNode *last;
-    
     AstNode *parent;
     AstNode *next;
-    AstNodeType *type;
+    AstNodeType type;
 };
 
 typedef struct Ast Ast;
@@ -43,10 +41,10 @@ Ast nil_ast = {
     &nil_ast_node, // currrent
 };
 
-#define PeekForward(node, type, nil_node) \
-for(; (node) && (node) != &(nil_node); (node) = (node)->next) \
-if((node)->token->type == (type)) \
-break;
+#define PeekForward(node, type, nil_node)				\
+    for(; (node) && (node) != &(nil_node); (node) = (node)->next)	\
+	if((node)->token->type == (type))				\
+	    break;
 
 //-
 internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);
@@ -57,22 +55,23 @@ internal void adopt_ast_node(AstNode *tree_node, AstNode *new_node);
 global_variable
 String8 reserved_words[] = {
     
-	str8("struct"),
-	str8("while"),
-	str8("return"),
-	str8("for"),
-	str8("import"),
-	str8("switch"),
-	str8("case"),
-	str8("defer"),
-	str8("enum"),
+    str8("struct"),
+    str8("while"),
+    str8("return"),
+    str8("for"),
+    str8("import"),
+    str8("switch"),
+    str8("case"),
+    str8("defer"),
+    str8("enum"),
 };
 
 
 
-#define FillAstNodeFieldWIthNilNode(node, field)		    \
-if(node->field == NULL || !is_ast_node_nil(node)) \
-node->field = &nil_ast_node;
+#define FillAstNodeFieldWIthNilNode(node, field)	\
+    if(node->field == NULL || !is_ast_node_nil(node))	\
+	node->field = &nil_ast_node;
 
+internal void adopt_ast_node(AstNode* node, AstNode *new_node);
 
 #endif // EDITOR_PARSER_H
