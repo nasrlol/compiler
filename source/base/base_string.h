@@ -80,11 +80,14 @@ internal u64 cstring16_length(u16 *c);
 internal u64 cstring32_length(u32 *c);
 
 //- string8
-internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
-internal u64     str8_find(String8 *buffer, u64 start_pos, String8 element);
+// TODO: refactoed the parameter names to use dest and src
+internal u64     str8_skip_element(String8 *left, u64 pos, String8 *right);            
+internal u64     str8_find(String8 *left, u64 pos, String8 right);
 internal b32     str8_is_match(String8 a, String8 b);
-internal void    str8_append_u8_element(String8 *buf, u8 c);
-internal int     str8_append(String8 *a, String8 *b);
+internal void    str8_append_str_lit(String *dest, const char *src)
+internal void    str8_append_char(String8 *dest, u8 src);
+internal int     str8_append(String8 *dest, String8 *src);
+
 internal void    str8_trim_right();
 
 internal String8 str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx);
@@ -152,7 +155,7 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
 
 // NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
 #define FOR_STR8_CHOP(index, buffer, count, function) \
-    for(u64 index = 0; (index < (buffer)->size) && ((buffer)->size > (count)); \
+    for(u64 index = 0; (index < (buffer->size)) && ((buffer)->size > (count)); \
         function((buffer), (count)), ++index)
 
 #define FOR_STR8_ARB_FN(expr, function, ...) \
