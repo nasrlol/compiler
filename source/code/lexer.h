@@ -2,41 +2,42 @@
 #define LEXER_H
 
 //-
-#define DEBUG_STR8_DIFF(tree, arena, diff_size)  \
-debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
+#define DEBUG_STR8_DIFF(tree, arena, diff_size)			\
+    debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
-#define TokenNodeContainsFlag(node, flag)	  \
-if(((node->flags) & (flag)) != (0))		\
-return false
+#define TokenNodeContainsFlag(node, flag)	\
+    if(((node->flags) & (flag)) != (0))		\
+	return false
 
-#define FillTokenNodeFieldWithNilNode(field)		    \
-if(node->field == NULL || !is_token_node_nil(node)) \
-node->field = &nil_token_node;
+#define FillTokenNodeFieldWithNilNode(field)		\
+    if(node->field == NULL || !is_token_node_nil(node)) \
+	node->field = &nil_token_node;
 
-enum TokenType : int {
-    Undefined = 256,
-	Identifier, // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
-	Value,      // because an identfier could really be anything from a value, variable or function.
-	String,
-	Number,
-	Double_Equal,
-	Greater_Equal,
-	Lesser_Equal,
-	Param,
-	Right_Shift,
-	Left_Shift,
-	Asterisk,
-	Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
-	C_Style_Comment_Start,
-	C_Style_Comment_End,
+enum TokenType  {
+// if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
+    Illegal = 256,
+    IdentToken, 
+    Value,      // because an identfier could really be anything from a value, variable or function.
+    String,
+    Number,
+    Double_Equal,
+    Greater_Equal,
+    Lesser_Equal,
+    Param,
+    Right_Shift,
+    Left_Shift,
+    Asterisk,
+    Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
+    C_Style_Comment_Start,
+    C_Style_Comment_End,
 };
 
-enum TokenNodeFlags : int {
-    None  = (1 << 0),
-	Root  = (1 << 11),
-	Child = (1 << 12),
-	Eof   = (1 << 13),
-	Bad   = (1 << 14),
+enum TokenNodeFlags: int {
+Invalid = 1,
+    Root = 2,
+    Child = 3,
+    Eof = 4,
+    Bad = 5,
 };
 
 typedef struct Token Token;
@@ -84,14 +85,14 @@ struct TokenTree {
 ReadOnly global_variable
 Token nil_token =
 {
-    TokenType::Undefined,
+    TokenType::Illegal,
     0,
     { NULL }
 };
 
 ReadOnly global_variable
 TokenNode nil_token_node = {
-    TokenNodeFlags::None,
+    TokenNodeFlags::Invalid,
     &nil_token_node, // next
     &nil_token_node, // previous
     &nil_token_node, // child
@@ -110,7 +111,6 @@ internal void push_token_node(TokenTree *tree, TokenNode * node);
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
 internal Token consume_token(String8 *buffer);
 internal TokenNode create_node_from_token();
-internal void adopt_ast_node(AstNode* node, AstNode *new_node);
 
 internal b32 is_token_node_nil(TokenNode *node) { return (node == &nil_token_node); }
 internal b32 is_token_nil(Token *token) { return (token == &nil_token); }

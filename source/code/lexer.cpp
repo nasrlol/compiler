@@ -49,14 +49,13 @@ lx_panic(TokenTree *tree, TokenNode *node)
 internal Token
 consume_token(String8 *buffer)
 {
-    String8 temp_buffer = *buffer;
     u64 start_index = 0;
     u64 end_index   = 0;
     String8 substr = {};
     
     // iterate the buffer and find the whitespaces
-    FOR_STR8_CHOP(temp_buffer, str8_chop_left, 1) {
-        b32 result = cstring_is_whitespace(*temp_buffer.data);
+    FOR_STR8_CHOP(index, buffer, 1, str8_chop_left_ptr) {
+        b32 result = cstring_is_whitespace(*buffer->data);
         if(result && start_index == 0) {
             
             continue;
@@ -71,8 +70,8 @@ consume_token(String8 *buffer)
     if(start_index != 0 && end_index != 0)
     {
         substr = str8_create_substr(buffer, index, start_index, end_index);
+
         // TODO: guess the token type;
-        
         if(str8_is_match(*buffer, substr)) {
         } else if(str8_is_match(*buffer, substr)) {
         } else if(str8_is_match(*buffer, substr)) {
@@ -144,7 +143,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
     
-    FOR_STR8_CHOP(tree->buffer, str8_chop_left, 1) {
+    FOR_STR8_CHOP(index, *tree->buffer, 1, str8_chop_left) {
         ScratchArena cycle_scratch = scratch_start(arena);
         
         u8 current_character = tree->buffer->data[0];
@@ -192,19 +191,19 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             ////////////////////////////////
             
             token->value.str_v = str8_chop_left(*tree->buffer, index);
-            token->type = TokenType::Identifier;
+            token->type = TokenType::IdentToken;
         }
         
         else if(cstring_is_digit(current_character)) {
-            if(node->parent->token->type == TokenType::Identifier) {
-                node->parent->flag = TokenNodeFlags::None;
-                node->parent->token->type = TokenType::Identifier;
+            if(node->parent->token->type == TokenType::IdentToken) {
+                node->parent->flag = (TokenNodeFlags)0;
+                node->parent->token->type = TokenType::IdentToken;
             } else {
                 node->parent->flag = TokenNodeFlags::Bad;
                 break;
             }
         } else if(current_character ==  '\"') {
-            token->type = TokenType::Identifier;
+            token->type = TokenType::IdentToken;
         } else if(str8_any_match(*tree->buffer,str8("//"))) {
             u64 start_pos = tree->index;
             String8 *buffer = tree->buffer;
@@ -240,6 +239,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                 token->line = tree->amount_of_new_lines;
                 token->value.str_v = str8("}");
                 
+
                 if(is_token_node_nil(tree->current->last)) {
                     node->token = token;
                     node->flag = TokenNodeFlags::Child;
@@ -253,7 +253,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                 } else {
                     TokenNode *temp_current_token_node = tree->current->last->next;
                     temp_current_token_node->token = token;
-                    temp_current_token_node->flag =  TokenNodeFlags::None;
+                    temp_current_token_node->flag =  TokenNodeFlags::Invalid;
                     temp_current_token_node->previous = tree->current->last;
                     temp_current_token_node->parent = tree->current->last->parent;
                 }
@@ -284,14 +284,16 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             }
             
         } else if(current_character == '#') {
-            Token *pound_token = consume_token(tree->buffer);
-            if(str8_pound_token.str_value)
+            Token pound_token = consume_token(tree->buffer);
+            if(pound_token.value.str_v)
             {
-                
+		// TODO: 
             }
+
             create_module(arena, pound_token);
+	    // TODO: pop the pound_token from the stack. we dont need it anymore after making the module
         } else if(current_character == ':') {
-            if(tree->current->parent && tree->current->parent->token->type  == TokenType::Identifier) {
+            if(tree->current->parent && tree->current->parent->token->type  == TokenType::IdentToken) {
                 
                 String8List *delimiters = PushStruct(arena, String8List);
                 String8Node *colon_node = PushStruct(arena, String8Node);
