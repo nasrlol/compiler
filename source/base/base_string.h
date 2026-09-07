@@ -81,11 +81,13 @@ internal u64 cstring32_length(u32 *c);
 
 //- string8
 internal u64     str8_skip_element(String8 *buffer, u64 start_pos, String8 *element);
-internal u64 str8_find(String8 *buffer, u64 start_pos, String8 element);
+internal u64     str8_find(String8 *buffer, u64 start_pos, String8 element);
 internal b32     str8_is_match(String8 a, String8 b);
 internal void    str8_append_u8_element(String8 *buf, u8 c);
 internal int     str8_append(String8 *a, String8 *b);
 internal void    str8_trim_right();
+
+internal String8 str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx);
 
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
@@ -125,28 +127,41 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
 #define ToString16(data) String16 { (u16 *)(data), (u64)(cstring16_length((u16 *) data))}
 #define ToString32(data) String32 { (u32 *)(data), (u64)(cstring32_length((u32 *) data))}
 
-#define str8(buffer) ToString8(buffer)
+#define str8(buffer)  ToString8(buffer)
 #define str16(buffer) ToString16(buffer)
 #define str32(buffer) ToString32(buffer)
 
-#define ToString8Size(data, size)  String8  {(u8 *)(data), (u64)(size)}
-#define ToString16Size(data, size) String16 {(u16 *)(data), (u64)(size)}
-#define ToString32Size(data, size) String32 {(u32 *)(data), (u64)(size)}
+#define ToString8Size(data, size)  String8  { (u8 * )(data), (u64)(size) }
+#define ToString16Size(data, size) String16 { (u16 *)(data), (u64)(size) }
+#define ToString32Size(data, size) String32 { (u32 *)(data), (u64)(size) }
 
-#define ToString8Node(string)  String8Node  {&nil_str8_node, string}
-#define ToString16Node(string) String16Node {&nil_str8_node, string}
-#define ToString32Node(string) String32Node {&nil_str8_node, string}
+#define ToString8Node(string)  String8Node  { &nil_str8_node, string }
+#define ToString16Node(string) String16Node { &nil_str8_node, string }
+#define ToString32Node(string) String32Node { &nil_str8_node, string }
 
 #define str8_node(text) ToString8Node(str8(text))
 #define str16_node(text) ToString16Node(str16(text))
 #define str32_node(text) ToString32Node(str32(text))
 
+#define LOOP(expr, exec) \
+    for(; expr; exec)
+
 // arbitratry amount of parameters can be passed to this function
 // TODO: put the index name as a paramter so that the reference can be made later without it being so hidden
-#define FOR_STR8_CHOP(buffer, function, count) for(u64 index = 0; index < buffer.size; buffer = (&function(*buffer, count)), ++index)
-#define FOR_STR8_ARB_FN(eval, function, ...) for(; (eval); function(__VA_ARGS__))
-#define FOR_STR8_MATCH(first_buffer, second_buffer) for(; str8_is_match(first_buffer, second_buffer); str8_chop_left(first_buffer, 1))
-#define FOR_STR8_NODE(str8_node_list, current) for(String8Node *current = str8_node_list->first; !is_nil_str8_node(current); current = current->next)
+
+
+// NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
+#define FOR_STR8_CHOP(index, buffer, count, function) \
+    for(u64 index = 0; (index < (buffer)->size) && ((buffer)->size > (count)); \
+        function((buffer), (count)), ++index)
+
+#define FOR_STR8_ARB_FN(expr, function, ...) \
+    LOOP(expr, function(__VA_ARGS__))
+
+#define FOR_STR8_MATCH(buffa, buffb) \
+    LOOP(str8_is_match(buffa, buffb), str8_chop_left(buffa, 1))
+
+#define FOR_STR8_NODE(str8_list, current) for(String8Node *current = str8_list->first; !is_nil_str8_node(current); current = current->next)
 
 
 internal b32 is_nil_str8(String8 *a);

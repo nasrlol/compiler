@@ -3,15 +3,20 @@
 
 
 #if defined(__linux__) ||  defined(__APPLE__)
+// #message "PLATFORM LINUX APPLE"
 #define PLATFORM_UNIX 1
+#define PLATFORM_LINUX 1
 #elif defined(__linux__) && !defined(__APPLE__)
+#message "PLATFORM LINUX"
 #define PLATFORM_LINUX 1
 #elif defined(_WIN32) || defined(_WIN64)
+#message "PLATFORM WINDOWS"
 #define PLATFORM_WINDOWS 1
 #elif defined(__APPLE__)
 #define PLATFORM_APPLE 1
+#message "PLATFORM APPLE"
 #else
-#error platform unknown
+#message platform unknown
 #endif // platform definitions
 
 #if PLATFORM_UNIX
@@ -46,6 +51,7 @@
 
 //-
 #include "base_core.h"
+#include "base_memory.h"
 
 #include "base_arena.h"
 #include "base_stack.h"
@@ -53,6 +59,8 @@
 #include "base_platform.h"
 #include "base_render.h"
 
+
+#include "base_memory.cpp"
 #include "base_arena.cpp"
 #include "base_stack.cpp"
 #include "base_string.cpp"

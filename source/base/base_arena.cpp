@@ -163,21 +163,6 @@ internal void
 scratch_end(ScratchArena *sa)
 {
     sa->arena->current_position = sa->start_position;
+    // TODO: does the rest of the memory need to be set to zero?
 }
 
-//-
-
-internal b32
-is_pow(umm x)
-{
-    return (x & (x - 1)) == 0;
-}
-
-internal u64
-align(u64 pointer, umm alignment)
-{
-    if((alignment & (alignment - 1)) == 0) {
-        return pointer;
-    }
-    return (pointer + alignment - 1) & ~(alignment - 1);
-}

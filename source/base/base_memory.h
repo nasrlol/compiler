@@ -1,3 +1,9 @@
+#ifndef BASE_MEMORY_H
+#define BASE_MEMORY_H
+
+
+//- asan
+
 // Marks memory region [addr, addr+size) as unaddressable.
 // This memory must be previously allocated by the user program. Accessing
 // addresses in this region from instrumented code is forbidden until
@@ -28,3 +34,16 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
     ((void)(addr), (void)(size))
 #endif
+
+//- helper functions
+
+#define KiB(n) (((u64)(n)) << 10)
+#define MiB(n) (((u64)(n)) << 20)
+#define GiB(n) (((u64)(n)) << 30)
+
+internal b32 is_pow(umm x);
+internal u64 align(u64 pointer, umm alignment);
+
+
+
+#endif // BASE_MEMORY_H

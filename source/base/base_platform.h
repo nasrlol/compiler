@@ -22,12 +22,10 @@ struct PlatformWindow {
 #include "base_platform_win32.h"
 #endif // PLATFORM_LINUX || PLATFORM_WINDOWS
 
-#if PLATFORM_LINUX
-#ifdef CMD_ARGS
-#define ENTRYPOINT(count, arguments) main(count, arguments)
-#endif
+#if PLATFORM_LINUX || PLATFORM_UNIX
+#define ENTRYPOINT() int main(int count, char **args)
 
-#define PlatformCreateWindow(arena, height, width, display_x, display_y)
+#define PlatformCreateWindow(arena, height, width, display_x, display_y) \
 LinuxCreateWindow(arena, height, width, display_x, display_y)
 
 #define PlatformGetDisplayWidth(display, screen_num ) \

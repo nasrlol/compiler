@@ -19,22 +19,28 @@ struct MemStackHeader {
     u8 previous_offset;
 };
 
-// TODO: fix all this dumb mem stack include issues where is it even coming from
 struct MemStack {
     MemStackHeader *header;
-    u64             current_offset;
-    u64             capacity;
-    u8             *base_position;
+    u64 current_offset;
+    u64 capacity;
+    u8 *base_position; // TODO: why is this a (u8 *)?
 };
 
 //-
 
 internal MemStack *stack_push_align(MemStack *stack, u64 size, u8 alignment);
 internal MemStack *stack_resize_align(MemStack *stack, void *pointer, u64 old_size, u64 new_size, u8 alignment);
-internal void     *stack_push(MemStack *stack, u64 size);
-internal void     stack_pop(MemStack *stack, void *pointer);
-internal void     stack_clear(MemStack *stack);
-internal u8       calculate_padding(u64 pointer, u8 alignment, u64 header_size);
+internal void *stack_push(MemStack *stack, u64 size);
+internal void stack_pop(MemStack *stack, void *pointer);
+internal void stack_clear(MemStack *stack);
+internal u8 calculate_padding(u64 pointer, u8 alignment, u64 header_size);
+internal MemStack *arena_to_stack(MemArena *arena, u64 size);
 
+#define StackPushStruct(stack, type) (type *)stack_push((stack), sizeof(type), 0)
+#define StackPushStructZero(stack, type) (type *)stack_push((stack), sizeof(type), 1)
+#define StackPushArray(stack, type, len) (type *)stack_push((stack), sizeof(type) * (len), 0)
+#define StackPushArrayZero(stack, type, len) (type *)stack_push((stack), sizeof(type) * (len), 1)
+#define StackPop(stack, pointer) stack_pop(stack, pointer)
+#define StackClear(stack) stack_clear(stack)
 
 #endif // BASE_STACK_H

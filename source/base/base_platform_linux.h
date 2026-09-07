@@ -1,7 +1,14 @@
 #ifndef BASE_LINUX_H
 #define BASE_LINUX_H
 
-#define X11 1
+typedef struct Library Library;
+struct Library {
+    u64 data;
+};
+
+
+#define X11 0
+#define WAYLAND 1
 
 typedef struct LinuxWindowHandle LinuxWindowHandle;
 struct LinuxWindowHandle {
@@ -16,17 +23,13 @@ internal s32 x11_cleanup(LinuxWindowHandle *s);
 internal s32 x11_read_input();
 
 
-#define LinuxCreateWindow(arena, height, width, x, y) x11_create_window(arena, height, width, x, y)
+#define LinuxCreateWindow(arena, height, width, x, y)  x11_create_window(arena, height, width, x, y)
 #define LinuxGetDisplayWdith(display, screen_num)      DisplayWidth(display, screen_num)
 #define LinuxGetDisplayHeight(display, screen_num)     DisplayHeight(display, screen_num);
 #define LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)    XReadBitmapFile(display, window, )
 
-typedef struct Library Library;
-struct Library {
-    u64 data;
-};
-
 #elif WAYLAND
+
 
 #else
 #error compositor not defined
