@@ -9,7 +9,7 @@ is_ast_node_nil(AstNode *node)
 internal Ast *
 parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
 {
-    ScratchArena *parse_scratch = scratch_start(arena);
+    ScratchArena parse_scratch = scratch_start(arena);
     Ast *ast = PushStruct(arena, Ast);
     MemStack *stack = arena_to_stack(arena, MiB(10), arena->current_position); 
     

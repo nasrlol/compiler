@@ -1,5 +1,6 @@
 #include "base/base_include.h"
 
+#include "messages.h"
 #include "lexer.h"
 #include "parser.h"
 #include "preproc.h"
@@ -8,7 +9,9 @@
 #include "lexer.cpp"
 #include "parser.cpp"
 #include "preproc.cpp"
-#include "parse_table.cpp"
+
+
+
 
 ENTRYPOINT()
 {
