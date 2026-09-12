@@ -57,30 +57,30 @@ consume_token(String8 *buffer)
             end_index = index;
         }
         start_index = index;
-
-    if(start_index != 0 && end_index != 0)
-    {
-        substr = str8_create_substr(buffer, index, start_index, end_index);
-
-        // TODO: guess the token type;
-        if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) {
-        } else if(str8_is_match(*buffer, substr)) { }
         
-
-    }
-    
-    
+        if(start_index != 0 && end_index != 0)
+        {
+            substr = str8_create_substr(buffer, index, start_index, end_index);
+            
+            // TODO: guess the token type;
+            if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) {
+            } else if(str8_is_match(*buffer, substr)) { }
+            
+            
+        }
+        
+        
         return  {
             
             // just for reference for now
@@ -145,15 +145,15 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
         
         // handle skipping
         b32 is_whitespace = cstring_is_whitespace(current_character);
-	if(is_whitespace) {
+        if(is_whitespace) {
             continue;
-	}
+        }
         
-	b32 is_newline = cstring_is_newline(current_character);
-	if(is_newline) {
+        b32 is_newline = cstring_is_newline(current_character);
+        if(is_newline) {
             tree->amount_of_new_lines += 1;
             continue;
-	}
+        }
         
         TokenNode *node = PushStruct(arena, TokenNode);
         Token *token = PushStruct(arena, Token);
@@ -234,7 +234,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                 token->line = tree->amount_of_new_lines;
                 token->value.str_v = str8("}");
                 
-
+                
                 if(is_token_node_nil(tree->current->last)) {
                     node->token = token;
                     node->flag = TokenNodeFlags::Child;
@@ -255,7 +255,9 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             }
         } else if(current_character == '(') {
             if(tree->current->parent) {
-                str8_list_push_node(delimiters, &(str8_node(")")));
+                String8Node *right_paran = PushStruct(arena, String8Node);
+                *right_paran = str8_node(")");
+                str8_list_push_node(delimiters, right_paran);
                 push_token_children(arena, tree, delimiters);
                 push_token_node(tree, node);
             }
@@ -271,50 +273,50 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
         // so we just do a children until we hit the delimiter
         else if(current_character == '[') {
             String8List *delimiters = PushStruct(arena, String8List);
-	    String8Node *right_bracket  = str8_node("]");
-            str8_list_push_node(delimiters, right_bracket));
-	push_token_node(tree, node);
-    } else if(current_character == ']') {
-	if(tree->current->first->token->type != (enum TokenType)'['){
-	    Log("didn't close the bracket you moron");
-	}
+            String8Node *right_bracket = PushStruct(arena, String8Node);
+            *right_bracket = str8_node("]");
+            str8_list_push_node(delimiters, right_bracket);
+            push_token_node(tree, node);
+        } else if(current_character == ']') {
+            if(tree->current->first->token->type != (enum TokenType)'['){
+                Log("didn't close the bracket you moron");
+            }
             
-    } else if(current_character == '#') {
-	Token pound_token = consume_token(tree->buffer);
-	if(pound_token.value.str_v.size != 0) // TODO: can this be null and segfault if we don't initialize it?
-	{
-
-	    create_module(arena, pound_token);
-
-	} else {
-
-	    PANIC(str8("No directive found after pound sign"));
-
-	}
-
-	// TODO: pop the pound_token from the stack. we dont need it anymore after making the module
-    } else if(current_character == ':') {
-	if(tree->current->parent && tree->current->parent->token->type  == TokenType::IdentToken) {
+        } else if(current_character == '#') {
+            Token pound_token = consume_token(tree->buffer);
+            if(pound_token.value.str_v.size != 0) // TODO: can this be null and segfault if we don't initialize it?
+            {
                 
-	    String8List *delimiters = PushStruct(arena, String8List);
-	    String8Node *colon_node = PushStruct(arena, String8Node);
-	    String8Node *komma_node = PushStruct(arena, String8Node);
+                create_module(arena, pound_token);
                 
-	    str8_list_push_node(delimiters, colon_node);
-	    str8_list_push_node(delimiters, komma_node);
+            } else {
                 
-	    push_token_children(arena, tree, delimiters);
-	} else {
-	    // TODO: push a warning / error
-	    Log("syntax error. Issue with the previous token. Unexpected token.");
-	}
-    } else {
-	// TODO: 
-	PANIC(str8("Not valid syntax"));
+                PANIC(str8("No directive found after pound sign"));
+                
+            }
+            
+            // TODO: pop the pound_token from the stack. we dont need it anymore after making the module
+        } else if(current_character == ':') {
+            if(tree->current->parent && tree->current->parent->token->type  == TokenType::IdentToken) {
+                
+                String8List *delimiters = PushStruct(arena, String8List);
+                String8Node *colon_node = PushStruct(arena, String8Node);
+                String8Node *komma_node = PushStruct(arena, String8Node);
+                
+                str8_list_push_node(delimiters, colon_node);
+                str8_list_push_node(delimiters, komma_node);
+                push_token_children(arena, tree, delimiters);
+            } else {
+                // TODO: push a warning / error
+                Log("syntax error. Issue with the previous token. Unexpected token.");
+            }
+        } else {
+            // TODO:
+            PANIC(str8("Not valid syntax"));
+        }
+        
     }
-        
-        
-}
     
-return tree;
+    return tree;
 }
+

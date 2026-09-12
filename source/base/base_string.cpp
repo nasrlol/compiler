@@ -46,6 +46,29 @@ str8_trim_left(String8 *buffer)
 }
 
 internal void
+str16_trim_left(String16 *buffer)
+{
+    u64 index = 0;
+    while(cstring_is_whitespace(buffer->data[index])) {
+        ++index;
+    }
+    
+    str16_chop_left(*buffer, index);
+}
+
+internal void
+str32_trim_left(String32 *buffer)
+{
+    u64 index = 0;
+    
+    while(cstring_is_whitespace(buffer->data[index])) {
+        ++index;
+    }
+    
+    str32_chop_left(*buffer, index);
+}
+
+internal void
 str8_trim_right(String8 *buffer)
 {
     u64 index = buffer->size;
@@ -101,26 +124,43 @@ str8_is_digit(String8 a, u64 start_pos)
     return true;
 }
 
-internal String8
-str8_append_u8_element(String8 buffer, u8 c)
+internal void
+str8_copy(String8 *dest, String8 *src)
 {
-    buffer.data[buffer.size] = c;
-    buffer.size += 1;
-    return buffer;
+    MemCpy(dest->data, src->data, src->size);
+    dest->size = src->size;
 }
 
-internal b32
-str8_append(String8 *a, String8 *b)
+
+internal String8
+str8_clone(MemArena *arena, String8 *src)
 {
-    if(is_nil_str8(a) || is_nil_str8(b) || a == NULL || b == NULL) {
-        return false;
-    }
+    String8 clone = PushString8(arena, src->size);
+    str8_copy(&clone, src);
+    return clone;
+}
+
+// you cant just do this you have to reallocat that thing no?
+internal b32
+str8_append_char(String8 *dest, u8 src)
+{
+    if(is_nil_str8(dest) || src == 0) return false;
+    dest->data[dest->size] = src;
+    dest->size += 1;
     
-    MemCpy(a->data + a->size, b->data, b->size);
-    a->size += b->size;
-    
+    res.data = dest->data;
+    res.size = dest->size;
     return true;
-    
+}
+
+// left here 7/9 refactoring the names and parameters
+internal b32
+str8_append(String8 *dest, String8 *src)
+{
+    if(is_nil_str8(src) || is_nil_str8(dest)) return false;
+    MemCpy(dest->data + dest->size, src->data, src->size);
+    dest->size += src->size;
+    return true;
 }
 
 internal String8
@@ -172,11 +212,23 @@ str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
     return str8_chop_left(str8_chop_right(*buffer, end_idx), (start_idx - current_idx));
 }
 
+internal String16
+str16_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+{
+    return str8_chop_left(str8_chop_right(*buffer, end_idx), (start_idx - current_idx));
+}
+
+
+internal String8
+str32_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+{
+    return str32_chop_left(str32_chop_right(*buffer, end_idx), (start_idx - current_idx));
+}
+
 
 internal String16
 str16_chop_left(String16 buffer, u64 count)
 {
-    
     if(buffer.size < count) {
         return buffer;
     }
@@ -190,7 +242,6 @@ str16_chop_left(String16 buffer, u64 count)
 internal String32
 str32_chop_left(String32 buffer, u64 count)
 {
-    
     if(buffer.size < count) {
         return buffer;
     }

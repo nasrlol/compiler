@@ -10,18 +10,15 @@
 #include "parser.cpp"
 #include "preproc.cpp"
 
-
-
-
 ENTRYPOINT()
 {
     String8 path;
     if(count > 0) {
-	path = str8(args[1]);
+        path = str8(args[1]);
     } else {
-	return 1;
+        return 1;
     }
-
+    
     MemArena *global_arena = ArenaCreate(MiB(100));
     String8 buffer = FileLoad(global_arena, path);
     TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);

@@ -36,10 +36,8 @@ internal void stack_clear(MemStack *stack);
 internal u8 calculate_padding(u64 pointer, u8 alignment, u64 header_size);
 internal MemStack *arena_to_stack(MemArena *arena, u64 size);
 
-#define StackPushStruct(stack, type) (type *)stack_push((stack), sizeof(type), 0)
-#define StackPushStructZero(stack, type) (type *)stack_push((stack), sizeof(type), 1)
-#define StackPushArray(stack, type, len) (type *)stack_push((stack), sizeof(type) * (len), 0)
-#define StackPushArrayZero(stack, type, len) (type *)stack_push((stack), sizeof(type) * (len), 1)
+#define StackPushStruct(stack, type) (type *)stack_push((stack), sizeof(type))
+#define StackPushArray(stack, type, len) (type *)stack_push((stack), sizeof(type) * (len))
 #define StackPop(stack, pointer) stack_pop(stack, pointer)
 #define StackClear(stack) stack_clear(stack)
 

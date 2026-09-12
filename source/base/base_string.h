@@ -66,45 +66,77 @@ struct String32List {
     u64           count;
 };
 
-//- cstring
-internal b32 cstring_is_alnum(u8 point);
-internal b32 cstring_is_nil(u8 point);
-internal b32 cstring_is_whitespace(u8 point);
-internal b32 cstring_is_slash(u8 point);
-internal b32 cstring_is_alpha(u8 point);
-internal b32 cstring_is_digit(u8 point);
-internal b32 cstring_is_newline(u8 point);
-internal b32 cstring_is_match(u8 *a, u8 *b);
-internal u64 cstring8_length(u8 *c);
-internal u64 cstring16_length(u16 *c);
-internal u64 cstring32_length(u32 *c);
 
-//- string8
-// TODO: refactoed the parameter names to use dest and src
-internal u64     str8_skip_element(String8 *left, u64 pos, String8 *right);            
-internal u64     str8_find(String8 *left, u64 pos, String8 right);
-internal b32     str8_is_match(String8 a, String8 b);
-internal void    str8_append_str_lit(String *dest, const char *src)
-internal void    str8_append_char(String8 *dest, u8 src);
-internal int     str8_append(String8 *dest, String8 *src);
+//- nil / zero-value checks and constructors
+internal b32 is_nil_str8(String8 *a);
+internal b32 is_nil_str8_node(String8Node *a);
+internal b32 is_nil_str16(String16 * a);
+internal b32 is_nil_str16_node(String16Node *a);
+internal b32 is_nil_str32(String32 *a);
+internal b32 is_nil_str32_node(String32Node *a);
+internal String8 str8_zero();
 
-internal void    str8_trim_right();
+//- str8 copy / clone / append
+internal String8 str8_clone(MemArena *arena, String8 *src);
+internal void str8_copy(String8 *dest, String8 *src);
+internal b32 str8_append(String8 *src, String8 dest);
+internal b32 str8_append_char(String8 * dest, u8 src);
 
-internal String8 str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx);
-
+//- str8 trim / chop
+internal void str8_trim_left(String8 * buffer);
+internal void str8_trim_right(String8 * buffer);
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
+internal void str8_chop_left_ptr(String8 * buffer, u64 count);
+internal void str8_chop_right_ptr(String8 * buffer, u64 count);
 
-internal void str8_chop_left_ptr(String8 *buffer, u64 count);
-internal void str8_chop_right_ptr(String8 *buffer, u64 count);
+//- str8 substrings, matching, search
+internal String8 str8_create_substr(String8 * buffer, u64 current_idx, u64 start_idx, u64 end_idx);
+internal b32 str8_any_match(String8 a, String8 b);
+internal b32 str8_is_match(String8 a, String8 b);
+internal u64 str8_find(String8 * buffer, u64 start_pos, String8 element);
+internal b32 str8_is_digit(String8 a, u64 start_pos);
+internal b32 str8_is_empty(String8 * buffer);
 
-internal String8 str8_zero();
+//- str8 list
+internal void str8_list_push_node(String8List * list, String8Node * node);
+
+//- str16 / str32 chop and substrings
+internal String16 str16_chop_left(String16 buffer, u64 count);
+internal String16 str16_chop_right(String16 buffer, u64 count);
+internal String16 str16_create_substr(String16 * buffer, u64 start_idx, u64 end_idx);
+internal String32 str32_chop_left(String32 buffer, u64 count);
+internal String32 str32_chop_right(String32 buffer, u64 count);
+internal String32 str32_create_substr(String32 * buffer, u64 start_idx, u64 end_idx);
+
+//- null-termination helpers
+internal const char* null_terminate(MemArena * arena, String8 * c);
+internal String8 remove_null_terminator(MemArena * arena, String8 c);
+
+//- cstring character classification
+internal b32 cstring_is_digit(u8 point);
+internal b32 cstring_is_alpha(u8 point);
+internal b32 cstring_is_alpha_num(u8 point);
+internal b32 cstring_is_nl(u8 point);
+internal b32 cstring_is_whitespace(u8 point);
+internal b32 cstring_is_slash(u8 point);
+internal b32 cstring_is_newline(u8 point);
+
+//- cstring matching, length, search
+internal b32 cstring_is_match(u8 * a, u8 * b);
+internal u64 cstring8_length(u8 * c);
+internal u64 cstring16_length(u16 * c);
+internal u64 cstring32_length(u32 * c);
+internal u64 cstring8_find(u8 * buffer, u8 * element);
+internal u64 cstring8_find_new_line(u8 * buffer);
+internal u64 cstring8_find_needle(u8 * buffer, u8 needle);
+
+//-
 
 #if COMPILER_GCC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #endif
-
 
 //-
 ReadOnly global_variable String8  nil_str8  = {NULL, 0};
@@ -146,22 +178,21 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
 #define str16_node(text) ToString16Node(str16(text))
 #define str32_node(text) ToString32Node(str32(text))
 
-#define LOOP(expr, exec) \
-    for(; expr; exec)
+#define LOOP(expr, exec)  for(; expr; exec)
 
 // arbitratry amount of parameters can be passed to this function
 // TODO: put the index name as a paramter so that the reference can be made later without it being so hidden
 
 
 // NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
-#define FOR_STR8_CHOP(index, buffer, count, function) \
-    for(u64 index = 0; (index < (buffer->size)) && ((buffer)->size > (count)); \
-        function((buffer), (count)), ++index)
+#define FOR_STR8_CHOP(index, buffer, count, function)			\
+    for(u64 index = 0; (index < (buffer->size)) && ((buffer->size) > (count)); \
+	function((buffer), (count)), ++index)
 
-#define FOR_STR8_ARB_FN(expr, function, ...) \
+#define FOR_STR8_ARB_FN(expr, function, ...)	\
     LOOP(expr, function(__VA_ARGS__))
 
-#define FOR_STR8_MATCH(buffa, buffb) \
+#define FOR_STR8_MATCH(buffa, buffb)				\
     LOOP(str8_is_match(buffa, buffb), str8_chop_left(buffa, 1))
 
 #define FOR_STR8_NODE(str8_list, current) for(String8Node *current = str8_list->first; !is_nil_str8_node(current); current = current->next)

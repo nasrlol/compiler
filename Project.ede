@@ -8,3 +8,9 @@
   :object-name "compiler"
   :makefile-type Makefile
   :configuration-variables '("debug" (("DEBUG" . "1"))))
+
+
+(ede-cpp-root-project "compiler"
+  :file "~/path/to/fajr/Project.ede"
+  :name "compiler"
+  :build-command "./build.sh")
