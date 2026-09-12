@@ -13,4 +13,4 @@ CFLAGS="-g -fno-rtti -fno-exceptions -Wall -Werror  -no-pie -Wno-unused-function
 mkdir -p "$BUILD_DIR"
 
 echo "Building ${BUILD_DIR}/program.exe..."
-clang++ $INCLUDES $CFLAGS "${SOURCE_DIR}/code/compiler.cpp" -o "${BUILD_DIR}/compiler.exe"
+g++ $INCLUDES $CFLAGS "${SOURCE_DIR}/code/compiler.cpp" -o "${BUILD_DIR}/compiler.exe"

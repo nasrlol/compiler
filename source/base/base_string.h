@@ -139,7 +139,7 @@ internal u64 cstring8_find_needle(u8 * buffer, u8 needle);
 #endif
 
 //-
-ReadOnly global_variable String8  nil_str8  = {NULL, 0};
+ ReadOnly global_variable String8  nil_str8  = {NULL, 0};
 ReadOnly global_variable String16 nil_str16 = {NULL, 0};
 ReadOnly global_variable String32 nil_str32 = {NULL, 0};
 

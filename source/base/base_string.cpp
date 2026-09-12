@@ -147,9 +147,6 @@ str8_append_char(String8 *dest, u8 src)
     if(is_nil_str8(dest) || src == 0) return false;
     dest->data[dest->size] = src;
     dest->size += 1;
-    
-    res.data = dest->data;
-    res.size = dest->size;
     return true;
 }
 
@@ -213,14 +210,14 @@ str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
 }
 
 internal String16
-str16_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+str16_create_substr(String16 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
 {
-    return str8_chop_left(str8_chop_right(*buffer, end_idx), (start_idx - current_idx));
+    return str16_chop_left(str16_chop_right(*buffer, end_idx), (start_idx - current_idx));
 }
 
 
 internal String8
-str32_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+str32_create_substr(String32 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
 {
     return str32_chop_left(str32_chop_right(*buffer, end_idx), (start_idx - current_idx));
 }
@@ -368,7 +365,6 @@ cstring8_length(u8 *c)
     for(; *c != 0; ++c);
     return (u64)(c - p);
 }
-
 
 internal u64
 cstring16_length(u16 *c)

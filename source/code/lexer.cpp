@@ -284,7 +284,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             
         } else if(current_character == '#') {
             Token pound_token = consume_token(tree->buffer);
-            if(pound_token.value.str_v.size != 0) // TODO: can this be null and segfault if we don't initialize it?
+            if(pound_token.value.str_v.size != 0) // TODO: can this be NULL and segfault if we don't initialize it?
             {
                 
                 create_module(arena, pound_token);

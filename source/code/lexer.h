@@ -16,7 +16,7 @@
 enum TokenType  {
 // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
     Illegal = 256,
-    IdentToken, 
+    IdentToken,
     Value,      // because an identfier could really be anything from a value, variable or function.
     String,
     Number,
@@ -87,7 +87,7 @@ Token nil_token =
 {
     TokenType::Illegal,
     0,
-    { NULL }
+    { }
 };
 
 ReadOnly global_variable
