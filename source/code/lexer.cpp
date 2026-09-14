@@ -39,6 +39,7 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
     scratch_end(&scratch);
 }
 
+// TODO: fix this function
 internal Token
 consume_token(String8 *buffer)
 {
@@ -145,15 +146,16 @@ Assert(!tree);
     FOR_STR8_CHOP(index, (*tree->buffer), 1, str8_chop_left) {
         u8 current_character = tree->buffer->data[0];
         
-        // handle skipping
+        // Handle skipping
         b32 is_whitespace = cstring_is_whitespace(current_character);
         if(is_whitespace) {
             continue;
         }
         
         b32 is_newline = cstring_is_newline(current_character);
-        if(is_newline) {
+        if(is_newline) { // NOTE: do one extra iteration to skip the new line. we keep getting stuck on the current character otherwse
             tree->amount_of_new_lines += 1;
+str8_chop_left_ptr(tree->buffer, 1);
             continue;
         }
         
@@ -225,7 +227,7 @@ cstring_is_alpha_num(temp_buffer);
             u64 offset = str8_find(tree->buffer, 0, element);
             u64 total_offset = offset + element.size; // calculate in the size of the element. [ */ ]. the exact reason don't care to explain
             DEBUG_STR8_DIFF(tree, arena, total_offset);
-            str8_chop_right_ptr(tree->buffer, offset);
+            str8_chop_left_ptr(tree->buffer, total_offset);
             
         } else if(current_character == '{') {
             
@@ -245,7 +247,6 @@ cstring_is_alpha_num(temp_buffer);
                 token->line = tree->amount_of_new_lines;
                 token->value.str_v = str8("}");
                 
-                
                 if(is_token_node_nil(tree->current->last)) {
                     node->token = token;
                     node->flag = TokenNodeFlags::Child;
@@ -256,12 +257,15 @@ cstring_is_alpha_num(temp_buffer);
                     FillTokenNodeFieldWithNilNode(first);
                     FillTokenNodeFieldWithNilNode(child);
                     FillTokenNodeFieldWithNilNode(next);
+
                 } else {
+
                     TokenNode *temp_current_token_node = tree->current->last->next;
                     temp_current_token_node->token = token;
                     temp_current_token_node->flag =  TokenNodeFlags::Invalid;
                     temp_current_token_node->previous = tree->current->last;
                     temp_current_token_node->parent = tree->current->last->parent;
+
                 }
             }
         } else if(current_character == '(') {

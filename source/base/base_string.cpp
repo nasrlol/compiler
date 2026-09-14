@@ -166,6 +166,24 @@ str8_zero()
     return String8{0};
 }
 
+internal void
+ str8_chop_left_ptr(String8 *buffer, u64 count)
+{
+    if(buffer->size < count) return;
+    
+    for(u64 idx = 0; idx < count; ++idx) {
+        buffer->data++;
+    }
+}
+
+internal void
+str8_chop_right_ptr(String8 *buffer, u64 count)
+{
+    if(buffer->size < count) return;
+    buffer->size -= count;
+}
+
+
 internal String8
 str8_chop_left(String8 buffer, u64 count)
 {
@@ -405,22 +423,6 @@ remove_null_terminator(MemArena *arena, String8 c)
     
     
     return c;
-}
-
-internal void str8_chop_left_ptr(String8 *buffer, u64 count)
-{
-    if(buffer->size < count) return;
-    
-    for(u64 idx = 0; idx < count; ++idx) {
-        buffer->data++;
-    }
-}
-
-internal void
-str8_chop_right_ptr(String8 *buffer, u64 count)
-{
-    if(buffer->size < count) return;
-    buffer->size -= count;
 }
 
 // returns the index of where to find it. if not found returns 0.

@@ -1,4 +1,6 @@
 #!/bin/bash
+
+date
 BUILD_DIR=build
 SOURCE_DIR=source
 INCLUDES="-I${SOURCE_DIR}/code -I${SOURCE_DIR} -I${SOURCE_DIR}/base"
