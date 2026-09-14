@@ -152,11 +152,11 @@ str8_append_char(String8 *dest, u8 src)
 
 // left here 7/9 refactoring the names and parameters
 internal b32
-str8_append(String8 *dest, String8 *src)
+str8_append(String8 *dest, String8 src)
 {
-    if(is_nil_str8(src) || is_nil_str8(dest)) return false;
-    MemCpy(dest->data + dest->size, src->data, src->size);
-    dest->size += src->size;
+    if( is_nil_str8(dest) || is_nil_str8(&src)) return false;
+    MemCpy(dest->data + dest->size, src.data, src.size);
+    dest->size += src.size;
     return true;
 }
 
@@ -214,14 +214,6 @@ str16_create_substr(String16 *buffer, u64 current_idx, u64 start_idx, u64 end_id
 {
     return str16_chop_left(str16_chop_right(*buffer, end_idx), (start_idx - current_idx));
 }
-
-
-internal String8
-str32_create_substr(String32 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
-{
-    return str32_chop_left(str32_chop_right(*buffer, end_idx), (start_idx - current_idx));
-}
-
 
 internal String16
 str16_chop_left(String16 buffer, u64 count)

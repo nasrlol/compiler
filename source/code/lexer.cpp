@@ -47,7 +47,7 @@ consume_token(String8 *buffer)
     String8 substr = {};
     
     // iterate the buffer and find the whitespaces
-    FOR_STR8_CHOP(index, buffer, 1, str8_chop_left_ptr) {
+    FOR_STR8_CHOP(index, (*buffer), 1, str8_chop_left) {
         b32 result = cstring_is_whitespace(*buffer->data);
         if(result && start_index == 0) {
             
@@ -138,7 +138,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
     
-    FOR_STR8_CHOP(index, *tree->buffer, 1, str8_chop_left) {
+    FOR_STR8_CHOP(index, (*tree->buffer), 1, str8_chop_left) {
         ScratchArena cycle_scratch = scratch_start(arena);
         
         u8 current_character = tree->buffer->data[0];
@@ -162,13 +162,17 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
         if(cstring_is_alpha(current_character)) {
             u64 index = 0;
             
-            String8 *temp_buffer = PushStructZero(arena, String8);
+// TODO: iterate and check if the character is ???
+#if 0
+            baseString8 *temp_buffer = PushString8(arena, buffer->size;);
             
             b32 is_alpha = cstring_is_alpha_num(current_character);
             FOR_STR8_ARB_FN(is_alpha, str8_chop_left, *temp_buffer, 1)
             {
+cstring_is_alpha_num(temp_buffer);
                 ++index;
             }
+#endif
             
             
             // 8/2/2026 TODO: but we don"t initialize the root node at all?
@@ -269,7 +273,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                 // TODO: Something I forgot what
             }
         }
-        // handle arrays --  an array consists of children of the variable name
+        // NOTE: handle arrays --  an array consists of children of the variable name
         // so we just do a children until we hit the delimiter
         else if(current_character == '[') {
             String8List *delimiters = PushStruct(arena, String8List);
@@ -281,21 +285,15 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             if(tree->current->first->token->type != (enum TokenType)'['){
                 Log("didn't close the bracket you moron");
             }
-            
         } else if(current_character == '#') {
+            // TODO: pop the pound_token from the stack. we dont need it anymore after making the module
             Token pound_token = consume_token(tree->buffer);
-            if(pound_token.value.str_v.size != 0) // TODO: can this be NULL and segfault if we don't initialize it?
-            {
-                
+            if(pound_token.value.str_v.size != 0) { // TODO: can this be NULL and segfault if we don't initialize it?
                 create_module(arena, pound_token);
-                
             } else {
-                
                 PANIC(str8("No directive found after pound sign"));
-                
             }
             
-            // TODO: pop the pound_token from the stack. we dont need it anymore after making the module
         } else if(current_character == ':') {
             if(tree->current->parent && tree->current->parent->token->type  == TokenType::IdentToken) {
                 
@@ -315,6 +313,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             PANIC(str8("Not valid syntax"));
         }
         
+scratch_end(&cycle_scratch);
     }
     
     return tree;

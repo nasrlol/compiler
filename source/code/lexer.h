@@ -17,7 +17,11 @@ enum TokenType  {
 // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
     Illegal = 256,
     IdentToken,
-    Value,      // because an identfier could really be anything from a value, variable or function.
+
+// TODO: what is this commentm man what are you saying
+// because an identfier could really be anything from a value, variable or function.
+    Value,
+
     String,
     Number,
     Double_Equal,

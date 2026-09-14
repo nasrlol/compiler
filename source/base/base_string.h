@@ -79,7 +79,7 @@ internal String8 str8_zero();
 //- str8 copy / clone / append
 internal String8 str8_clone(MemArena *arena, String8 *src);
 internal void str8_copy(String8 *dest, String8 *src);
-internal b32 str8_append(String8 *src, String8 dest);
+internal b32 str8_append(String8 *dest, String8 src);
 internal b32 str8_append_char(String8 * dest, u8 src);
 
 //- str8 trim / chop
@@ -143,13 +143,12 @@ internal u64 cstring8_find_needle(u8 * buffer, u8 needle);
 ReadOnly global_variable String16 nil_str16 = {NULL, 0};
 ReadOnly global_variable String32 nil_str32 = {NULL, 0};
 
-ReadOnly global_variable String8Node  nil_str8_node  = {NULL, {NULL}};
-ReadOnly global_variable String16Node nil_str16_node = {NULL, {NULL}};
-ReadOnly global_variable String32Node nil_str32_node = {NULL, {NULL}};
-
-ReadOnly global_variable String8List  nil_str8_list  = {NULL, {NULL}};
-ReadOnly global_variable String16List nil_str16_list = {NULL, {NULL}};
-ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
+ReadOnly global_variable String8Node  nil_str8_node  = {NULL, {}};
+ReadOnly global_variable String16Node nil_str16_node = {NULL, {}};
+ReadOnly global_variable String32Node nil_str32_node = {NULL, {}};
+ReadOnly global_variable String8List  nil_str8_list  = {NULL, {}};
+ReadOnly global_variable String16List nil_str16_list = {NULL, {}};
+ReadOnly global_variable String32List nil_str32_list = {NULL, {}};
 
 
 //- macros
@@ -186,7 +185,7 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {NULL}};
 
 // NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
 #define FOR_STR8_CHOP(index, buffer, count, function)			\
-    for(u64 index = 0; (index < (buffer->size)) && ((buffer->size) > (count)); \
+    for(u64 index = 0; (index < (buffer.size)) && ((buffer.size) > (count)); \
 	function((buffer), (count)), ++index)
 
 #define FOR_STR8_ARB_FN(expr, function, ...)	\

@@ -16,7 +16,8 @@ ENTRYPOINT()
     if(count > 0) {
         path = str8(args[1]);
     } else {
-        return 1;
+Log("No arguments passed to fajr");
+        return -1;
     }
     
     MemArena *global_arena = ArenaCreate(MiB(100));

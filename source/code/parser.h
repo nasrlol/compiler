@@ -4,7 +4,7 @@
 // typedef enum AstNodeType AstNodeType;
 enum AstNodeType {
     Literal,
-    IdentExpr, // TODO: evaluate this in an expression pass 
+    IdentExpr, // TODO: evaluate this in an expression pass
     Binary,
     Assignment,
     Return,
@@ -43,8 +43,7 @@ Ast nil_ast = {
 
 #define PeekForward(node, type, nil_node)				\
     for(; (node) && (node) != &(nil_node); (node) = (node)->next)	\
-	if((node)->token->type == (type))				\
-	    break;
+	if((node)->token->type == (type)) break;
 
 //-
 internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);

@@ -108,7 +108,7 @@ internal void unix_log_with_args(const char *format, ...);
 #if COMPILER_GCC || COMPILER_CLANG
 // TODO: I know that the __VA_ARGS are the correct ones for gcc but also check them out for clang
 #define Log(...) unix_log_with_args(__VA_ARGS__)
-#define LogStr8(message) Log("%.s", (*message)->data))
+#define LogStr8(message) Log(Str8Fmt, Str8Arg(message))
 #elif COMPILER_MSVC
 #define Log(message, ...) unix_log_with_args(_Printf_format_string_ message, ...) // TODO: __VA_ARGS what is the implementation for msvc
 // TODO: for this to wwork we need the /analyze argument

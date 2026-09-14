@@ -135,6 +135,10 @@ unix_file_exists(String8 path)
 internal String8
 unix_file_load(MemArena *arena, String8 path)
 {
+if(path.size < 0) {
+return {};
+}
+
     String8     result = {0};
     struct stat sbuf   = {0};
 

@@ -108,6 +108,8 @@ calculate_padding(u64 pointer, u8 alignment, u64 header_size)
 internal MemStack *
 stack_push_align(MemStack *stack, u64 size, u8 alignment)
 {
+// NOTE: satifisying static analyzer
+Assert(stack != NULL);
     u8 padding = 0;
 
 
@@ -122,7 +124,13 @@ stack_push_align(MemStack *stack, u64 size, u8 alignment)
         alignment = 128;
     }
     
-    u64 current_address = (u64)stack->base_position + stack->current_offset;
+u64 current_address;
+if(stack) {
+current_address = (u64)stack->base_position + stack->current_offset;
+} else {
+return (0);
+}
+
     padding             = calculate_padding(current_address, alignment, sizeof(MemStackHeader));
     
     if(stack->current_offset + padding + size > stack->capacity) {
@@ -245,7 +253,7 @@ arena_to_stack(MemArena *arena, u64 requested_size, u64 alignment)
     stack->header = header;
     stack->current_offset = 0;
     stack->capacity = (u64)arena->base_position - arena->current_position; // we just allocate the remainder of the size
-    stack->base_position = (u8 *)arena->current_position; 
+    stack->base_position = (u8 *)arena->current_position;
     
     return stack;
 }
