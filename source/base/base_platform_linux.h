@@ -41,7 +41,7 @@ internal void *unix_library_get_proc(Library *library, String8 proc_name);
 internal Library unix_library_load(MemArena *arena, String8 path);
 internal int unix_library_close(Library *library);
 
-internal b32 unix_os_exit();
+internal void unix_os_exit() __attribute__ ((noreturn));
 
 internal b32 unix_file_exists(String8 path);
 internal String8 unix_file_load(MemArena *arena, String8 path);

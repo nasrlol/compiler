@@ -129,18 +129,20 @@ push_token_node(TokenTree *tree, TokenNode *node)
 internal TokenTree *
 tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 {
-    // initializations
     b32 is_empty = str8_is_empty(buffer_from_file);
-    Assert(!is_empty);
+    Assert(is_empty);
+
     TokenTree *tree = PushStruct(arena, TokenTree);
+Assert(!tree);
+
     tree->buffer = PushStruct(arena, String8);
+
     MemCpy(tree->buffer, buffer_from_file, buffer_from_file->size);
+
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
     
     FOR_STR8_CHOP(index, (*tree->buffer), 1, str8_chop_left) {
-        ScratchArena cycle_scratch = scratch_start(arena);
-        
         u8 current_character = tree->buffer->data[0];
         
         // handle skipping
@@ -189,8 +191,13 @@ cstring_is_alpha_num(temp_buffer);
             }
             ////////////////////////////////
             
-            token->value.str_v = str8_chop_left(*tree->buffer, index);
-            token->type = TokenType::IdentToken;
+
+	    // TODO: try replacign this with an assertion a bit earlier than this
+	    if(token)
+	    {
+		token->value.str_v = str8_chop_left(*tree->buffer, index);
+		token->type = TokenType::IdentToken;
+	    }
         }
         
         else if(cstring_is_digit(current_character)) {
@@ -313,7 +320,6 @@ cstring_is_alpha_num(temp_buffer);
             PANIC(str8("Not valid syntax"));
         }
         
-scratch_end(&cycle_scratch);
     }
     
     return tree;

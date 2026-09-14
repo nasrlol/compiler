@@ -94,7 +94,7 @@ internal void  win32_logf(_Printf_format_string_ const char *fmt, ...);
 internal String8 unix_file_write(String8 data, String8 path);
 internal String8 unix_file_load(MemArena *arena, String8 path);
 internal b32 unix_file_exists(String8 path);
-internal b32 unix_os_exit();
+internal void unix_os_exit() __attribute__ ((noreturn));
 internal s64 unix_read(int fd, const void *buf, u64 count);
 internal s64 unix_log(int fd, const void *buf, u64 count);
 internal void unix_log_with_args(const char *format, ...);

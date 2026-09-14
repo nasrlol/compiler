@@ -1,3 +1,4 @@
+#if UI
 #if PLATFORM_LINUX
 internal LinuxWindowHandle
 x11_create_window(MemArena *arena,
@@ -91,6 +92,7 @@ x11_read_input()
 }
 
 #endif // PLATFORM_LINUX
+#endif
 
 //-
 
@@ -142,14 +144,17 @@ return {};
     String8     result = {0};
     struct stat sbuf   = {0};
 
+if(!path.data) {
+Log("Invalid path file");
+return str8_zero();
+}
+
     s32 file = open((const char *)path.data, O_RDONLY);
     if(file == -1) {
         Log("An error occurred. File was not loaded. error code: %s", file);
-        return (String8) {
-            0
-        };
-    }
-
+        return str8_zero();
+        }
+    
     if(fstat(file, &sbuf) == -1) {
         close(file);
         return str8_zero();
@@ -200,9 +205,8 @@ unix_log_with_args(const char *format, ...)
 }
 
 
-internal b32
+internal void
 unix_os_exit()
 {
     _exit(0);
-    return true;
 }

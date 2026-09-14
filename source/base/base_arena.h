@@ -20,15 +20,25 @@ struct ScratchArena {
 
 //-
 
+
+
 #if defined(PLATFORM_UNIX)
+
+internal MemArena *unix_arena_create(u64 capacity) ;
+internal void unix_arena_destroy(MemArena *arena);
+
 #define ArenaCreate(capacity) unix_arena_create(capacity)
 #define ArenaDestroy(arena)   unix_arena_destroy(arena)
 #elif defined(PLATFORM_WINDOWS)
+
+internal void win32_arena_destroy(MemArena *arena);
+internal MemArena *win32_arena_create(u64 capacity);
+
 #define ArenaCreate(capacity) win32_arena_create(capacity)
 #define ArenaDestroy(arena)   win32_arena_destroy(arena)
 #endif
 
-internal void *arena_alloc(MemArena *arena, u64 size, b32 zero);
+internal void* arena_alloc(MemArena *arena, u64 size, b32 zero);
 internal void arena_pop(MemArena *arena, u64 size);
 internal void arena_pop_to(MemArena *arena, u64 pos);
 internal void arena_clear(MemArena *arena);

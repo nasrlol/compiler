@@ -41,12 +41,11 @@
 
 //- breakpoints
 #if ARCH_ARM
-#define breakpoint() __asm__ volatile("brk #0");
-// #define temp_breakpoint() __asm__ volatile("udf #0"); // TODO: I don't remember what the issue with this was for
+#define breakpoint() __asm__ volatile("brk #0")
 #elif ARCH_x86_64
 
 #if COMPILER_GCC
-#define breakpoint() __asm__ volatile("int3"); // TODO: put this in the architecture guard
+#define breakpoint() __asm__ volatile("int3")
 #endif
 #endif
 
@@ -67,16 +66,15 @@
 #elif COMPILER_GCC || COMPILER_CLANG
 
 #if PLATFORM_APPLE
-#define ReadOnly __attribute__((section(".const")))
-#else
 #define ReadOnly __attribute__((section("__TEXT,__const")))
+#else
+#define ReadOnly __attribute__((section(".const")))
 #endif // PLATFORM_APPLE
 
 #endif
 
-
 //-
-#define Assert(x) do{if(!(x)) {breakpoint();}}while(0)
+
 
 //- types
 
@@ -107,5 +105,22 @@ typedef intptr_t  smm;
 #if COMPILER_MSVC
 #pragma warning(disable : 6246)  // disable the same name within a certain scope
 #endif
+
+
+//-
+
+internal void _assert(bool expression);
+
+internal void
+_assert(bool expression) {
+
+    if(expression) {
+	breakpoint();
+	__builtin_unreachable ();
+    }
+
+}
+
+#define Assert(expression) _assert(expression)
 
 #endif //  BASE_CORE_H

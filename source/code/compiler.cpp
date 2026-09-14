@@ -21,9 +21,27 @@ Log("No arguments passed to fajr");
     }
     
     MemArena *global_arena = ArenaCreate(MiB(100));
+if(global_arena)
+{
     String8 buffer = FileLoad(global_arena, path);
     TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);
+breakpoint();
+if(tree)
+{
     Ast *ast = parse_tokenized_tree_fmt(global_arena, tree);
+if(!ast) {
+Log("Ast is NULL");
+return 1;
+}
+} else {
+Log("Tree is NULL\n");
+return 1;
+
+}
+} else  {
+Log("Arena is NULL\n");
+return 1;
+}
     
     return 0;
 }

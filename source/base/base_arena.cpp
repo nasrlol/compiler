@@ -39,8 +39,7 @@ unix_arena_destroy(MemArena *arena)
 internal MemArena *
 win32_arena_create(u64 capacity)
 {
-    MemArena *arena = (MemArena *)VirtualAlloc(
-                          NULL,
+    MemArena *arena = (MemArena *)VirtualAlloc(NULL,
                           capacity + sizeof(MemArena),
                           MEM_COMMIT | MEM_RESERVE,
                           PAGE_READWRITE);
