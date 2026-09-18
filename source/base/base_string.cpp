@@ -150,6 +150,15 @@ str8_append_char(String8 *dest, u8 src)
     return true;
 }
 
+internal b32
+str8_append(String8 *dest, String8 *src)
+{
+if(is_nil_str8(dest) || is_nil_str8(src)) return false;
+MemCpy(dest->data + dest->size, src->data, src->size);
+dest->size += src->size;
+return true;
+}
+
 // left here 7/9 refactoring the names and parameters
 internal b32
 str8_append(String8 *dest, String8 src)
@@ -211,6 +220,7 @@ str8_chop_right(String8 buffer, u64 count)
 internal void
 str8_list_push_node(String8List *list, String8Node *node)
 {
+if(list) {
     if(list->first == NULL) {
         list->first = node;
         list->last  = node;
@@ -220,18 +230,26 @@ str8_list_push_node(String8List *list, String8Node *node)
     }
     list->count += 1;
 }
+}
 
 internal String8
-str8_create_substr(String8 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+str8_create_substr(String8 *buffer, u64 start_idx, u64 end_idx)
 {
-    return str8_chop_left(str8_chop_right(*buffer, end_idx), (start_idx - current_idx));
+    return str8_chop_left(str8_chop_right(*buffer, end_idx), start_idx);
 }
 
 internal String16
-str16_create_substr(String16 *buffer, u64 current_idx, u64 start_idx, u64 end_idx)
+str16_create_substr(String16 *buffer, u64 start_idx, u64 end_idx)
 {
-    return str16_chop_left(str16_chop_right(*buffer, end_idx), (start_idx - current_idx));
+    return str16_chop_left(str16_chop_right(*buffer, end_idx), start_idx);
 }
+
+internal String32
+str32_create_substr(String32 *buffer, u64 start_idx, u64 end_idx)
+{
+    return str32_chop_left(str32_chop_right(*buffer, end_idx), start_idx);
+}
+
 
 internal String16
 str16_chop_left(String16 buffer, u64 count)
@@ -282,27 +300,22 @@ str32_chop_right(String32 buffer, u64 count)
     return buffer;
 }
 
-internal String16
-str16_create_substr(String16 *buffer, u64 start_idx, u64 end_idx)
-{
-    return str16_chop_left(str16_chop_right(*buffer, end_idx), (start_idx));
-    // current idx should signify the calculation from the beginning of the string buffer
-    // until it's end
-    // but we know its beginnging because that's 0
-    // so basically the start idx is already the diff from the currentidx to the start_idx
-}
-
-internal String32
-str32_create_substr(String32 *buffer, u64 start_idx, u64 end_idx)
-{
-    return str32_chop_left(str32_chop_right(*buffer, end_idx), (start_idx ));
-}
-
 internal b32
 str8_is_empty(String8 *buffer)
 {
     if(cstring8_length(buffer->data) == 0 || buffer->size == 0) return true; // the values can't be lower than 0
     return false;
+}
+
+internal b32
+ str8_insert(MemArena *arena, String8 *dest, String8 *src, u64 pos)
+{
+if(dest->size > pos) return false;
+String8 buffer_start = str8_create_substr(dest, 0, pos);
+String8 buffer_end = str8_create_substr(dest, pos, dest->size);
+    str8_append(&buffer_start, src);
+    str8_append(&buffer_start, buffer_end);
+return true;
 }
 
 //- cstring implementations
@@ -326,12 +339,6 @@ cstring_is_alpha_num(u8 point)
 }
 
 internal b32
-cstring_is_nl(u8 point)
-{
-    return (point == '\n' || point == '\r');
-}
-
-internal b32
 cstring_is_whitespace(u8 point)
 {
     return (point == ' ' || point == '\t');
@@ -348,6 +355,7 @@ cstring_is_newline(u8 point)
 {
     return (point == '\n' || point == '\r');
 }
+
 
 internal b32
 cstring_is_match(u8 *a, u8 *b)
@@ -400,16 +408,15 @@ cstring32_length(u32 *c)
 }
 
 
-internal const char *
-null_terminate(MemArena *arena, String8 *c)
+internal cstring
+null_terminate(MemArena *arena, String8 *buffer)
 {
     ScratchArena scratch = scratch_start(arena);
-    char *cstring = (char *)arena_alloc(scratch.arena, c->size + 1, 0);
-    MemCpy(cstring, c->data, c->size);
-    cstring[c->size] = '\0';
+     char *text = (char *)arena_alloc(scratch.arena, buffer->size + 1, 0); // TODO: How do i push these properly
+    MemCpy(text, buffer->data, buffer->size);
+    text[buffer->size] = '\0';
     scratch_end(&scratch);
-    
-    return (const char *)cstring;
+    return (cstring)text;
 }
 
 
@@ -447,7 +454,7 @@ cstring8_find_new_line(u8 *buffer)
 {
     u8* c = buffer;
     while(*c != 0) {
-        if(cstring_is_nl(*c)) {
+        if(cstring_is_newline(*c)) {
             return c - buffer;
         } else {
             ++c;
@@ -477,3 +484,11 @@ cstring8_find_needle(u8 *buffer, u8 needle)
     
 }
 
+internal cstring
+str8_to_cstring(MemArena *arena, String8 *buffer) {
+
+cstring null_terminated_buffer = null_terminate(arena, buffer);
+return (cstring)null_terminated_buffer;
+
+
+}

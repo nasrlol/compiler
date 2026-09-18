@@ -225,7 +225,8 @@ win32_create_window(HINSTANCE instance, int height, int width, int display_x, in
 }
 
 internal String8List
-open_directory(String8 name)
+win32_open_dir(MemArena *arena, String8 *original_path)
+
 {
 
 

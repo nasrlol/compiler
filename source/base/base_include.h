@@ -1,7 +1,6 @@
 #ifndef BASE_INCLUDE_H
 #define BASE_INCLUDE_H
 
-
 #if defined(__linux__) ||  defined(__APPLE__)
 // #message "PLATFORM LINUX APPLE"
 #define PLATFORM_UNIX 1
@@ -25,6 +24,7 @@
 #include <sys/syscall.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #include <dlfcn.h>
 #if PLATFORM_LINUX
@@ -38,6 +38,7 @@
 #endif // PLATFORM_UNIX - PLATFORM_WINDOWS
 
 //-
+
 #include <time.h>
 #include <math.h>
 #include <string.h>
@@ -45,9 +46,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
-
-
-
 
 //-
 #include "base_core.h"
@@ -59,7 +57,6 @@
 #include "base_platform.h"
 #include "base_render.h"
 
-
 #include "base_memory.cpp"
 #include "base_arena.cpp"
 #include "base_stack.cpp"
@@ -69,6 +66,5 @@
 #include "base_rand.cpp"
 #include "base_simd.cpp"
 #include "base_render.cpp"
-
 
 #endif // BASE_INCLUDE_H

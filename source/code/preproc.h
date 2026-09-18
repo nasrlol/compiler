@@ -15,7 +15,7 @@ String8 name;
 module_file_handle *handle;
 };
 
-internal module create_module(MemArena *arena, Token token);
+internal module create_module(MemArena *arena, Token *token);
 internal module_file_handle *find_module();
 
 #endif // PREPROC_H

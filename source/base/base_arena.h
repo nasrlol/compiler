@@ -43,7 +43,7 @@ internal void arena_pop(MemArena *arena, u64 size);
 internal void arena_pop_to(MemArena *arena, u64 pos);
 internal void arena_clear(MemArena *arena);
 internal ScratchArena scratch_start(MemArena *arena);
-internal void scratch_end(ScratchArena *temp);
+internal void scratch_end(ScratchArena *scratch);
 internal MemArena *arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size, umm alignment);
 internal MemArena *arena_resize(MemArena *arena, void *old_memory, u64 new_size, u64 old_size);
 internal u64 arena_calculate_used_capacity(MemArena *arena);

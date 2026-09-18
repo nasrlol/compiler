@@ -1,6 +1,10 @@
 #ifndef BASE_STRING_H
 #define BASE_STRING_H
 
+//- cstring
+
+typedef const char* cstring;
+
 // - str8
 typedef struct String8  String8;
 typedef struct String16 String16;
@@ -81,6 +85,7 @@ internal String8 str8_clone(MemArena *arena, String8 *src);
 internal void str8_copy(String8 *dest, String8 *src);
 internal b32 str8_append(String8 *dest, String8 src);
 internal b32 str8_append_char(String8 * dest, u8 src);
+internal b32 str8_insert(String8 *dest, String8 *src, u64 pos);
 
 //- str8 trim / chop
 internal void str8_trim_left(String8 * buffer);
@@ -91,15 +96,15 @@ internal void str8_chop_left_ptr(String8 * buffer, u64 count);
 internal void str8_chop_right_ptr(String8 * buffer, u64 count);
 
 //- str8 substrings, matching, search
-internal String8 str8_create_substr(String8 * buffer, u64 current_idx, u64 start_idx, u64 end_idx);
+internal String8 str8_create_substr(String8 *buffer, u64 start_idx, u64 end_idx);
 internal b32 str8_any_match(String8 a, String8 b);
 internal b32 str8_is_match(String8 a, String8 b);
-internal u64 str8_find(String8 * buffer, u64 start_pos, String8 element);
+internal u64 str8_find(String8 *buffer, u64 start_pos, String8 element);
 internal b32 str8_is_digit(String8 a, u64 start_pos);
-internal b32 str8_is_empty(String8 * buffer);
+internal b32 str8_is_empty(String8 *buffer);
 
 //- str8 list
-internal void str8_list_push_node(String8List * list, String8Node * node);
+internal void str8_list_push_node(String8List *list, String8Node * node);
 
 //- str16 / str32 chop and substrings
 internal String16 str16_chop_left(String16 buffer, u64 count);
@@ -110,14 +115,17 @@ internal String32 str32_chop_right(String32 buffer, u64 count);
 internal String32 str32_create_substr(String32 * buffer, u64 start_idx, u64 end_idx);
 
 //- null-termination helpers
-internal const char* null_terminate(MemArena * arena, String8 * c);
-internal String8 remove_null_terminator(MemArena * arena, String8 c);
+internal cstring null_terminate(MemArena *arena, String8 *c);
+internal String8 remove_null_terminator(MemArena *arena, String8 c);
+
+//- convert
+
+internal cstring str8_to_cstring(String8 *buffer);
 
 //- cstring character classification
 internal b32 cstring_is_digit(u8 point);
 internal b32 cstring_is_alpha(u8 point);
 internal b32 cstring_is_alpha_num(u8 point);
-internal b32 cstring_is_nl(u8 point);
 internal b32 cstring_is_whitespace(u8 point);
 internal b32 cstring_is_slash(u8 point);
 internal b32 cstring_is_newline(u8 point);
@@ -150,7 +158,6 @@ ReadOnly global_variable String8List  nil_str8_list  = {NULL, {}};
 ReadOnly global_variable String16List nil_str16_list = {NULL, {}};
 ReadOnly global_variable String32List nil_str32_list = {NULL, {}};
 
-
 //- macros
 #define PushString8(arena, count)  { (u8 *) (PushArrayZero(arena, u8,  (count))), (u64)(count)}
 #define PushString16(arena, count) { (u16 *)(PushArrayZero(arena, u16, (count))), (u64)(count)}
@@ -182,6 +189,11 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {}};
 // arbitratry amount of parameters can be passed to this function
 // TODO: put the index name as a paramter so that the reference can be made later without it being so hidden
 
+#define FOR_STR8_CHOP_LEFT(index, buffer, count) \
+FOR_STR8_CHOP(index, buffer, count, str8_chop_left)
+
+#define FOR_STR8_CHOP_RIGHT(index, buffer, count) \
+FOR_STR8_CHOP(index, buffer, count, str8_chop_right)
 
 // NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
 #define FOR_STR8_CHOP(index, buffer, count, function)			\

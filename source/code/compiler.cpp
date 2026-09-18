@@ -1,3 +1,4 @@
+#define DBEUG
 #include "base/base_include.h"
 
 #include "messages.h"

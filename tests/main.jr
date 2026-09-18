@@ -3,7 +3,8 @@
 // this is a comment
 /* this is also a comment */
 
-#import std
+#use std
+#use
 
 enum colors
 {
@@ -48,22 +49,18 @@ baz(x: int) {
 
 switch x
 {
-case:
-{
+case: {
 x = 1
 }
    
-case:
-{
+case: {
 x -= 1
 }
-case:
-{
+
+case: {
 x += 1
 }
 }
-}
-
 }
 
 foo(x: s32, y: s32) ! {

@@ -70,14 +70,11 @@ win32_arena_destroy(MemArena *arena)
 internal void *
 arena_alloc(MemArena *arena, u64 size, b32 zero)
 {
-    if(!arena) {
-        return NULL;
-    }
+    Assert(!arena);
+
     u64 aligned = Align(arena->current_position, arena_align);
     u64 new_pos = aligned + size;
-    if(new_pos > arena->capacity) {
-        return NULL;
-    }
+    Assert(new_pos > arena->capacity);
 
     void *out = arena->base_position + aligned;
 
@@ -159,9 +156,9 @@ scratch_start(MemArena *arena)
 }
 
 internal void
-scratch_end(ScratchArena *sa)
+scratch_end(ScratchArena *scratch)
 {
-    sa->arena->current_position = sa->start_position;
+    scratch->arena->current_position = scratch->start_position;
     // TODO: does the rest of the memory need to be set to zero?
 }
 

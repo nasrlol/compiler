@@ -1,3 +1,18 @@
-1. current node in tree is null
-2. root node in tree is null
-3. amount of lines in tree is incorrect - does this mean we do some kind of weird jumping?
+
+~ lexer
+
+-- current node in tree is null
+-- root node in tree is null
+-- amount of lines in tree is incorrect - does this mean we do some kind of weird jumping? >> I think this is fixed
+-- does a new line count as a whitespace?
+
+~ parser
+
+
+~ modules
+
+-- should contain a list of methods and references
+-- we want to disable parts of the imports to keep the bloat minimal
+-- so bassically compile away the stuff we don't want
+
+

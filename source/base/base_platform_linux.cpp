@@ -210,3 +210,26 @@ unix_os_exit()
 {
     _exit(0);
 }
+
+
+// TODO: change the return value
+internal String8List *
+unix_open_dir(MemArena *arena, String8 *original_path) {
+
+String8List *files_list = PushStruct(arena, String8List);
+
+cstring path = (cstring)original_path->data;
+struct dirent *entry;
+
+DIR *dir = opendir(path);
+if(dir != NULL) {
+
+while((entry = readdir(dir)) != NULL) {
+String8Node *file_node = PushStruct(arena, String8Node);
+ *file_node = str8_node(entry->d_name);
+  str8_list_push_node(files_list, file_node);
+}
+}
+
+return files_list;
+}

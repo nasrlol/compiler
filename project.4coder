@@ -15,32 +15,25 @@ blacklist_patterns = {
     ".*",
 };
 
-load_paths_base = {
-    { ".",                 .relative = true, .recursive = true, },
+ paths = {
+    { "./source/code",     .relative = true, .recursive = true, },
+    { "./source/base",     .relative = true, .recursive = true, },
 };
 
 load_paths = {
-.win = load_paths_base,
-.linux = load_paths_base,
-.mac = load_paths_base,
+.win = paths,
+.linux = paths,
+.mac = paths,
 };
 
 commands = {
-    .build =
-    {
-        .out  = "*compilation*", .footer_panel = false, .save_dirty_files = true,
-        .win   = "build.bat",
-        .linux = "bash build.sh",
-        .mac   = "bash build.sh",
-    },
-    .run =
-    {
-        .out   = "*run*", .footer_panel = false, .save_dirty_files = false,
-        .win   = "build\\compiler",
-        .linux = "build/compiler",
-        .mac   = "build/compiler",
-    },
+    .run      = { .linux = "./build/compiler", .mac = "./build.sh", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+    .build    = { .linux = "./build.sh", .mac = "./build.sh", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
 };
-fkey_command[1] = "build";
-fkey_command[2] = "run";
+
+
+fkey_command = {
+    .F1 = "build",
+    .F2 = "run",
+};
 

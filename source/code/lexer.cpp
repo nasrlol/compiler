@@ -17,6 +17,7 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
     ScratchArena scratch = scratch_start(arena);
     String8 *temp_buffer = PushStruct(arena, String8);
     MemCpy(temp_buffer, tree->buffer, tree->buffer->size);
+
     
     FOR_STR8_NODE(delimiters, curr_delimiter) {
         FOR_STR8_MATCH(*temp_buffer, curr_delimiter->value) {
@@ -40,69 +41,66 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
 }
 
 // TODO: fix this function
-internal Token
-consume_token(String8 *buffer)
+internal Token *
+consume_token_from_buffer(MemArena *arena, String8 *buffer)
 {
-    u64 start_index = 0;
+breakpoint();
+
+//- skip pound token
+if(cstring_is_match(buffer->data, (u8 *)'#')) {
+buffer->data++;
+ } else {
+Assert(1);
+}
+
     u64 end_index   = 0;
+    u64 start_index = 0;
+
     String8 substr = {};
     
     // iterate the buffer and find the whitespaces
     FOR_STR8_CHOP(index, (*buffer), 1, str8_chop_left) {
+
+//- Get the whitespaces, or delimiter that seperates a token from the rest of the strings
+		// I don't know if we want other delimiters in this case besides whtie spaces
+		// does a new line count as a whitespace?
         b32 result = cstring_is_whitespace(*buffer->data);
         if(result && start_index == 0) {
-            
+str8_chop_left_ptr(buffer, 1);
             continue;
         } else if(start_index != 0) {
-            
             end_index = index;
         }
         start_index = index;
         
-        if(start_index != 0 && end_index != 0)
-        {
-            substr = str8_create_substr(buffer, index, start_index, end_index);
-            
-            // TODO: guess the token type;
-            if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) {
-            } else if(str8_is_match(*buffer, substr)) { }
-            
-            
+        if(start_index != 0 && end_index != 0) {
+            substr = str8_create_substr(buffer, start_index, end_index);
         }
         
-        
-        return  {
-            
-            // just for reference for now
-#if 0
-            enum TokenType type;
-            u64 line;
-            
-            union {
-                String8 str_v;
-                f64 f64_v; // this is a seperate type because floats have a different notation than integers do
-                u64 int_v;
-            } value;
-            
-#endif
-        };
+if(str8_is_match(substr, str8("use"))) {
+
+} else if(str8_is_match(substr, str8("import"))) {
+
+} else {
+// directive not defined
+breakpoint();
+PANIC("directive not defined yet");
+}
+
+Token *new_token = PushStruct(arena, Token);
+new_token->type = IdentToken;
+new_token->line = 0;
+new_token->value.str_v = substr;
+
+        return new_token;
         
     }
     
-    return nil_token; // we return an invalid token if we can't find a token  to consume
+// NOTE: We return an invalid token if we can't find a one to consume.
+    return &nil_token;
     
 }
+
 
 internal void
 push_token_node(TokenTree *tree, TokenNode *node)
@@ -115,15 +113,12 @@ push_token_node(TokenTree *tree, TokenNode *node)
         tree->current->next = node;
         node->parent        = tree->current;
         
-        // Fill the token node with nil nodes if they are not empty
-        {
             FillTokenNodeFieldWithNilNode(next);
             FillTokenNodeFieldWithNilNode(previous);
             FillTokenNodeFieldWithNilNode(child);
             FillTokenNodeFieldWithNilNode(parent);
             FillTokenNodeFieldWithNilNode(first);
             FillTokenNodeFieldWithNilNode(last);
-        }
     }
 }
 
@@ -131,7 +126,10 @@ internal TokenTree *
 tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 {
     b32 is_empty = str8_is_empty(buffer_from_file);
-    Assert(is_empty);
+    if(is_empty) {
+Log("No buffer passed as argument");
+Assert(0);
+}
 
     TokenTree *tree = PushStruct(arena, TokenTree);
 Assert(!tree);
@@ -143,7 +141,7 @@ Assert(!tree);
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
     
-    FOR_STR8_CHOP(index, (*tree->buffer), 1, str8_chop_left) {
+    FOR_STR8_CHOP_LEFT(index, (*tree->buffer), 1) {
         u8 current_character = tree->buffer->data[0];
         
         // Handle skipping
@@ -298,11 +296,12 @@ cstring_is_alpha_num(temp_buffer);
             }
         } else if(current_character == '#') {
             // TODO: pop the pound_token from the stack. we dont need it anymore after making the module
-            Token pound_token = consume_token(tree->buffer);
-            if(pound_token.value.str_v.size != 0) { // TODO: can this be NULL and segfault if we don't initialize it?
+            Token *pound_token = consume_token_from_buffer(arena, tree->buffer);
+            if(pound_token->value.str_v.size != 0) { // TODO: can this be NULL and segfault if we don't initialize it?
                 create_module(arena, pound_token);
             } else {
-                PANIC(str8("No directive found after pound sign"));
+Assert(1);
+                PANIC("No directive found after pound sign");
             }
             
         } else if(current_character == ':') {
@@ -321,7 +320,7 @@ cstring_is_alpha_num(temp_buffer);
             }
         } else {
             // TODO:
-            PANIC(str8("Not valid syntax"));
+            PANIC("Not valid syntax");
         }
         
     }

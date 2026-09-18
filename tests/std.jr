@@ -1,0 +1,6 @@
+
+ print(buffer: string) {
+// TODO: ...
+}
+
+print()
