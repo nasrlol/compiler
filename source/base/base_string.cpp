@@ -97,22 +97,37 @@ str8_is_match(String8 a, String8 b)
     return (b32)(memcmp(a.data, b.data, a.size) == 0);
 }
 
+internal b32
+str8_find_all(MemArena *arena, String8 *buffer, u64 start_pos, String8 element, String8List *out) {
 
-internal u64
-str8_find(String8 *buffer, u64 start_pos, String8 element)
+u64 count = 0;
+u64 found_pos = 0;
+while(str8_find(buffer, start_pos, element, &found_pos))  {
+String8Node *node = PushStruct(arena, String8Node);
+*node = ToString8Node(str8_create_substr(buffer, found_pos, element.size));
+str8_list_push_node(out, node);
+++count;
+		  }
+if(!count) return false;
+return true;
+}
+
+
+internal b32
+str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out)
 {
     b32 result = false;
     for(u64 index = start_pos; index < buffer->size - element.size; ++index) {
         String8 view = str8_chop_left(*buffer, index);
         result = str8_any_match(view, element);
         if(result) {
-            return index;
+             *out = index;
+return true;
         }
     }
 
-    return 0;
+    return false;
 }
-
 
 internal b32
 str8_is_digit(String8 a, u64 start_pos)

@@ -24,23 +24,28 @@ ENTRYPOINT()
     MemArena *global_arena = ArenaCreate(MiB(100));
     if(global_arena)
     {
+
+ScratchArena inital_buffer_scratch = scratch_start(global_arena);
         String8 buffer = FileLoad(global_arena, path);
+
+// NOTE: pass the buffer. but internally allocate a big enough one because we don't know how much
+// memory we need. we basically will always need more than the already allocatred buffer
+// NOTE: the  scratch arena gets closed  inside the scan buffer handler
+// TODO: is this even a good idea?
+scan_buffer_handle_modules(global_arena, &inital_buffer_scratch,  &buffer);
         TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);
-        breakpoint();
-        if(tree)
-        {
+        if(tree) {
             Ast *ast = parse_tokenized_tree_fmt(global_arena, tree);
             if(!ast) {
-                Log("Ast is NULL");
+                Log("Failed to create AST\n");
                 return 1;
             }
         } else {
-            Log("Tree is NULL\n");
+            Log("Failed to create Token Tree\n");
             return 1;
-
         }
     } else  {
-        Log("Arena is NULL\n");
+        Log("Failed to allocate memory\n");
         return 1;
     }
 

@@ -44,16 +44,18 @@ enum TokenNodeFlags: int {
     Bad = 5,
 };
 
+typedef union TokenValue TokenValue;
+union TokenValue {
+String8 as_str;
+        f64 as_float;
+        u64 as_int;
+};
+
 typedef struct Token Token;
 struct Token {
     enum TokenType type;
     u64 line;
-
-    union {
-        String8 str_v;
-        f64 f64_v; // this is a seperate type because floats have a different notation than integers do
-        u64 int_v;
-    } value;
+TokenValue value;
 };
 
 typedef struct TokenNode TokenNode;

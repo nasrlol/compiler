@@ -212,10 +212,10 @@ unix_os_exit()
 }
 
 
-// TODO: change the return value
 internal String8List *
 unix_open_dir(MemArena *arena, String8 *original_path) {
 
+// TODO: this returns null for some reason
     String8List *files_list = PushStruct(arena, String8List);
 
     cstring path = (cstring)original_path->data;

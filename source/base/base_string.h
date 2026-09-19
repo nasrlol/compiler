@@ -99,7 +99,7 @@ internal void str8_chop_right_ptr(String8 * buffer, u64 count);
 internal String8 str8_create_substr(String8 *buffer, u64 left_offset, u64 right_offset);
 internal b32 str8_any_match(String8 a, String8 b);
 internal b32 str8_is_match(String8 a, String8 b);
-internal u64 str8_find(String8 *buffer, u64 start_pos, String8 element);
+internal b32 str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out);
 internal b32 str8_is_digit(String8 a, u64 start_pos);
 internal b32 str8_is_empty(String8 *buffer);
 

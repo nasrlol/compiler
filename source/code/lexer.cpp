@@ -42,66 +42,6 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
 }
 
 // TODO: fix this function
-internal Token *
-consume_token_from_buffer(MemArena *arena, String8 *buffer)
-{
-
-    u8 pound_sign = (u8)'#';
-    if(buffer->data[0] == pound_sign) { // skip pound token
-        buffer->data++;
-    } else {
-        Assert(1);
-    }
-
-//- NOTE: find the start_idx.
-    // iterate the buffer and find the whitespaces
-// FIX: WRONG the pound sign should never be followed by a space
-// NOTE: I don't know. I know casey prefers using for loops for everything but arent while loops easier to debug?
-u64 idx = 0;
-	b32 is_whitespace  = 0;
-    u64 end_offset = 0;
-    String8 substr = {};
-
-while(!is_whitespace) {
-		is_whitespace = cstring_is_whitespace(buffer->data[idx]);
-             end_offset = idx;
-++idx;
-        }
-
-    if(end_offset != 0) {
-        substr = str8_create_substr(buffer, 0, end_offset);
-str8_chop_left_ptr(buffer,  end_offset);
-    }
-
-    if(str8_is_empty(&substr))  {
-        PANIC("directive not defined yet");
-        return &nil_token;
-    }
-
-	// NOTE: before there was a pice of code here that said that we should  handle module code the code here
-// but this should stay a generic function.
- // do the matrching on the returned struct instead
-
-    Token *new_token = PushStruct(arena, Token);
-
-    new_token->type = IdentToken;
-    new_token->line = 0;
-    new_token->value.str_v = substr;
-
-
-
-    new_token->type = IdentToken;
-    new_token->line = 0;
-    new_token->value.str_v = substr;
-
-
-    return new_token;
-
-    // NOTE: We return an invalid token if we can't find a one to consume.
-// see above.
-
-}
-
 
 internal void
 push_token_node(TokenTree *tree, TokenNode *node)
@@ -195,7 +135,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             // TODO: try replacign this with an assertion a bit earlier than this
             if(token)
             {
-                token->value.str_v = str8_chop_left(*tree->buffer, index);
+                token->value.as_str = str8_chop_left(*tree->buffer, index);
                 token->type = TokenType::IdentToken;
             }
         }
@@ -222,7 +162,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
         } else if(str8_any_match(*tree->buffer, str8("/*"))) {
 
             String8 element = str8("*/");
-            u64 offset = str8_find(tree->buffer, 0, element);
+            u64 offset = str8_find(tree->buffer, 0, element, &offset);
             u64 total_offset = offset + element.size; // calculate in the size of the element. [ */ ]. the exact reason don't care to explain
             DEBUG_STR8_DIFF(tree, arena, total_offset);
             str8_chop_left_ptr(tree->buffer, total_offset);
@@ -243,7 +183,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 
                 token->type = TokenType::Param;
                 token->line = tree->amount_of_new_lines;
-                token->value.str_v = str8("}");
+                token->value.as_str = str8("}");
 
                 if(is_token_node_nil(tree->current->last)) {
                     node->token = token;
@@ -276,7 +216,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             }
         } else if(current_character == ')') {
             // TODO: fix this ugly thing
-            if(str8_is_match(tree->current->first->token->value.str_v, str8(")"))) {
+            if(str8_is_match(tree->current->first->token->value.as_str, str8(")"))) {
                 Log("Error: No opening brace found on line  %llu amount_of_newlines", tree->amount_of_new_lines);
             } else {
                 // TODO: Something I forgot what
@@ -294,16 +234,6 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             if(tree->current->first->token->type != (enum TokenType)'['){
                 Log("didn't close the bracket you moron");
             }
-        } else if(current_character == '#') {
-            // TODO: pop the pound_token from the stack. we dont need it anymore after making the module
-            Token *pound_token = consume_token_from_buffer(arena, tree->buffer);
-            if(pound_token->value.str_v.size != 0) { // TODO: can this be NULL and segfault if we don't initialize it?
-                create_module(arena, pound_token);
-            } else {
-                Assert(1);
-                PANIC("No directive found after pound sign");
-            }
-
         } else if(current_character == ':') {
             if(tree->current->parent && tree->current->parent->token->type  == TokenType::IdentToken) {
 
