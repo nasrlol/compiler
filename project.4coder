@@ -15,15 +15,15 @@ blacklist_patterns = {
     ".*",
 };
 
- paths = {
+paths = {
     { "./source/code",     .relative = true, .recursive = true, },
     { "./source/base",     .relative = true, .recursive = true, },
 };
 
 load_paths = {
-.win = paths,
-.linux = paths,
-.mac = paths,
+    .win = paths,
+    .linux = paths,
+    .mac = paths,
 };
 
 commands = {

@@ -96,7 +96,7 @@ internal void str8_chop_left_ptr(String8 * buffer, u64 count);
 internal void str8_chop_right_ptr(String8 * buffer, u64 count);
 
 //- str8 substrings, matching, search
-internal String8 str8_create_substr(String8 *buffer, u64 start_idx, u64 end_idx);
+internal String8 str8_create_substr(String8 *buffer, u64 left_offset, u64 right_offset);
 internal b32 str8_any_match(String8 a, String8 b);
 internal b32 str8_is_match(String8 a, String8 b);
 internal u64 str8_find(String8 *buffer, u64 start_pos, String8 element);
@@ -109,10 +109,10 @@ internal void str8_list_push_node(String8List *list, String8Node * node);
 //- str16 / str32 chop and substrings
 internal String16 str16_chop_left(String16 buffer, u64 count);
 internal String16 str16_chop_right(String16 buffer, u64 count);
-internal String16 str16_create_substr(String16 * buffer, u64 start_idx, u64 end_idx);
+internal String16 str16_create_substr(String16 *buffer, u64 left_offset, u64 right_offset);
 internal String32 str32_chop_left(String32 buffer, u64 count);
 internal String32 str32_chop_right(String32 buffer, u64 count);
-internal String32 str32_create_substr(String32 * buffer, u64 start_idx, u64 end_idx);
+internal String32 str32_create_substr(String32 *buffer, u64 left_offset, u64 right_offset);
 
 //- null-termination helpers
 internal cstring null_terminate(MemArena *arena, String8 *c);
@@ -147,7 +147,7 @@ internal u64 cstring8_find_needle(u8 * buffer, u8 needle);
 #endif
 
 //-
- ReadOnly global_variable String8  nil_str8  = {NULL, 0};
+ReadOnly global_variable String8  nil_str8  = {NULL, 0};
 ReadOnly global_variable String16 nil_str16 = {NULL, 0};
 ReadOnly global_variable String32 nil_str32 = {NULL, 0};
 
@@ -190,15 +190,15 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {}};
 // TODO: put the index name as a paramter so that the reference can be made later without it being so hidden
 
 #define FOR_STR8_CHOP_LEFT(index, buffer, count) \
-FOR_STR8_CHOP(index, buffer, count, str8_chop_left)
+    FOR_STR8_CHOP(index, buffer, count, str8_chop_left)
 
 #define FOR_STR8_CHOP_RIGHT(index, buffer, count) \
-FOR_STR8_CHOP(index, buffer, count, str8_chop_right)
+    FOR_STR8_CHOP(index, buffer, count, str8_chop_right)
 
 // NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
 #define FOR_STR8_CHOP(index, buffer, count, function)			\
     for(u64 index = 0; (index < (buffer.size)) && ((buffer.size) > (count)); \
-	function((buffer), (count)), ++index)
+        function((buffer), (count)), ++index)
 
 #define FOR_STR8_ARB_FN(expr, function, ...)	\
     LOOP(expr, function(__VA_ARGS__))

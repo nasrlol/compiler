@@ -1,10 +1,11 @@
 #!/bin/bash
 
+echo
 date
 BUILD_DIR=build
 SOURCE_DIR=source
 INCLUDES="-I${SOURCE_DIR}/code -I${SOURCE_DIR} -I${SOURCE_DIR}/base"
-CFLAGS="-g -fno-rtti -fno-exceptions -Wall -Werror -fanalyzer -no-pie -Wno-unused-function -Wno-unused-variable"
+CFLAGS="-g -fno-rtti -fno-exceptions -Wall -Werror -fanalyzer -no-pie -Wno-unused-function -Wno-unused-variable -O0"
 
 mkdir -p "$BUILD_DIR"
 

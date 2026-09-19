@@ -4,15 +4,15 @@
 typedef struct module_file_handle module_file_handle;
 struct module_file_handle
 {
-String8 buffer;
+    String8 buffer;
 };
 
 typedef struct module module;
 struct module
 {
-TokenTree *tree;
-String8 name;
-module_file_handle *handle;
+    TokenTree *tree;
+    String8 name;
+    module_file_handle *handle;
 };
 
 internal module create_module(MemArena *arena, Token *token);

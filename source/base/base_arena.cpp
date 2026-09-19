@@ -4,13 +4,13 @@ internal MemArena *
 unix_arena_create(u64 capacity)
 {
     MemArena *arena = (MemArena *)mmap(
-                          /* kernel decides where to throw the arena */
-                          NULL,
-                          capacity + sizeof(MemArena),
-                          PROT_READ | PROT_WRITE,
-                          MAP_SHARED | MAP_ANONYMOUS,
-                          -1,
-                          0);
+                                       /* kernel decides where to throw the arena */
+                                       NULL,
+                                       capacity + sizeof(MemArena),
+                                       PROT_READ | PROT_WRITE,
+                                       MAP_SHARED | MAP_ANONYMOUS,
+                                       -1,
+                                       0);
 
     if(arena == MAP_FAILED) {
         return NULL;
@@ -40,9 +40,9 @@ internal MemArena *
 win32_arena_create(u64 capacity)
 {
     MemArena *arena = (MemArena *)VirtualAlloc(NULL,
-                          capacity + sizeof(MemArena),
-                          MEM_COMMIT | MEM_RESERVE,
-                          PAGE_READWRITE);
+                                               capacity + sizeof(MemArena),
+                                               MEM_COMMIT | MEM_RESERVE,
+                                               PAGE_READWRITE);
     if(!arena) {
         return NULL;
     }

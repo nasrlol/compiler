@@ -41,18 +41,18 @@ x11_create_window(MemArena *arena,
     };
 
     Window window = XCreateWindow(
-                        main_display,            // display
-                        root,                    // parent
-                        display_x,               // x
-                        display_y,               // y
-                        window_width,            // width
-                        window_height,           // height
-                        0,                       // border_width
-                        CopyFromParent,          // depth
-                        CopyFromParent,          // class
-                        v,                       // depth
-                        CWBackPixel,             // visual
-                        &wa);
+                                  main_display,            // display
+                                  root,                    // parent
+                                  display_x,               // x
+                                  display_y,               // y
+                                  window_width,            // width
+                                  window_height,           // height
+                                  0,                       // border_width
+                                  CopyFromParent,          // depth
+                                  CopyFromParent,          // class
+                                  v,                       // depth
+                                  CWBackPixel,             // visual
+                                  &wa);
 
     XSetWindowBorder(main_display, window, 60);
     XSelectInput(main_display, window, ExposureMask | StructureNotifyMask | KeyReleaseMask | KeyPressMask);
@@ -137,24 +137,24 @@ unix_file_exists(String8 path)
 internal String8
 unix_file_load(MemArena *arena, String8 path)
 {
-if(path.size < 0) {
-return {};
-}
+    if(path.size < 0) {
+        return {};
+    }
 
     String8     result = {0};
     struct stat sbuf   = {0};
 
-if(!path.data) {
-Log("Invalid path file");
-return str8_zero();
-}
+    if(!path.data) {
+        Log("Invalid path file");
+        return str8_zero();
+    }
 
     s32 file = open((const char *)path.data, O_RDONLY);
     if(file == -1) {
         Log("An error occurred. File was not loaded. error code: %s", file);
         return str8_zero();
-        }
-    
+    }
+
     if(fstat(file, &sbuf) == -1) {
         close(file);
         return str8_zero();
@@ -216,20 +216,20 @@ unix_os_exit()
 internal String8List *
 unix_open_dir(MemArena *arena, String8 *original_path) {
 
-String8List *files_list = PushStruct(arena, String8List);
+    String8List *files_list = PushStruct(arena, String8List);
 
-cstring path = (cstring)original_path->data;
-struct dirent *entry;
+    cstring path = (cstring)original_path->data;
+    struct dirent *entry;
 
-DIR *dir = opendir(path);
-if(dir != NULL) {
+    DIR *dir = opendir(path);
+    if(dir != NULL) {
 
-while((entry = readdir(dir)) != NULL) {
-String8Node *file_node = PushStruct(arena, String8Node);
- *file_node = str8_node(entry->d_name);
-  str8_list_push_node(files_list, file_node);
-}
-}
+        while((entry = readdir(dir)) != NULL) {
+            String8Node *file_node = PushStruct(arena, String8Node);
+            *file_node = str8_node(entry->d_name);
+            str8_list_push_node(files_list, file_node);
+        }
+    }
 
-return files_list;
+    return files_list;
 }

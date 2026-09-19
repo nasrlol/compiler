@@ -23,11 +23,11 @@ internal s32               x11_read_input();
 
 
 #define LinuxCreateWindow(arena, height, width, x, y) \
-  x11_create_window(arena, height, width, x, y)
+    x11_create_window(arena, height, width, x, y)
 #define LinuxGetDisplayWdith(display, screen_num) \
-      DisplayWidth(display, screen_num)
+    DisplayWidth(display, screen_num)
 #define LinuxGetDisplayHeight(display, screen_num) \
-     DisplayHeight(display, screen_num);
+    DisplayHeight(display, screen_num);
 #define LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y) \
     XReadBitmapFile(display, window, )
 

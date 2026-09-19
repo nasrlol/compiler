@@ -7,19 +7,19 @@
 
 #define TokenNodeContainsFlag(node, flag)	\
     if(((node->flags) & (flag)) != (0))		\
-	return false
+    return false
 
 #define FillTokenNodeFieldWithNilNode(field)		\
     if(node->field == NULL || !is_token_node_nil(node)) \
-	node->field = &nil_token_node;
+    node->field = &nil_token_node;
 
 enum TokenType  {
-// if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
+    // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
     Illegal = 256,
     IdentToken,
 
-// TODO: what is this commentm man what are you saying
-// because an identfier could really be anything from a value, variable or function.
+    // TODO: what is this commentm man what are you saying
+    // because an identfier could really be anything from a value, variable or function.
     Value,
 
     String,
@@ -37,7 +37,7 @@ enum TokenType  {
 };
 
 enum TokenNodeFlags: int {
-Invalid = 1,
+    Invalid = 1,
     Root = 2,
     Child = 3,
     Eof = 4,
@@ -48,7 +48,7 @@ typedef struct Token Token;
 struct Token {
     enum TokenType type;
     u64 line;
-    
+
     union {
         String8 str_v;
         f64 f64_v; // this is a seperate type because floats have a different notation than integers do

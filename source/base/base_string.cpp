@@ -41,7 +41,7 @@ str8_trim_left(String8 *buffer)
     while(cstring_is_whitespace(buffer->data[index])) {
         ++index;
     }
-    
+
     str8_chop_left(*buffer, index);
 }
 
@@ -52,7 +52,7 @@ str16_trim_left(String16 *buffer)
     while(cstring_is_whitespace(buffer->data[index])) {
         ++index;
     }
-    
+
     str16_chop_left(*buffer, index);
 }
 
@@ -60,11 +60,11 @@ internal void
 str32_trim_left(String32 *buffer)
 {
     u64 index = 0;
-    
+
     while(cstring_is_whitespace(buffer->data[index])) {
         ++index;
     }
-    
+
     str32_chop_left(*buffer, index);
 }
 
@@ -75,7 +75,7 @@ str8_trim_right(String8 *buffer)
     while(cstring_is_whitespace(buffer->data[index])) {
         --index;
     }
-    
+
     str8_chop_right(*buffer, index);
 }
 
@@ -109,7 +109,7 @@ str8_find(String8 *buffer, u64 start_pos, String8 element)
             return index;
         }
     }
-    
+
     return 0;
 }
 
@@ -120,7 +120,7 @@ str8_is_digit(String8 a, u64 start_pos)
     for(u64 index = start_pos; index < a.size; ++index) {
         if(!cstring_is_digit(a.data[index])) return false;
     }
-    
+
     return true;
 }
 
@@ -153,10 +153,10 @@ str8_append_char(String8 *dest, u8 src)
 internal b32
 str8_append(String8 *dest, String8 *src)
 {
-if(is_nil_str8(dest) || is_nil_str8(src)) return false;
-MemCpy(dest->data + dest->size, src->data, src->size);
-dest->size += src->size;
-return true;
+    if(is_nil_str8(dest) || is_nil_str8(src)) return false;
+    MemCpy(dest->data + dest->size, src->data, src->size);
+    dest->size += src->size;
+    return true;
 }
 
 // left here 7/9 refactoring the names and parameters
@@ -176,10 +176,10 @@ str8_zero()
 }
 
 internal void
- str8_chop_left_ptr(String8 *buffer, u64 count)
+str8_chop_left_ptr(String8 *buffer, u64 count)
 {
     if(buffer->size < count) return;
-    
+
     for(u64 idx = 0; idx < count; ++idx) {
         buffer->data++;
     }
@@ -197,9 +197,10 @@ internal String8
 str8_chop_left(String8 buffer, u64 count)
 {
     if(buffer.size < count) {
+breakpoint();
         return buffer;
     }
-    
+
     for(u64 idx = 0; idx < count; ++idx) {
         buffer.data++;
     }
@@ -210,9 +211,10 @@ internal String8
 str8_chop_right(String8 buffer, u64 count)
 {
     if(buffer.size < count) {
+breakpoint();
         return buffer;
     }
-    
+
     buffer.size -= count;
     return buffer;
 }
@@ -220,34 +222,34 @@ str8_chop_right(String8 buffer, u64 count)
 internal void
 str8_list_push_node(String8List *list, String8Node *node)
 {
-if(list) {
-    if(list->first == NULL) {
-        list->first = node;
-        list->last  = node;
-    } else {
-        list->last->next = node;
-        list->last        = node;
+    if(list) {
+        if(list->first == NULL) {
+            list->first = node;
+            list->last  = node;
+        } else {
+            list->last->next = node;
+            list->last        = node;
+        }
+        list->count += 1;
     }
-    list->count += 1;
-}
 }
 
 internal String8
-str8_create_substr(String8 *buffer, u64 start_idx, u64 end_idx)
+str8_create_substr(String8 *buffer, u64 left_offset, u64 right_offset)
 {
-    return str8_chop_left(str8_chop_right(*buffer, end_idx), start_idx);
+    return str8_chop_right(str8_chop_left(*buffer, left_offset), (buffer->size - left_offset) - right_offset); // we need to remove all of the excess data to only retain the substring we want
 }
 
 internal String16
-str16_create_substr(String16 *buffer, u64 start_idx, u64 end_idx)
+str16_create_substr(String16 *buffer, u64 left_offset, u64 right_offset)
 {
-    return str16_chop_left(str16_chop_right(*buffer, end_idx), start_idx);
+    return str16_chop_right(str16_chop_left(*buffer, left_offset), (buffer->size - left_offset) - right_offset);
 }
 
 internal String32
-str32_create_substr(String32 *buffer, u64 start_idx, u64 end_idx)
+str32_create_substr(String32 *buffer, u64 left_offset, u64 right_offset)
 {
-    return str32_chop_left(str32_chop_right(*buffer, end_idx), start_idx);
+    return str32_chop_right(str32_chop_left(*buffer, left_offset), (buffer->size - left_offset) - right_offset);
 }
 
 
@@ -257,7 +259,7 @@ str16_chop_left(String16 buffer, u64 count)
     if(buffer.size < count) {
         return buffer;
     }
-    
+
     for(u64 idx = 0; idx < count; ++idx) {
         buffer.data++;
     }
@@ -270,7 +272,7 @@ str32_chop_left(String32 buffer, u64 count)
     if(buffer.size < count) {
         return buffer;
     }
-    
+
     for(u64 idx = 0; idx < count; ++idx) {
         buffer.data++;
     }
@@ -284,7 +286,7 @@ str16_chop_right(String16 buffer, u64 count)
     if(buffer.size < count) {
         return buffer;
     }
-    
+
     buffer.size -= count;
     return buffer;
 }
@@ -295,7 +297,7 @@ str32_chop_right(String32 buffer, u64 count)
     if(buffer.size < count) {
         return buffer;
     }
-    
+
     buffer.size -= count;
     return buffer;
 }
@@ -308,14 +310,14 @@ str8_is_empty(String8 *buffer)
 }
 
 internal b32
- str8_insert(MemArena *arena, String8 *dest, String8 *src, u64 pos)
+str8_insert(MemArena *arena, String8 *dest, String8 *src, u64 pos)
 {
-if(dest->size > pos) return false;
-String8 buffer_start = str8_create_substr(dest, 0, pos);
-String8 buffer_end = str8_create_substr(dest, pos, dest->size);
+    if(dest->size > pos) return false;
+    String8 buffer_start = str8_create_substr(dest, 0, pos);
+    String8 buffer_end = str8_create_substr(dest, pos, dest->size);
     str8_append(&buffer_start, src);
     str8_append(&buffer_start, buffer_end);
-return true;
+    return true;
 }
 
 //- cstring implementations
@@ -362,11 +364,11 @@ cstring_is_match(u8 *a, u8 *b)
 {
     u64 as = cstring8_length(a);
     u64 bs = cstring8_length(b);
-    
+
     if(as != bs) {
         return false;
     }
-    
+
     for(u64 idx = 0; idx < as; ++idx) {
         if(a[idx] != b[idx]) {
             return false;
@@ -388,23 +390,23 @@ internal u64
 cstring16_length(u16 *c)
 {
     u16  *p = c;
-    
+
     if(!c) return 0;
     for(; *c != 0; ++c);
     return (u64)(p - c);
-    
+
 }
 
 internal u64
 cstring32_length(u32 *c)
 {
-    
+
     u32  *p = c;
-    
+
     if(!c) return 0;
     for(; *c != 0; ++c);
     return (u64)(p - c);
-    
+
 }
 
 
@@ -412,7 +414,7 @@ internal cstring
 null_terminate(MemArena *arena, String8 *buffer)
 {
     ScratchArena scratch = scratch_start(arena);
-     char *text = (char *)arena_alloc(scratch.arena, buffer->size + 1, 0); // TODO: How do i push these properly
+    char *text = (char *)arena_alloc(scratch.arena, buffer->size + 1, 0); // TODO: How do i push these properly
     MemCpy(text, buffer->data, buffer->size);
     text[buffer->size] = '\0';
     scratch_end(&scratch);
@@ -427,8 +429,8 @@ remove_null_terminator(MemArena *arena, String8 c)
         String8 chopped = {c.data, c.size - 1};
         return chopped;
     }
-    
-    
+
+
     return c;
 }
 
@@ -444,7 +446,7 @@ cstring8_find(u8 *buffer, u8 *element)
             ++c;
         }
     }
-    
+
     return 0;
 }
 
@@ -460,7 +462,7 @@ cstring8_find_new_line(u8 *buffer)
             ++c;
         }
     }
-    
+
     return 0;
 }
 
@@ -470,7 +472,7 @@ cstring8_find_new_line(u8 *buffer)
 internal u64
 cstring8_find_needle(u8 *buffer, u8 needle)
 {
-    
+
     u8* c = buffer;
     while(*c != 0) {
         if(*c == needle) {
@@ -479,16 +481,16 @@ cstring8_find_needle(u8 *buffer, u8 needle)
             ++c;
         }
     }
-    
+
     return 0;
-    
+
 }
 
 internal cstring
 str8_to_cstring(MemArena *arena, String8 *buffer) {
 
-cstring null_terminated_buffer = null_terminate(arena, buffer);
-return (cstring)null_terminated_buffer;
+    cstring null_terminated_buffer = null_terminate(arena, buffer);
+    return (cstring)null_terminated_buffer;
 
 
 }

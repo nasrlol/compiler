@@ -15,16 +15,16 @@
 #define ENTRYPOINT() int main(int count, char **args)
 
 #define PlatformCreateWindow(arena, height, width, display_x, display_y) \
-LinuxCreateWindow(arena, height, width, display_x, display_y)
+    LinuxCreateWindow(arena, height, width, display_x, display_y)
 
 #define PlatformGetDisplayWidth(display, screen_num)  \
- LinuxDisplayWdith(display, screen_num)  // defined externally
+    LinuxDisplayWdith(display, screen_num)  // defined externally
 
 #define PlatformGetDisplayHeight(display, screen_num) \
- LinuxDisplayHeight(display, screen_num) // defined externally
+    LinuxDisplayHeight(display, screen_num) // defined externally
 
 #define PlatformLoadBitmapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y) \
- LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)
+    LinuxLoadBitMapFromFile(display, window, path, width, height, out, hotspot_x, hotspot_y)
 
 //- windows layer
 #elif PLATFORM_WINDOWS
@@ -73,7 +73,7 @@ internal void  win32_logf(_Printf_format_string_ const char *fmt, ...);
 
 typedef struct Directory Directory;
 struct Directory {
-String8List *file_names;
+    String8List *file_names;
 };
 
 //-  File I/O

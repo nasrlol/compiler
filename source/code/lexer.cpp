@@ -1,3 +1,4 @@
+// TODO: replace the logs with this
 internal void
 debug_str8_diff(TokenTree *tree, MemArena *arena, u64 diff_size, const char *function_name)
 {
@@ -18,12 +19,12 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
     String8 *temp_buffer = PushStruct(arena, String8);
     MemCpy(temp_buffer, tree->buffer, tree->buffer->size);
 
-    
+
     FOR_STR8_NODE(delimiters, curr_delimiter) {
         FOR_STR8_MATCH(*temp_buffer, curr_delimiter->value) {
             TokenNode *node = PushStruct(arena, TokenNode);
             TokenNode *current = tree->current;
-            
+
             // NOTE: we can assume that if the first node is nil that the last node will be nill aswell
             if(!is_token_node_nil(current->first)) {
                 current->first = node;
@@ -36,7 +37,7 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
             }
         }
     }
-    
+
     scratch_end(&scratch);
 }
 
@@ -44,61 +45,61 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
 internal Token *
 consume_token_from_buffer(MemArena *arena, String8 *buffer)
 {
-breakpoint();
 
-//- skip pound token
-if(cstring_is_match(buffer->data, (u8 *)'#')) {
-buffer->data++;
- } else {
-Assert(1);
-}
-
-    u64 end_index   = 0;
-    u64 start_index = 0;
-
-    String8 substr = {};
-    
-    // iterate the buffer and find the whitespaces
-    FOR_STR8_CHOP(index, (*buffer), 1, str8_chop_left) {
-
-//- Get the whitespaces, or delimiter that seperates a token from the rest of the strings
-		// I don't know if we want other delimiters in this case besides whtie spaces
-		// does a new line count as a whitespace?
-        b32 result = cstring_is_whitespace(*buffer->data);
-        if(result && start_index == 0) {
-str8_chop_left_ptr(buffer, 1);
-            continue;
-        } else if(start_index != 0) {
-            end_index = index;
-        }
-        start_index = index;
-        
-        if(start_index != 0 && end_index != 0) {
-            substr = str8_create_substr(buffer, start_index, end_index);
-        }
-        
-if(str8_is_match(substr, str8("use"))) {
-
-} else if(str8_is_match(substr, str8("import"))) {
-
-} else {
-// directive not defined
-breakpoint();
-PANIC("directive not defined yet");
-}
-
-Token *new_token = PushStruct(arena, Token);
-new_token->type = IdentToken;
-new_token->line = 0;
-new_token->value.str_v = substr;
-
-        return new_token;
-        
+    u8 pound_sign = (u8)'#';
+    if(buffer->data[0] == pound_sign) { // skip pound token
+        buffer->data++;
+    } else {
+        Assert(1);
     }
-    
-// NOTE: We return an invalid token if we can't find a one to consume.
-    return &nil_token;
-    
+
+//- NOTE: find the start_idx.
+    // iterate the buffer and find the whitespaces
+// FIX: WRONG the pound sign should never be followed by a space
+// NOTE: I don't know. I know casey prefers using for loops for everything but arent while loops easier to debug?
+u64 idx = 0;
+	b32 is_whitespace  = 0;
+    u64 end_offset = 0;
+    String8 substr = {};
+
+while(!is_whitespace) {
+		is_whitespace = cstring_is_whitespace(buffer->data[idx]);
+             end_offset = idx;
+++idx;
+        }
+
+    if(end_offset != 0) {
+        substr = str8_create_substr(buffer, 0, end_offset);
+str8_chop_left_ptr(buffer,  end_offset);
+    }
+
+    if(str8_is_empty(&substr))  {
+        PANIC("directive not defined yet");
+        return &nil_token;
+    }
+
+	// NOTE: before there was a pice of code here that said that we should  handle module code the code here
+// but this should stay a generic function.
+ // do the matrching on the returned struct instead
+
+    Token *new_token = PushStruct(arena, Token);
+
+    new_token->type = IdentToken;
+    new_token->line = 0;
+    new_token->value.str_v = substr;
+
+
+
+    new_token->type = IdentToken;
+    new_token->line = 0;
+    new_token->value.str_v = substr;
+
+
+    return new_token;
+
+    // NOTE: We return an invalid token if we can't find a one to consume.
+// see above.
+
 }
 
 
@@ -112,13 +113,13 @@ push_token_node(TokenTree *tree, TokenNode *node)
     } else {
         tree->current->next = node;
         node->parent        = tree->current;
-        
-            FillTokenNodeFieldWithNilNode(next);
-            FillTokenNodeFieldWithNilNode(previous);
-            FillTokenNodeFieldWithNilNode(child);
-            FillTokenNodeFieldWithNilNode(parent);
-            FillTokenNodeFieldWithNilNode(first);
-            FillTokenNodeFieldWithNilNode(last);
+
+        FillTokenNodeFieldWithNilNode(next);
+        FillTokenNodeFieldWithNilNode(previous);
+        FillTokenNodeFieldWithNilNode(child);
+        FillTokenNodeFieldWithNilNode(parent);
+        FillTokenNodeFieldWithNilNode(first);
+        FillTokenNodeFieldWithNilNode(last);
     }
 }
 
@@ -127,12 +128,12 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 {
     b32 is_empty = str8_is_empty(buffer_from_file);
     if(is_empty) {
-Log("No buffer passed as argument");
-Assert(0);
-}
+        Log("No buffer passed as argument");
+        Assert(0);
+    }
 
     TokenTree *tree = PushStruct(arena, TokenTree);
-Assert(!tree);
+    Assert(!tree);
 
     tree->buffer = PushStruct(arena, String8);
 
@@ -140,47 +141,46 @@ Assert(!tree);
 
     tree->buffer->size = buffer_from_file->size;
     tree->index = 0;
-    
+
     FOR_STR8_CHOP_LEFT(index, (*tree->buffer), 1) {
         u8 current_character = tree->buffer->data[0];
-        
+
         // Handle skipping
         b32 is_whitespace = cstring_is_whitespace(current_character);
         if(is_whitespace) {
             continue;
         }
-        
+
         b32 is_newline = cstring_is_newline(current_character);
         if(is_newline) { // NOTE: do one extra iteration to skip the new line. we keep getting stuck on the current character otherwse
             tree->amount_of_new_lines += 1;
-str8_chop_left_ptr(tree->buffer, 1);
+            str8_chop_left_ptr(tree->buffer, 1);
             continue;
         }
-        
+
         TokenNode *node = PushStruct(arena, TokenNode);
         Token *token = PushStruct(arena, Token);
         String8List *delimiters = PushStruct(arena, String8List);
-        
+
         if(cstring_is_alpha(current_character)) {
             u64 index = 0;
-            
-// TODO: iterate and check if the character is ???
+
+            // TODO: iterate and check if the character is ???
 #if 0
             baseString8 *temp_buffer = PushString8(arena, buffer->size;);
-            
+
             b32 is_alpha = cstring_is_alpha_num(current_character);
             FOR_STR8_ARB_FN(is_alpha, str8_chop_left, *temp_buffer, 1)
             {
-cstring_is_alpha_num(temp_buffer);
+                cstring_is_alpha_num(temp_buffer);
                 ++index;
             }
 #endif
-            
-            
+
             // 8/2/2026 TODO: but we don"t initialize the root node at all?
             // we talk about the children but we ignore the root node
             // and what is the point of focussing on this here when we have a function that handles this?
-            
+
             // the tree root only takes children. because when we take a look at the tree. the root having a next node means that something is on the same height
             // as that root node. this is only appropriate when working with translation units. i think we could have a forest of trees. where the root nodes/
             // stand for the translation units. and therefor allow the multiple notes to interact with each other.
@@ -190,16 +190,16 @@ cstring_is_alpha_num(temp_buffer);
                 tree->root->child = node;
             }
             ////////////////////////////////
-            
 
-	    // TODO: try replacign this with an assertion a bit earlier than this
-	    if(token)
-	    {
-		token->value.str_v = str8_chop_left(*tree->buffer, index);
-		token->type = TokenType::IdentToken;
-	    }
+
+            // TODO: try replacign this with an assertion a bit earlier than this
+            if(token)
+            {
+                token->value.str_v = str8_chop_left(*tree->buffer, index);
+                token->type = TokenType::IdentToken;
+            }
         }
-        
+
         else if(cstring_is_digit(current_character)) {
             if(node->parent->token->type == TokenType::IdentToken) {
                 node->parent->flag = (TokenNodeFlags)0;
@@ -215,42 +215,42 @@ cstring_is_alpha_num(temp_buffer);
             String8 *buffer = tree->buffer;
             u64 offset = cstring8_find_needle(tree->buffer->data, '\n');
             tree->index += offset;
-            
+
             DEBUG_STR8_DIFF(tree, arena, offset);
             str8_chop_left_ptr(tree->buffer, offset);
-            
+
         } else if(str8_any_match(*tree->buffer, str8("/*"))) {
-            
+
             String8 element = str8("*/");
             u64 offset = str8_find(tree->buffer, 0, element);
             u64 total_offset = offset + element.size; // calculate in the size of the element. [ */ ]. the exact reason don't care to explain
             DEBUG_STR8_DIFF(tree, arena, total_offset);
             str8_chop_left_ptr(tree->buffer, total_offset);
-            
+
         } else if(current_character == '{') {
-            
+
             tree->current->next = node;
             node->token->type = (enum TokenType)'{';
             String8Node right_paran_delim = str8_node("}");
             str8_list_push_node(delimiters, &right_paran_delim);
-            
+
         } else if(current_character ==  '}') {
             if(node->first->token->type != (enum TokenType)'{') {
                 Log("Error: closing brace not matching opening brace");
             } else {
                 Token *token = PushStruct(arena, Token);
                 tree->current->last = node;
-                
+
                 token->type = TokenType::Param;
                 token->line = tree->amount_of_new_lines;
                 token->value.str_v = str8("}");
-                
+
                 if(is_token_node_nil(tree->current->last)) {
                     node->token = token;
                     node->flag = TokenNodeFlags::Child;
                     node->previous = tree->current;
                     node->parent = node->previous->parent;
-                    
+
                     FillTokenNodeFieldWithNilNode(last);
                     FillTokenNodeFieldWithNilNode(first);
                     FillTokenNodeFieldWithNilNode(child);
@@ -300,17 +300,17 @@ cstring_is_alpha_num(temp_buffer);
             if(pound_token->value.str_v.size != 0) { // TODO: can this be NULL and segfault if we don't initialize it?
                 create_module(arena, pound_token);
             } else {
-Assert(1);
+                Assert(1);
                 PANIC("No directive found after pound sign");
             }
-            
+
         } else if(current_character == ':') {
             if(tree->current->parent && tree->current->parent->token->type  == TokenType::IdentToken) {
-                
+
                 String8List *delimiters = PushStruct(arena, String8List);
                 String8Node *colon_node = PushStruct(arena, String8Node);
                 String8Node *komma_node = PushStruct(arena, String8Node);
-                
+
                 str8_list_push_node(delimiters, colon_node);
                 str8_list_push_node(delimiters, komma_node);
                 push_token_children(arena, tree, delimiters);
@@ -322,9 +322,9 @@ Assert(1);
             // TODO:
             PANIC("Not valid syntax");
         }
-        
+
     }
-    
+
     return tree;
 }
 
