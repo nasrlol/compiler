@@ -102,4 +102,7 @@ internal void    unix_log_with_args(const char *format, ...);
 #endif // COMPILER_GCC || COMPILER_CLANG
 #endif // PLATFORM_UNIX
 
+
+
+
 #endif // BASE_PLATFORM_H

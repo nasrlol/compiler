@@ -84,7 +84,7 @@ internal String8 str8_zero();
 internal String8 str8_clone(MemArena *arena, String8 *src);
 internal void str8_copy(String8 *dest, String8 *src);
 internal b32 str8_append(String8 *dest, String8 src);
-internal b32 str8_append_char(String8 * dest, u8 src);
+internal b32 str8_append_char(String8 *dest, u8 src);
 internal b32 str8_insert(String8 *dest, String8 *src, u64 pos);
 
 //- str8 trim / chop

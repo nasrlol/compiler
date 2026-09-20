@@ -109,7 +109,8 @@ typedef intptr_t  smm;
 
 //-
 
-internal void _assert(bool expression);
+internal void
+ _assert(bool expression);
 
 internal void
 _assert(bool expression) {
@@ -122,5 +123,7 @@ _assert(bool expression) {
 }
 
 #define Assert(expression) _assert(expression)
+
+
 
 #endif //  BASE_CORE_H

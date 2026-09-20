@@ -143,6 +143,7 @@ internal void
 str8_copy(String8 *dest, String8 *src)
 {
     MemCpy(dest->data, src->data, src->size);
+Assert(!cstring_is_match(dest->data, src->data));
     dest->size = src->size;
 }
 
@@ -166,19 +167,9 @@ str8_append_char(String8 *dest, u8 src)
 }
 
 internal b32
-str8_append(String8 *dest, String8 *src)
-{
-    if(is_nil_str8(dest) || is_nil_str8(src)) return false;
-    MemCpy(dest->data + dest->size, src->data, src->size);
-    dest->size += src->size;
-    return true;
-}
-
-// left here 7/9 refactoring the names and parameters
-internal b32
 str8_append(String8 *dest, String8 src)
 {
-    if( is_nil_str8(dest) || is_nil_str8(&src)) return false;
+    if(is_nil_str8(dest) || is_nil_str8(&src)) return false;
     MemCpy(dest->data + dest->size, src.data, src.size);
     dest->size += src.size;
     return true;
@@ -212,7 +203,6 @@ internal String8
 str8_chop_left(String8 buffer, u64 count)
 {
     if(buffer.size < count) {
-breakpoint();
         return buffer;
     }
 
@@ -226,7 +216,6 @@ internal String8
 str8_chop_right(String8 buffer, u64 count)
 {
     if(buffer.size < count) {
-breakpoint();
         return buffer;
     }
 
@@ -327,13 +316,32 @@ str8_is_empty(String8 *buffer)
 internal b32
 str8_insert(MemArena *arena, String8 *dest, String8 *src, u64 pos)
 {
-    if(dest->size > pos) return false;
-    String8 buffer_start = str8_create_substr(dest, 0, pos);
-    String8 buffer_end = str8_create_substr(dest, pos, dest->size);
-    str8_append(&buffer_start, src);
-    str8_append(&buffer_start, buffer_end);
+    if (dest->size < pos) return false;
+	
+    String8 result = PushString8(arena, dest->size + src->size);
+    result.size = 0;
+	
+    String8 head = str8_create_substr(dest, 0, pos);
+    String8 tail = str8_create_substr(dest, pos, dest->size);
+	
+    if (!str8_append(&result, head))
+return false;
+    if (!str8_append(&result, *src))
+return false;
+    if (!str8_append(&result, tail))
+return false;
+	
+    *dest = result;
     return true;
 }
+
+internal cstring
+str8_to_cstring(MemArena *arena, String8 *buffer) {
+
+    cstring null_terminated_buffer = null_terminate(arena, buffer);
+    return (cstring)null_terminated_buffer;
+}
+
 
 //- cstring implementations
 
@@ -481,13 +489,10 @@ cstring8_find_new_line(u8 *buffer)
     return 0;
 }
 
-
-
 // returns the index of where to find it. if not found returns 0.
 internal u64
 cstring8_find_needle(u8 *buffer, u8 needle)
 {
-
     u8* c = buffer;
     while(*c != 0) {
         if(*c == needle) {
@@ -498,14 +503,5 @@ cstring8_find_needle(u8 *buffer, u8 needle)
     }
 
     return 0;
-
-}
-
-internal cstring
-str8_to_cstring(MemArena *arena, String8 *buffer) {
-
-    cstring null_terminated_buffer = null_terminate(arena, buffer);
-    return (cstring)null_terminated_buffer;
-
 
 }

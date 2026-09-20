@@ -11,43 +11,40 @@
 #include "parser.cpp"
 #include "preproc.cpp"
 
-ENTRYPOINT()
-{
+
+internal void tests() {
+
+MemArena *arena = ArenaCreate(MiB(1));
+String8 buffer = PushString8(arena, 100);
+String8 hw = str8("Hello World\n");
+  str8_copy(&buffer, &hw);
+str8_append(&buffer, str8("Assalamoealaykoem Warahmatoellahi Wabarakatoeh\n"));
+LogStr8(buffer);
+
+}
+
+ENTRYPOINT() {
+
+tests();
+
     String8 path;
-    if(count > 0) {
+    if(count < 0) {
+Log("No arguments passed to fajr");
+return -1;
+}
         path = str8(args[1]);
-    } else {
-        Log("No arguments passed to fajr");
-        return -1;
-    }
 
-    MemArena *global_arena = ArenaCreate(MiB(100));
-    if(global_arena)
-    {
+    MemArena *global_arena = ArenaCreate(MiB(200));
+    if(!global_arena) Log("Failed to allocate memory\n");
 
-ScratchArena inital_buffer_scratch = scratch_start(global_arena);
         String8 buffer = FileLoad(global_arena, path);
+scan_buffer_and_handle_modules(global_arena, &buffer);
 
-// NOTE: pass the buffer. but internally allocate a big enough one because we don't know how much
-// memory we need. we basically will always need more than the already allocatred buffer
-// NOTE: the  scratch arena gets closed  inside the scan buffer handler
-// TODO: is this even a good idea?
-scan_buffer_handle_modules(global_arena, &inital_buffer_scratch,  &buffer);
         TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);
-        if(tree) {
+        if(!tree) Log("Failed to create Token Tree\n");
+
             Ast *ast = parse_tokenized_tree_fmt(global_arena, tree);
-            if(!ast) {
-                Log("Failed to create AST\n");
-                return 1;
-            }
-        } else {
-            Log("Failed to create Token Tree\n");
-            return 1;
-        }
-    } else  {
-        Log("Failed to allocate memory\n");
-        return 1;
-    }
+            if(!ast) Log("Failed to create AST\n");
 
     return 0;
 }

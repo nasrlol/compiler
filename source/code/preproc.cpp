@@ -73,27 +73,17 @@ str8_chop_left_ptr(buffer,  end_offset);
 // but is this the approach we want?
 //- rewrite the buffer to handle module imports
 internal void
-scan_buffer_handle_modules(MemArena *arena, ScratchArena *initial_scratch_memory, String8 *original_buffer) {
-
-// TODO: im workignt through  this idea
-Unused(initial_scratch_memory);
-
+scan_buffer_and_handle_modules(MemArena *arena ,String8 *original_buffer) {
 
 String8 dest_buffer = PushString8(arena, original_buffer->size);
 str8_copy(&dest_buffer, original_buffer);
 
-String8 seperator = str8("------------------------------- seperator -------------------------------");
+String8 seperator = PushString8(arena, 15);
+ seperator = str8("// seperator \\");
 str8_insert(arena, original_buffer, &seperator, 10);
-str8_insert(arena, original_buffer, &dest_buffer, 0);
 
-#if 0
 Assert(dest_buffer.size != original_buffer->size);
-
-#endif
-
     Token *token = consume_token_from_buffer(arena, original_buffer);
-
-
     String8List *files = DirLoad(arena, &token->value.as_str);
 
 
