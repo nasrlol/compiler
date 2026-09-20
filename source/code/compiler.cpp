@@ -29,8 +29,7 @@ tests();
 
     String8 path;
     if(count < 0) {
-Log("No arguments passed to fajr");
-return -1;
+PANIC("No arguments passed to fajr");
 }
         path = str8(args[1]);
 

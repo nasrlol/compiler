@@ -1,21 +1,13 @@
 #ifndef PREPROC_H
 #define PREPROC_H
 
-typedef struct module_file_handle module_file_handle;
-struct module_file_handle
-{
-    String8 buffer;
-};
-
-typedef struct module module;
-struct module
+typedef struct Module Module;
+struct Module
 {
     TokenTree *tree;
     String8 name;
-    module_file_handle *handle;
+      void *handle; // TODO: update the platform library to support a generic file type
 };
 
-internal module create_module(MemArena *arena, Token *token);
-internal module_file_handle *find_module();
 
 #endif // PREPROC_H
