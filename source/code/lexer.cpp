@@ -44,7 +44,7 @@ push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
 // TODO: fix this function
 
 internal void
-push_token_node(TokenTree *tree, TokenNode *node)
+ push_token_node(TokenTree *tree, TokenNode *node)
 {
     if(is_token_node_nil(tree->root)) {
         tree->root    = node;
@@ -150,7 +150,7 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
             }
         } else if(current_character ==  '\"') {
             token->type = TokenType::IdentToken;
-        } else if(str8_any_match(*tree->buffer,str8("//"))) {
+        } else if(str8_any_match(*tree->buffer, str8("//"))) {
             u64 start_pos = tree->index;
             String8 *buffer = tree->buffer;
             u64 offset = cstring8_find_needle(tree->buffer->data, '\n');
@@ -249,7 +249,9 @@ tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
                 Log("syntax error. Issue with the previous token. Unexpected token.");
             }
         } else {
-            // TODO:
+#if DEBUG
+breakpoint();
+#endif
             PANIC("Not valid syntax");
         }
 

@@ -79,11 +79,13 @@ str8_trim_right(String8 *buffer)
     str8_chop_right(*buffer, index);
 }
 
+// TODO: this doesnt do what it's supposed to do, A is always the bigger buffer so :
 // the first the element is the buffer you are searching in and the second buffer is the element you are matching for.
 // it's important not to mess this up because it messes with the memcpy size
 internal b32
 str8_any_match(String8 a, String8 b)
 {
+if(a.size != b.size) return false;
     b32 result = (memcmp(a.data, b.data, b.size) == 0);
     return result;
 }
@@ -119,6 +121,7 @@ str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out)
     b32 result = false;
     for(u64 index = start_pos; index < buffer->size - element.size; ++index) {
         String8 view = str8_chop_left(*buffer, index);
+str8_chop_right_ptr(*buffer, buffer->size - element.size);
         result = str8_any_match(view, element);
         if(result) {
              *out = index;
@@ -181,6 +184,7 @@ str8_zero()
     return String8{0};
 }
 
+// TODO: error handling
 internal void
 str8_chop_left_ptr(String8 *buffer, u64 count)
 {

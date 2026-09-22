@@ -1,4 +1,4 @@
-#define DBEUG
+#define DBEUG 1
 #include "base/base_include.h"
 
 #include "messages.h"
@@ -16,9 +16,9 @@ internal void tests() {
 
 MemArena *arena = ArenaCreate(MiB(1));
 String8 buffer = PushString8(arena, 100);
-String8 hw = str8("Hello World\n");
+String8 hw = str8("Bar\n");
   str8_copy(&buffer, &hw);
-str8_append(&buffer, str8("Assalamoealaykoem Warahmatoellahi Wabarakatoeh\n"));
+str8_append(&buffer, str8("Foo\n"));
 LogStr8(buffer);
 
 }
@@ -29,8 +29,15 @@ tests();
 
     String8 path;
     if(count < 0) {
+
+#if 0
 PANIC("No arguments passed to fajr");
+#endif
+
+path = str8("./tests/main.jr");
+
 }
+
         path = str8(args[1]);
 
     MemArena *global_arena = ArenaCreate(MiB(200));
