@@ -3,7 +3,7 @@
 set -e
 
 
-BUILD_DIR=./test/build
+BUILD_DIR=./build
 SOURCE_DIR=source
 PROGRAM_DIR=test
 
@@ -12,4 +12,4 @@ CFLAGS="-g -fno-rtti -fno-exceptions -Wall -Werror -fanalyzer -no-pie -Wno-unuse
 
 mkdir -p "$BUILD_DIR"
 
-g++ $INCLUDES $CFLAGS "tests/base/test.cpp" -o "${BUILD_DIR}/test" 
+g++ $INCLUDES $CFLAGS "tests/base/test.cpp" -o "${BUILD_DIR}/test"

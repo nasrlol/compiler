@@ -5,5 +5,5 @@ extern void test_nil_checks();
 
 int main()
 {
-    test_nil_checks();
+    str8_find_num();
 }

@@ -215,6 +215,7 @@ unix_os_exit()
 internal String8List *
 unix_open_dir(MemArena *arena, String8 *original_path) {
 
+breakpoint();
 // TODO: this returns null for some reason
     String8List *files_list = PushStruct(arena, String8List);
 

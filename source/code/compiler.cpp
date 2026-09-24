@@ -12,33 +12,14 @@
 #include "preproc.cpp"
 
 
-internal void tests() {
-
-MemArena *arena = ArenaCreate(MiB(1));
-String8 buffer = PushString8(arena, 100);
-String8 hw = str8("Bar\n");
-  str8_copy(&buffer, &hw);
-str8_append(&buffer, str8("Foo\n"));
-LogStr8(buffer);
-
-}
-
 ENTRYPOINT() {
 
-tests();
-
     String8 path;
-    if(count < 0) {
-
-#if 0
-PANIC("No arguments passed to fajr");
-#endif
-
+    if(count <= 1) {
 path = str8("./tests/main.jr");
-
-}
-
+} else {
         path = str8(args[1]);
+}
 
     MemArena *global_arena = ArenaCreate(MiB(200));
     if(!global_arena) Log("Failed to allocate memory\n");

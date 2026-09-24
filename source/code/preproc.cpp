@@ -6,7 +6,9 @@ consume_token_from_buffer(MemArena *arena, String8 *buffer)
 Assert(buffer->size < 0);
 // TODO: Break out of function if no pound sign is found
   u64 offset_to_first_pound = 0;
+
 b32 found = str8_find(buffer, 0, str8("#"), &offset_to_first_pound);
+
 if(!found) return &nil_token;
 str8_chop_left_ptr(buffer,offset_to_first_pound );
 
@@ -23,8 +25,8 @@ Assert(1);
 // NOTE: I don't know. I know casey prefers using for loops for everything but arent while loops easier to debug?
 u64 idx = 0;
 b32 is_whitespace  = 0;
-u64 end_offset = 0;
-String8 substr = {};
+u64 end_offset     = 0;
+String8 substr     = {};
 
 while(!is_whitespace) {
 is_whitespace = cstring_is_whitespace(buffer->data[idx]);
@@ -40,14 +42,11 @@ str8_chop_left_ptr(buffer,  end_offset);
 //- handle directives
 
 if(str8_is_match(substr, str8("import"))) {
-
 str8_chop_left_ptr(buffer, substr.size);
 while(cstring_is_whitespace(*buffer->data)) str8_chop_left_ptr(buffer, 1);
 u64 whitespace_pos = 0;
 str8_find(&substr, 0, str8(" "), &whitespace_pos);
  substr = str8_create_substr(buffer, 0, whitespace_pos);
-
-
 } else {
 		if(str8_is_empty(&substr))  {
 			PANIC("directive not defined yet");
@@ -77,7 +76,6 @@ return new_token;
 // see above.
 
 }
-
 
 // TODO: I will derefernce this for now. but think about it if you really want it to derefernce it?
 // first initial pass to handle the includes and create on single large buffer

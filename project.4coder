@@ -27,13 +27,17 @@ load_paths = {
 };
 
 commands = {
-    .run      = { .linux = "./build/compiler", .mac = "./build.sh", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
-    .build    = { .linux = "./build.sh", .mac = "./build.sh", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+    .run         = { .linux = "./build/compiler", .mac = "./build.sh", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+    .build       = { .linux = "./build.sh",       .mac = "./build.sh", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+	.test_build  = { .linux = "./test.sh",        .mac = "./test.sh" , .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+	.test_run    = { .linux = "./build/test",     .mac = "./test.sh" , .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
 };
 
 
 fkey_command = {
     .F1 = "build",
     .F2 = "run",
+.F3 = "test_build",
+.F4 = "test_run",
 };
 

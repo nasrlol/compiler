@@ -1,12 +1,26 @@
+ void tests() {
 
-void test_nil_checks()
+MemArena *arena = ArenaCreate(MiB(1));
+String8 buffer = PushString8(arena, 100);
+String8 hw = str8("Bar\n");
+  str8_copy(&buffer, &hw);
+str8_append(&buffer, str8("Foo\n"));
+LogStr8(buffer);
+}
+
+// TODO: does this work like it should?
+ void str8_find_num()
 {
-    String8 buffer = &nil_str8;
-    String8Node node = &nil_str8_node;
+String8 buffer = str8("123");
 
-    b32 str8_result = is_nil_str8(buffer);
-    b32 str8_node_result = is_nil_str8_node(node);
+u64 pos = 0;
 
+	str8_find(&buffer, 0, str8("1"), &pos);
+Assert(pos != 1);
+	
+	str8_find(&buffer, 0, str8("2"), &pos);
+	Assert(pos == 2);
 
-    Assert(str8_result);
+	str8_find(&buffer, 0, str8("3"), &pos);
+	Assert(pos == 3);
 }

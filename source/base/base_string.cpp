@@ -115,13 +115,14 @@ return true;
 }
 
 
+// TODO: does this work like it should?
 internal b32
 str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out)
 {
     b32 result = false;
     for(u64 index = start_pos; index < buffer->size - element.size; ++index) {
         String8 view = str8_chop_left(*buffer, index);
-str8_chop_right_ptr(*buffer, buffer->size - element.size);
+str8_chop_right_ptr(buffer, buffer->size - element.size);
         result = str8_any_match(view, element);
         if(result) {
              *out = index;
@@ -168,6 +169,22 @@ str8_append_char(String8 *dest, u8 src)
     dest->size += 1;
     return true;
 }
+
+internal int
+ str8_to_int(String8 *buffer) {
+
+int result = 0;
+
+for(u64 index = 0; index < buffer->size; ++index) {
+
+if(buffer->data[index] < 'Z' && buffer->data[index] > 'A') {
+ result = buffer->data[index] - '0';
+result *= 10;
+}
+}
+ return result;
+}
+
 
 internal b32
 str8_append(String8 *dest, String8 src)
