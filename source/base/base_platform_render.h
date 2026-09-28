@@ -1,7 +1,6 @@
 #ifndef PLATFORM_RENDER_H
 #define PLATFORM_RENDER_H
 
-
 //- generic window description
 typedef struct PlatformWindow PlatformWindow;
 struct PlatformWindow {

@@ -3,18 +3,12 @@
 // TODO: renmae current_position in arena.cpp and arena.h to current_address or vice versa
 
 #if PLATFORM_LINUX
-internal MemStack *
-unix_stack_create(u64 capacity)
+internal MemStack *unix_stack_create(u64 capacity)
 {
-    MemStack *stack = (MemStack *)mmap(
-                                       0,
-                                       capacity + sizeof(MemStack),
-                                       PROT_READ | PROT_WRITE,
-                                       MAP_SHARED | MAP_ANONYMOUS,
-                                       -1,
-                                       0);
+    MemStack *stack = (MemStack *)mmap(0, capacity + sizeof(MemStack), PROT_READ | PROT_WRITE,
+                                       MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    if(stack == MAP_FAILED) {
+    if (stack == MAP_FAILED) {
         return NULL;
     }
 
@@ -25,10 +19,9 @@ unix_stack_create(u64 capacity)
     return stack;
 }
 
-internal void
-unix_stack_destroy(MemStack *stack)
+internal void unix_stack_destroy(MemStack *stack)
 {
-    if(!stack) {
+    if (!stack) {
         return;
     }
 
@@ -39,16 +32,12 @@ unix_stack_destroy(MemStack *stack)
 #if PLATFORM_WINDOWS
 
 // request a page from the operating system
-internal MemStack *
-win32_stack_create(u64 capacity)
+internal MemStack *win32_stack_create(u64 capacity)
 {
-    MemStack *stack = (MemStack *)VirtualAlloc(
-                                               NULL,
-                                               capacity + sizeof(MemStack),
-                                               MEM_COMMIT | MEM_RESERVE,
-                                               PAGE_READWRITE);
+    MemStack *stack = (MemStack *)VirtualAlloc(NULL, capacity + sizeof(MemStack),
+                                               MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    if(!stack) {
+    if (!stack) {
         Log("Failed to receive a memory address from the operating system");
         return NULL;
     }
@@ -59,28 +48,24 @@ win32_stack_create(u64 capacity)
     return stack;
 }
 
-internal void
-win32_stack_destroy(MemStack *stack)
+internal void win32_stack_destroy(MemStack *stack)
 {
     b32 result = VirtualFree(stack,
                              0, // stands for the byte of committed pages
                              MEM_RELEASE);
 
-    if(!result) {
+    if (!result) {
         Log("Failed to receive a memory address from the operating system");
     }
 }
 
-
 #endif // PLATFORM_WINDOWS
 
-
-internal u8
-calculate_padding(u64 pointer, u8 alignment, u64 header_size)
+internal u8 calculate_padding(u64 pointer, u8 alignment, u64 header_size)
 {
     u8 modulo, padding;
 
-    if(!is_pow(alignment)) {
+    if (!is_pow(alignment)) {
         return 0;
     }
 
@@ -88,14 +73,14 @@ calculate_padding(u64 pointer, u8 alignment, u64 header_size)
 
     padding = 0;
 
-    if(0 != modulo) {
+    if (0 != modulo) {
         padding = alignment - modulo;
     }
 
-    if(padding < header_size) {
+    if (padding < header_size) {
         header_size -= padding;
 
-        if((header_size & (alignment - 1)) != 0) {
+        if ((header_size & (alignment - 1)) != 0) {
             padding += alignment * (1 + (u8)(header_size / alignment));
         } else {
             padding += alignment * ((u8)(header_size / alignment));
@@ -105,75 +90,68 @@ calculate_padding(u64 pointer, u8 alignment, u64 header_size)
     return padding;
 }
 
-internal MemStack *
-stack_push_align(MemStack *stack, u64 size, u8 alignment)
+internal MemStack *stack_push_align(MemStack *stack, u64 size, u8 alignment)
 {
     // NOTE: satifisying static analyzer
-    Assert(stack != NULL);
+    AssertLog((stack != NULL), "STACK IS NULL");
     u8 padding = 0;
-
 
     // NOTE: this shouln't be possible because we have the allignment predefined
     // so it's bassically a useless check
 
-    if(!is_pow(alignment)) {
+    if (!is_pow(alignment)) {
+breakpoint();
         return (0);
     }
 
-    if(alignment > 128) { // NOTE: where does the 128 come from?
+    if (alignment > 128) { // NOTE: where does the 128 come from?
         alignment = 128;
     }
 
     u64 current_address;
-    if(stack) {
-        current_address = (u64)stack->base_position + stack->current_offset;
-    } else {
-        return (0);
-    }
+        current_address = (u64)stack->base_position + stack->current_offset; // NOTE: we already we're checking if the stack existed
+    padding = calculate_padding(current_address, alignment, sizeof(MemStackHeader));
 
-    padding             = calculate_padding(current_address, alignment, sizeof(MemStackHeader));
-
-    if(stack->current_offset + padding + size > stack->capacity) {
+    if (stack->current_offset + padding + size > stack->capacity) {
+breakpoint();
         return 0;
     }
 
     stack->current_offset += padding;
 
-    u64             next_address = current_address + (u64)padding;
-    MemStackHeader *header       = (MemStackHeader *)(next_address - sizeof(MemStackHeader));
-    header->padding              = padding;
+    u64 next_address       = current_address + (u64)padding;
+    MemStackHeader *header = (MemStackHeader *)(next_address - sizeof(MemStackHeader));
+    header->padding        = padding;
 
     stack->current_offset += size;
 
     return (MemStack *)MemSet((MemStack *)next_address, size);
 }
 
-internal void *
-stack_push(MemStack *stack, u64 size)
+internal void *stack_push(MemStack *stack, u64 size)
 {
     return stack_push_align(stack, size, arena_align);
 }
 
-internal void
-stack_pop(MemStack *stack, void *pointer)
+internal void stack_pop(MemStack *stack, void *pointer)
 {
-    if(pointer != NULL) {
-        u64             start, end, current_address;
+    if (pointer != NULL) {
+        u64 start, end, current_address;
         MemStackHeader *header;
-        u64             prev_offset;
+        u64 prev_offset;
 
         start           = (u64)stack->base_position;
         end             = start + (u64)stack->capacity;
         current_address = (u64)pointer;
 
-        if(!(start <= current_address && current_address < end)) {
-            if(0 && "Out of bounds memory address passed to stack allocator (free)") {
+        if (!(start <= current_address && current_address < end)) {
+            if (0 && "Out of bounds memory address passed to stack allocator (free)") {
                 return;
             }
             return;
         }
 
-        if(current_address >= start + (u64)stack->current_offset) {
+        if (current_address >= start + (u64)stack->current_offset) {
             return;
         }
 
@@ -183,77 +161,79 @@ stack_pop(MemStack *stack, void *pointer)
     }
 }
 
-internal MemStack *
-stack_resize_align(MemStack *stack, void *pointer, u64 old_size, u64 new_size, u8 alignment)
+internal MemStack *stack_resize_align(MemStack *stack, void *pointer, u64 old_size, u64 new_size,
+                                      u8 alignment)
 {
-    if(pointer == NULL) {
+    if (pointer == NULL) {
         return stack_push_align(stack, new_size, alignment);
-    } else if(new_size == 0) {
+    } else if (new_size == 0) {
         stack_pop(stack, pointer);
         return NULL;
     }
 
-    u64   start, end, current_address;
-    u64   min_size = old_size < new_size ? old_size : new_size;
+    u64 start, end, current_address;
+    u64 min_size = old_size < new_size ? old_size : new_size;
     void *new_pointer;
 
     start           = (u64)stack->base_position;
     end             = start + (u64)stack->capacity;
     current_address = (u64)pointer;
-    if(!(start <= current_address && current_address < end)) {
+    if (!(start <= current_address && current_address < end)) {
         return NULL;
     }
 
-    if(current_address >= start + (u64)stack->current_offset) {
+    if (current_address >= start + (u64)stack->current_offset) {
         return NULL;
     }
 
-    if(old_size == new_size) {
+    if (old_size == new_size) {
         return (MemStack *)pointer;
     }
 
     new_pointer = stack_push_align(stack, new_size, alignment);
+AssertLog((new_pointer != NULL), "stack_push_align failed in stack_resize_align");
     memmove(new_pointer, pointer, min_size);
     return (MemStack *)new_pointer;
 }
 
-
 #define StackToArena(arena, requested_size) Stack()
 
-internal MemStack *
-arena_to_stack(MemArena *arena, u64 requested_size, u64 alignment)
+internal MemStack *arena_to_stack(MemArena *arena, u64 requested_size, u64 alignment)
 {
 
     u8 padding = 0;
 
-
     // NOTE: this shouln't be possible because we have the allignment predefined
     // so it's bassically a useless check
 
-    if(!is_pow(alignment)) {
+    if (!is_pow(alignment)) {
         return (0);
     }
 
-    if(alignment > 128) { // NOTE: where does the 128 come from?
+    if (alignment > 128) { // NOTE: where does the 128 come from?
         alignment = 128;
     }
 
-    padding             = calculate_padding(arena->current_position, alignment, sizeof(MemStackHeader));
+    padding = calculate_padding(arena->current_position, alignment, sizeof(MemStackHeader));
 
-    u64 used_capacity = *arena->base_position - arena->current_position;
-    Assert(requested_size < used_capacity);
+    u64 used_capacity = arena->current_position;
+
+// this should be if the size is less than the remaining capacity
+
+    Assert(requested_size <= (arena->capacity - used_capacity));
 
     // assign the header to the closest position in the arena.
     // TODO: doesnt this get left behin after a while
-    MemStackHeader *header = (MemStackHeader *)arena->current_position; // TODO: I hope this handle represents the address. if it doesnt i will need to find a way to convert it properly
+    MemStackHeader *header = (MemStackHeader *) arena->current_position; // TODO: I hope this handle represents the address. if it
+                                     // doesnt i will need to find a way to convert it properly
     header->padding = padding;
 
-
-    MemStack *stack = (MemStack *)(arena->current_position + sizeof(MemStackHeader));
-    stack->header = header;
+    MemStack *stack       = (MemStack *)(arena->current_position + sizeof(MemStackHeader));
+    stack->header         = header;
     stack->current_offset = 0;
-    stack->capacity = (u64)arena->base_position - arena->current_position; // we just allocate the remainder of the size
-    stack->base_position = (u8 *)arena->current_position;
+    stack->capacity       = (u64)arena->base_position -
+                            arena->current_position; // we just allocate the remainder of the size
+    stack->base_position  = (u8 *)arena->current_position;
 
     return stack;
 }
@@ -261,7 +241,6 @@ arena_to_stack(MemArena *arena, u64 requested_size, u64 alignment)
 #if 0
 #if MEM_DEBUG
 global_variable String8List *stack_log; // TODO: initialize this in the mem stack callback
-
 
 #endif
 
@@ -278,8 +257,4 @@ stack_debug_view(MemArena *global_arena, MemStack *stack)
 }
 #endif
 
-internal void
-stack_clear(MemStack *stack)
-{
-    stack->current_offset = 0;
-}
+internal void stack_clear(MemStack *stack) { stack->current_offset = 0; }

@@ -1,9 +1,7 @@
 #define RAND_CONSTANT 6364136223846793005
 internal u64 rand_u64(u64 constant);
 
-
-internal u64
-rand_u64(u64 constant)
+internal u64 rand_u64(u64 constant)
 {
     time_t current_time = time(0);
     constant            = current_time ^ constant;

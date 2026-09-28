@@ -29,7 +29,8 @@ struct MemStack {
 //-
 
 internal MemStack *stack_push_align(MemStack *stack, u64 size, u8 alignment);
-internal MemStack *stack_resize_align(MemStack *stack, void *pointer, u64 old_size, u64 new_size, u8 alignment);
+internal MemStack *stack_resize_align(MemStack *stack, void *pointer, u64 old_size, u64 new_size,
+                                      u8 alignment);
 internal void *stack_push(MemStack *stack, u64 size);
 internal void stack_pop(MemStack *stack, void *pointer);
 internal void stack_clear(MemStack *stack);

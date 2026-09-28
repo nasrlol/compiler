@@ -2,19 +2,20 @@
 #define LEXER_H
 
 //-
-#define DEBUG_STR8_DIFF(tree, arena, diff_size)			\
+#define DEBUG_STR8_DIFF(tree, arena, diff_size)                                                    \
     debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
-#define TokenNodeContainsFlag(node, flag)	\
-    if(((node->flags) & (flag)) != (0))		\
+#define TokenNodeContainsFlag(node, flag)                                                          \
+    if (((node->flags) & (flag)) != (0))                                                           \
     return false
 
-#define FillTokenNodeFieldWithNilNode(field)		\
-    if(node->field == NULL || !is_token_node_nil(node)) \
-    node->field = &nil_token_node;
+#define FillTokenNodeFieldWithNilNode(field)                                                       \
+    if (node->field == NULL || !is_token_node_nil(node))                                           \
+        node->field = &nil_token_node;
 
-enum TokenType  {
-    // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying the properties of the identifier
+enum TokenType {
+    // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying
+    // the properties of the identifier
     Illegal = 256,
     IdentToken,
 
@@ -36,26 +37,26 @@ enum TokenType  {
     C_Style_Comment_End,
 };
 
-enum TokenNodeFlags: int {
+enum TokenNodeFlags : int {
     Invalid = 1,
-    Root = 2,
-    Child = 3,
-    Eof = 4,
-    Bad = 5,
+    Root    = 2,
+    Child   = 3,
+    Eof     = 4,
+    Bad     = 5,
 };
 
 typedef union TokenValue TokenValue;
 union TokenValue {
-String8 as_str;
-        f64 as_float;
-        u64 as_int;
+    String8 as_str;
+    f64 as_float;
+    u64 as_int;
 };
 
 typedef struct Token Token;
 struct Token {
     enum TokenType type;
     u64 line;
-TokenValue value;
+    TokenValue value;
 };
 
 typedef struct TokenNode TokenNode;
@@ -67,17 +68,17 @@ struct TokenNode {
     TokenNode *parent;
     TokenNode *first;
     TokenNode *last;
-    Token     *token;
+    Token *token;
 };
 
 typedef struct Lexeme Lexeme;
-struct Lexeme
-{
+struct Lexeme {
     String8 *buffer;
     u64 index;
 };
 
-// Find a way to do this without allocating the tokens on the heap. It's a huge toll on the performance of the program
+// Find a way to do this without allocating the tokens on the heap. It's a huge toll on the
+// performance of the program
 typedef struct TokenTree TokenTree;
 struct TokenTree {
     TokenNode *root;
@@ -88,33 +89,23 @@ struct TokenTree {
 };
 
 //- nil variables
-ReadOnly global_variable
-Token nil_token =
-{
-    TokenType::Illegal,
-    0,
-    { }
-};
+ReadOnly global_variable Token nil_token = {TokenType::Illegal, 0, {}};
 
-ReadOnly global_variable
-TokenNode nil_token_node = {
-    TokenNodeFlags::Invalid,
-    &nil_token_node, // next
-    &nil_token_node, // previous
-    &nil_token_node, // child
-    &nil_token_node, // parent
-    &nil_token_node, // first
-    &nil_token_node, // last
-    {}
-};
-
+ReadOnly global_variable TokenNode nil_token_node = {TokenNodeFlags::Invalid,
+                                                     &nil_token_node, // next
+                                                     &nil_token_node, // previous
+                                                     &nil_token_node, // child
+                                                     &nil_token_node, // parent
+                                                     &nil_token_node, // first
+                                                     &nil_token_node, // last
+                                                     {}};
 
 // - functions
 internal b32 is_token_node_nil(TokenNode *node);
 internal b32 is_token_nil(Token *token);
 internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
-internal void push_token_node(TokenTree *tree, TokenNode * node);
-internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 * buffer_from_file);
+internal void push_token_node(TokenTree *tree, TokenNode *node);
+internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file);
 internal Token consume_token(String8 *buffer);
 internal TokenNode create_node_from_token();
 

@@ -1,37 +1,39 @@
 #define DBEUG 1
 #include "base/base_include.h"
 
-#include "messages.h"
 #include "lexer.h"
+#include "messages.h"
+#include "parse_table.h"
 #include "parser.h"
 #include "preproc.h"
-#include "parse_table.h"
 
 #include "lexer.cpp"
 #include "parser.cpp"
 #include "preproc.cpp"
 
-
-ENTRYPOINT() {
-
+ENTRYPOINT()
+{
     String8 path;
-    if(count <= 1) {
-path = str8("./tests/main.jr");
-} else {
+    if (count <= 1) {
+        path = str8("./tests/main.jr");
+    } else {
         path = str8(args[1]);
-}
+    }
 
-    MemArena *global_arena = ArenaCreate(MiB(200));
-    if(!global_arena) Log("Failed to allocate memory\n");
+    MemArena *arena = ArenaCreate(KiB(10));
+    if (!arena)
+        Log("Failed to allocate memory\n");
 
-        String8 buffer = FileLoad(global_arena, path);
-scan_buffer_and_handle_modules(global_arena, &buffer);
+    String8 buffer = FileLoad(arena, path);
+    scan_buffer_and_handle_modules(arena, &buffer);
 
-        TokenTree *tree = tokenize_tree_fmt(global_arena, &buffer);
-        if(!tree) Log("Failed to create Token Tree\n");
+    TokenTree *tree = tokenize_tree_fmt(arena, &buffer);
+    if (!tree)
+        Log("Failed to create Token Tree\n");
 
-            Ast *ast = parse_tokenized_tree_fmt(global_arena, tree);
-            if(!ast) Log("Failed to create AST\n");
+    Ast *ast = parse_tokenized_tree_fmt(arena, tree);
+    if (!ast)
+        Log("Failed to create AST\n");
 
     return 0;
 }

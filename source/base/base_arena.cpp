@@ -70,11 +70,13 @@ win32_arena_destroy(MemArena *arena)
 internal void *
 arena_alloc(MemArena *arena, u64 size, b32 zero)
 {
-    Assert(!arena);
+    Assert(arena);
 
     u64 aligned = Align(arena->current_position, arena_align);
     u64 new_pos = aligned + size;
-    Assert(new_pos > arena->capacity);
+
+AssertLog((new_pos <= arena->capacity), "max arena capacity reached\n");
+
 
     void *out = arena->base_position + aligned;
 
@@ -109,7 +111,7 @@ arena_clear(MemArena *arena)
 }
 
 internal MemArena *
-arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size, umm alignment)
+arena_resize_block_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size, umm alignment)
 {
     u8 *old_mem = (u8 *)old_memory;
 
@@ -119,7 +121,7 @@ arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size
 
     if(old_memory == NULL || old_size == 0) {
         return (MemArena *)arena_alloc(arena, new_size, 0);
-    } else if((old_mem >= arena->base_position && old_mem < arena->base_position + arena->capacity)) {
+    } else if((old_mem >= arena->base_position && old_mem < arena->base_position + arena->current_position)) { // NOTE: does not find it self after the current position
         if((arena->base_position + arena->previous_position) == old_memory) {
             arena->current_position = arena->previous_position + new_size;
             if(new_size > old_size) {
@@ -133,32 +135,31 @@ arena_resize_align(MemArena *arena, void *old_memory, u64 new_size, u64 old_size
             memmove(new_memory, old_mem, copy_size);
         }
     } else {
-        // Log("yeah something in the mem allocator failed i guess"); // TODO: find a way to properly include the logging
+         AssertLog(false, "Failed to resize memory.\n");
     }
 
     return NULL;
 }
 
 internal MemArena *
-arena_resize(MemArena *arena, void *old_memory, u64 new_size, u64 old_size)
+arena_resize_block(MemArena *arena, void *old_memory, u64 new_size, u64 old_size)
 {
-    return arena_resize_align(arena, old_memory, new_size, old_size, arena_align);
+    return arena_resize_block_align(arena, old_memory, new_size, old_size, arena_align);
 }
 
 internal ScratchArena
 scratch_start(MemArena *arena)
 {
-    ScratchArena sa;
-    sa.arena          = arena;
-    sa.start_position = arena->current_position;
+    ScratchArena scratch;
+    scratch.arena          = arena;
+    scratch.start_position = arena->current_position;
 
-    return sa;
+    return scratch;
 }
 
 internal void
 scratch_end(ScratchArena *scratch)
 {
     scratch->arena->current_position = scratch->start_position;
-    // TODO: does the rest of the memory need to be set to zero?
 }
 

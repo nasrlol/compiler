@@ -2,11 +2,9 @@
 #define COMPILER_H
 
 typedef struct params params;
-struct params
-{
+struct params {
     String8 desired_context;
     String8 current_context;
-
 };
 
 #endif COMPILER_H

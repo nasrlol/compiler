@@ -31,8 +31,7 @@ vk_render_entrypoint(MemArena *arena, PlatformWindow *window, Engine *engine)
 #endif
     }
 
-
-#ifdef  BASE_DEBUG
+#ifdef BASE_DEBUG
     bool enable_validation_layer = true;
 #else
     bool enable_validation_layer = false;
