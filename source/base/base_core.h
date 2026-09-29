@@ -115,7 +115,7 @@ Log(__VA_ARGS__);\
 Assert(false);\
 }\
 } \
-while(0);
+while(0)
 
 internal void _assert(bool expression);
 
