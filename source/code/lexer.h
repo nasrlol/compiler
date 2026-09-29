@@ -88,6 +88,16 @@ struct TokenTree {
     u64 index;
 };
 
+typedef struct TranslationUnit TranslationUnit;
+struct TranslationUnit {
+// stored as an array
+// per omdule one unit, to handle namespace issues
+TokenTree *tree_units;
+
+};
+
+
+
 //- nil variables
 ReadOnly global_variable Token nil_token = {TokenType::Illegal, 0, {}};
 
@@ -98,7 +108,19 @@ ReadOnly global_variable TokenNode nil_token_node = {TokenNodeFlags::Invalid,
                                                      &nil_token_node, // parent
                                                      &nil_token_node, // first
                                                      &nil_token_node, // last
-                                                     {}};
+                                                     {}
+};
+
+
+ReadOnly TokenTree nil_token_tree {
+
+    &nil_token_node, // root
+     &nil_token_node, // current;
+    {},              //*buffer;
+	0,               // amount_of_new_lines
+    0,               // index;
+};
+
 
 // - functions
 internal b32 is_token_node_nil(TokenNode *node);

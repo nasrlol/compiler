@@ -1,11 +1,28 @@
 #ifndef PREPROC_H
 #define PREPROC_H
 
+
 typedef struct Module Module;
 struct Module {
-    TokenTree *tree;
+    TokenTree *unit;
     String8 name;
-    void *handle; // TODO: update the platform library to support a generic file type
+Module *next;
 };
 
+  typedef struct ModuleList ModuleList;
+struct ModuleList {
+Module *current;
+};
+
+ReadOnly Module nil_module = {
+&nil_token_tree,
+{},
+&nil_module,
+
+};
+
+internal Token *consume_token_from_buffer(MemArena * arena, String8 * buffer);
+ internal ModuleList *scan_buffer_and_handle_modules(MemArena * arena, String8 * buffer);
+
 #endif // PREPROC_H
+
