@@ -196,44 +196,18 @@ AssertLog((new_pointer != NULL), "stack_push_align failed in stack_resize_align"
     return (MemStack *)new_pointer;
 }
 
-#define StackToArena(arena, requested_size) Stack()
-
-internal MemStack *arena_to_stack(MemArena *arena, u64 requested_size, u64 alignment)
+internal MemStack *arena_to_stack(MemArena *arena, u64 requested_size)
 {
 
-    u8 padding = 0;
+Assert(arena);
 
-    // NOTE: this shouln't be possible because we have the allignment predefined
-    // so it's bassically a useless check
+MemStack *stack = PushStruct(arena, MemStack);
+u8 *buffer = PushArray(arena, u8, requested_size);
 
-    if (!is_pow(alignment)) {
-        return (0);
-    }
-
-    if (alignment > 128) { // NOTE: where does the 128 come from?
-        alignment = 128;
-    }
-
-    padding = calculate_padding(arena->current_position, alignment, sizeof(MemStackHeader));
-
-    u64 used_capacity = arena->current_position;
-
-// this should be if the size is less than the remaining capacity
-
-    Assert(requested_size <= (arena->capacity - used_capacity));
-
-    // assign the header to the closest position in the arena.
-    // TODO: doesnt this get left behin after a while
-    MemStackHeader *header = (MemStackHeader *) arena->current_position; // TODO: I hope this handle represents the address. if it
-                                     // doesnt i will need to find a way to convert it properly
-    header->padding = padding;
-
-    MemStack *stack       = (MemStack *)(arena->current_position + sizeof(MemStackHeader));
-    stack->header         = header;
+    stack->header         = 0;
+    stack->base_position  = buffer;
+    stack->capacity       = requested_size;
     stack->current_offset = 0;
-    stack->capacity       = (u64)arena->base_position -
-                            arena->current_position; // we just allocate the remainder of the size
-    stack->base_position  = (u8 *)arena->current_position;
 
     return stack;
 }
