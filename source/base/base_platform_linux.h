@@ -41,6 +41,6 @@ internal int unix_library_close(Library *library);
 internal void unix_os_exit() __attribute__((noreturn));
 internal b32 unix_file_exists(String8 path);
 internal String8 unix_file_load(MemArena *arena, String8 path);
-internal String8 unix_file_write(String8 data, String8 path);
+internal b32 unix_file_write(String8 data, String8 path);
 
 #endif // BASE_LINUX_H

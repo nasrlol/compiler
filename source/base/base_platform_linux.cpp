@@ -167,12 +167,12 @@ result.size = total_bytes_read;
     return result;
 }
 
-internal String8 unix_file_write(String8 data, String8 path)
+// TODO: why was this returning a str8 before?
+internal b32 unix_file_write(String8 data, String8 path)
 {
-    String8 result = {0};
     s32 file       = open((const char *)path.data, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (file == -1) {
-        return (String8){0};
+return false;
     }
 
     u64 written = 0;
@@ -180,14 +180,13 @@ internal String8 unix_file_write(String8 data, String8 path)
         s64 err = write(file, data.data + written, data.size - written);
         if (err == -1) {
             close(file);
-            return str8_zero();
+            return false;
         }
         written += err;
     }
 
     close(file);
-    result = data;
-    return result;
+    return true;
 }
 
 internal void unix_log_with_args(const char *format, ...)
@@ -195,7 +194,7 @@ internal void unix_log_with_args(const char *format, ...)
     va_list arguments;
     va_start(arguments, format);
     vprintf(format, arguments);
-	fflush(stdout);
+    fflush(stdout);
     va_end(arguments);
 }
 
@@ -207,14 +206,14 @@ internal String8List *unix_open_dir(MemArena *arena, String8 *path)
     String8List *files_list = PushStructZero(arena, String8List);
     files_list->first       = &nil_str8_node;
     files_list->last        = &nil_str8_node;
-	
+
     cstring cpath = null_terminate(arena, path);
     DIR *dir     = opendir(cpath);
     if (!dir) {
         Log("opendir(%s) failed\n", cpath);
         return files_list;
     }
-	
+
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type != DT_REG) { // TODO: should symbolic files be handles aswell?
@@ -231,7 +230,7 @@ FOR_STR8_NODE(files_list, current) {
 Log("Logging files names");
 LogStr8(current->value);
 }
-	
+
     closedir(dir);
     return files_list;
 }

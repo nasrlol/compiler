@@ -87,7 +87,7 @@ start_pos = found_pos + element.size;
 internal b32 str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out)
 {
     for (u64 index = start_pos; index < buffer->size - element.size; ++index) {
-		String8 view = str8_chop_left(*buffer, index);
+        String8 view = str8_chop_left(*buffer, index);
         view = str8_chop_right(view, view.size - element.size);
         if (str8_is_match(view, element)) {
             *out = index;

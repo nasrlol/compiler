@@ -80,7 +80,7 @@ struct Directory {
 };
 
 //-  File I/O
-internal String8 unix_file_write(String8 data, String8 path);
+internal b32 unix_file_write(String8 data, String8 path);
 internal String8 unix_file_load(MemArena *arena, String8 path);
 internal b32 unix_file_exists(String8 path);
 internal String8List *unix_open_dir(MemArena *arena,

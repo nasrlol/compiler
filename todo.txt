@@ -10,12 +10,13 @@
 
 
 ~ modules
-
 -- should contain a list of methods and references
 -- we want to disable parts of the imports to keep the bloat minimal
 -- so bassically compile away the stuff we don't want
 
 -- modules table? list of all available .jr files in a current directory
+-- is compiling everything as a single buffer a good idea? or is that just a give me naespace issues cry
+
 
 
 
@@ -53,3 +54,13 @@ It returns MemArena * and should return void *.
 The copy branch never returns new_memory and falls through to NULL.
 MemSet(&arena->current_position, ...) overwrites the arena header.
 The "last allocation" check uses previous_position, which is unaligned. Use old_mem + old_size == base + current_position.
+
+
+
+
+~ performance
+is mmaping faster in reading files?
+
+
+
+-- do we pop the buffers fromt mem or not?
