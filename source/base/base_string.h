@@ -84,15 +84,15 @@ internal String8 str8_clone(MemArena *arena, String8 *src);
 internal void str8_copy(String8 *dest, String8 *src);
 internal b32 str8_append(String8 *dest, String8 src);
 internal b32 str8_append_char(String8 *dest, u8 src);
-internal b32 str8_insert(String8 *dest, String8 *src, u64 pos);
+internal b32 str8_insert(MemArena *arena, String8 *dest, String8 *src, u64 pos);
 
 //- str8 trim / chop
 internal void str8_trim_left(String8 *buffer);
 internal void str8_trim_right(String8 *buffer);
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
-internal void str8_chop_left_ptr(String8 *buffer, u64 count);
-internal void str8_chop_right_ptr(String8 *buffer, u64 count);
+internal b32 str8_chop_left_ptr(String8 *buffer, u64 count);
+internal b32 str8_chop_right_ptr(String8 *buffer, u64 count);
 
 //- str8 substrings, matching, search
 internal String8 str8_create_substr(String8 *buffer, u64 left_offset, u64 right_offset);

@@ -13,16 +13,19 @@
 
 ENTRYPOINT()
 {
-    String8 path;
+
+    Log("\n\nCurrent directory: %s\n", args[0]);
+String8 path;
     if (count <= 1) {
-        path = str8("./tests/main.jr");
+path = str8("./tests/main.jr");
+Log(Str8Fmt, "is the default tests file received \n", Str8Arg(path));
     } else {
+Log("Received file %s\n", args[1]);
         path = str8(args[1]);
     }
 
-    MemArena *arena = ArenaCreate(KiB(10));
-    if (!arena)
-        Log("Failed to allocate memory\n");
+    MemArena *arena = ArenaCreate(MiB(256));
+     AssertLog(arena, "Failed to allocate memory\n");
 
     String8 buffer = FileLoad(arena, path);
     scan_buffer_and_handle_modules(arena, &buffer);

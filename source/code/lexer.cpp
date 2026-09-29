@@ -218,10 +218,9 @@ b32 found       = str8_find(tree->buffer, 0, element, &offset);
         } else if (current_character == ')') {
             // TODO: fix this ugly thing
             if (str8_is_match(tree->current->first->token->value.as_str, str8(")"))) {
-                Log("Error: No opening brace found on line  %llu amount_of_newlines",
-                    tree->amount_of_new_lines);
+push_token_node(tree, node);
             } else {
-                // TODO: Something I forgot what
+                Log("Error: No opening brace found on line %llu", tree->amount_of_new_lines);
             }
         }
         // NOTE: handle arrays --  an array consists of children of the variable name

@@ -178,21 +178,23 @@ internal b32 str8_append(String8 *dest, String8 src)
 internal String8 str8_zero() { return String8{0}; }
 
 // TODO: error handling
-internal void str8_chop_left_ptr(String8 *buffer, u64 count)
+internal b32 str8_chop_left_ptr(String8 *buffer, u64 count)
 {
-    if (buffer->size < count) return;
+    if (buffer->size < count) return false;
 
         buffer->data += count;
 buffer->size -= count;
+return true;
 
 
 }
 
-internal void str8_chop_right_ptr(String8 *buffer, u64 count)
+internal b32 str8_chop_right_ptr(String8 *buffer, u64 count)
 {
-    if (buffer->size < count)
-        return;
+    if (buffer->size < count) return false;
+
     buffer->size -= count;
+return true;
 }
 
 internal String8 str8_chop_left(String8 buffer, u64 count)
@@ -295,11 +297,14 @@ internal String32 str32_chop_right(String32 buffer, u64 count)
     return buffer;
 }
 
+internal b32 str8_prefix(MemArena *arena, String8 *buffer, String8 *prefix) {
+b32 result = str8_insert(arena, buffer, prefix, 0);
+return result;
+}
 
 internal b32 str8_starts_with(String8 buffer, String8 prefix) {
 
 if(buffer.size < prefix.size) {
-
 return false;
 }
 
@@ -425,6 +430,7 @@ internal cstring null_terminate(MemArena *arena, String8 *buffer)
 
 internal String8 remove_null_terminator(MemArena *arena, String8 c)
 {
+Assert(arena);
     if ((c.size > 0) && (c.data[c.size - 1] == '\0')) {
         String8 chopped = {c.data, c.size - 1};
         return chopped;

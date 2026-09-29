@@ -47,16 +47,14 @@ internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
 
     Ast *ast = PushStruct(arena, Ast);
     MemStack *stack;
-    stack = arena_to_stack(arena, MiB(10), arena->current_position);
+    stack = ArenaToStack(arena, MiB(10));
 
-    for (TokenNode *current_node = token_tree->current; !is_token_node_nil(current_node);
-         current_node            = current_node->next) {
+    for (TokenNode *current_node = token_tree->current; !is_token_node_nil(current_node); current_node = current_node->next) {
         AstNode *new_node = StackPushStruct(stack, AstNode);
         // TODO: cleanup after scan
         if (!new_node) {
 
-            // NOTE: this doesn't need to be part of the compiler output because it should never
-            // fail
+            // NOTE: this doesn't need to be part of the compiler output because it should never fail
             Log("Failed to push new node on to the stack\n");
             return NULL;
         }
