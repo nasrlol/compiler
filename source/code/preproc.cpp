@@ -29,6 +29,7 @@ return &nil_token;
         ++idx;
     }
 
+
     if (end_offset != 0) {
         substr = str8_create_substr(buffer, 0, end_offset);
         str8_chop_left_ptr(buffer, end_offset);
@@ -37,12 +38,36 @@ return &nil_token;
     //- handle directives
 
     if (str8_is_match(substr, str8("import"))) {
-        str8_chop_left_ptr(buffer, substr.size);
-        while (cstring_is_whitespace(*buffer->data))
+
+        substr = str8_chop_left(*buffer, substr.size);
+
+        while (cstring_is_whitespace(*buffer->data)) {
             str8_chop_left_ptr(buffer, 1);
-        u64 whitespace_pos = 0;
-        str8_find(buffer, 0, str8(" "), &whitespace_pos);
-        substr = str8_create_substr(buffer, 0, whitespace_pos);
+}
+
+        u64 end_pos = 0;
+b32 found_first_newline_or_whitespace = false;
+for(u64 substr_index_to_find_newline_or_whitespace = 0; substr_index_to_find_newline_or_whitespace < substr.size; ++substr_index_to_find_newline_or_whitespace) {
+
+if(cstring_is_whitespace(buffer->data[substr_index_to_find_newline_or_whitespace]) ||
+ cstring_is_newline(buffer->data[substr_index_to_find_newline_or_whitespace])) {
+end_pos = substr_index_to_find_newline_or_whitespace;
+found_first_newline_or_whitespace = true;
+continue;
+}
+
+if(found_first_newline_or_whitespace) {
+
+break;
+}
+
+}
+
+// TODO: we count one to many for some reason
+ end_pos-= 1;
+
+        substr = str8_create_substr(buffer, 0, end_pos);
+
     } else {
         if (str8_is_empty(&substr)) {
             PANIC("directive not defined yet");
@@ -56,15 +81,9 @@ return &nil_token;
     // instead
 
     Token *new_token = PushStruct(arena, Token);
-
     new_token->type         = IdentToken;
     new_token->line         = 0;
     new_token->value.as_str = substr;
-
-    new_token->type         = IdentToken;
-    new_token->line         = 0;
-    new_token->value.as_str = substr;
-
     return new_token;
 
     // NOTE: We return an invalid token if we can't find a one to consume.
@@ -82,17 +101,39 @@ internal void scan_buffer_and_handle_modules(MemArena *arena, String8 *original_
     str8_copy(&dest_buffer, original_buffer);
 
     Token *token = consume_token_from_buffer(arena, original_buffer);
-    String8List *files;
-    if (!is_token_nil(token)) {
-        files = DirLoad(arena, &token->value.as_str);
+
+// TODO: auto per directory include module feature
+// compile time arguments
+
+// TODO: remove one of these in the future when we have a proper seperation between the directory and per file loading
+                String8List *files = {};
+
+String8 included_module_buffer = {};
+if (!is_token_nil(token)) {
+#if 0
+files = DirLoad(arena, &token->value.as_str);
+if (files->count == 0) {
+PANIC("include not found in current directory.");
+}
+#else
+included_module_buffer = FileLoad(arena, token->value.as_str);
+if(included_module_buffer.size == 0) {
+PANIC("include not found in current directory.");
+}
+#endif
+
+
     } else {
         // NOTE: if it's a nil token we should be able to assume that there is no pound token in the
         // file or that the directive used isnt known. or some other edge case. this will be logged
         // from inside the consume_token_from_buffer function
-        Log("preprocessor early exit");
+        Log("preprocessor early exit, no file specified");
         return;
     }
 
+// TODO: this is the seperation between the per directoryu and per file handling
+// disabled for now
+#if 0
     String8 buffer = {};
 
     FOR_STR8_NODE(files, current)
@@ -107,8 +148,21 @@ internal void scan_buffer_and_handle_modules(MemArena *arena, String8 *original_
                 str8_append(&buffer, FileLoad(arena, current_value_file_path));
             }
             buffer = FileLoad(arena, current->value);
+b32 result = str8_insert(arena, original_buffer, &buffer, 0);
+if(result) {
+Log("preprocessor handled " Str8Fmt, current_value_file_path);
+
+} else {
+break;
+}
         }
     }
+#else
+
+if
+
+
+#endif
 
     Log("Preprocessor exit\n");
     return;

@@ -15,8 +15,41 @@
 -- we want to disable parts of the imports to keep the bloat minimal
 -- so bassically compile away the stuff we don't want
 
+-- modules table? list of all available .jr files in a current directory
+
 
 
 ~ base
 
 fix the arena implementaiotn
+
+
+~ The parser's stack request can't fit in the arena. arena_to_stack asserts at base_stack.cpp:223: it wants 10 MiB (requested_size=10485760) from an arena that is only 10 MiB total and already partly used.
+Make the arena bigger in compiler.cpp:23 (e.g. MiB(256), or GiBs; untouched mmap pages cost nothing), or ask for less.
+parser.cpp:50 still passes arena->current_position as the alignment argument. It only passed the is_pow check by luck and got clamped to 128. Pass arena_align instead.
+
+~ arena_to_stack will crash right after that (base_stack.cpp:201-238).
+Lines 227 and 231 use current_position (an offset) as an address. Writing through it segfaults.
+Lines 234-235 compute capacity as an address minus an offset. It should be requested_size.
+Line 236 sets base_position to an offset.
+It never advances arena->current_position, so the next PushStruct overwrites the stack.
+Easiest fix: rewrite it on top of arena_alloc, using the sketch from my previous message.
+
+~ The preprocessor reads the wrong module name. That's where opendir(r\n\nenum) failed in your output comes from.
+In preproc.cpp:~40, str8_chop_left_ptr(buffer, end_offset) already removed import. The import branch then chops substr.size (6 chars) again, so " std.jr\n\nenum…" becomes "r\n\nenum…".
+The name search looks for " " only, so it runs past the newline. It should stop at any whitespace.
+consume_token_from_buffer(arena, original_buffer) chops main's buffer in place. After preprocessing, the lexer never sees anything before #import. Pass a copy (dest_buffer is already made and never used).
+In scan_buffer_and_handle_modules, buffer = FileLoad(arena, current->value); runs right after the if/else and throws away the str8_append result.
+
+~ tests/base/test.cpp:28 is testing the wrong idea.
+ ArenaResize(arena, arena->base_position, MiB(1), arena->capacity) tries to resize the whole arena. It fails because nothing is allocated yet (current_position = 0). Rewrite it to test a block: PushStruct a few Foos, resize the last one (in place) and a middle one (copy), then check the contents survived.
+
+Allocator correctness
+
+align() is inverted (base_memory.cpp:5): it returns early for every power of two, so nothing is ever aligned. Change == 0 to != 0.
+is_pow(0) returns true. It should be x && (x & (x - 1)) == 0.
+arena_resize_block_align (base_arena.cpp) has several problems:
+It returns MemArena * and should return void *.
+The copy branch never returns new_memory and falls through to NULL.
+MemSet(&arena->current_position, ...) overwrites the arena header.
+The "last allocation" check uses previous_position, which is unaligned. Use old_mem + old_size == base + current_position.

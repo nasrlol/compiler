@@ -3,7 +3,6 @@
 // this is a comment
 /* this is also a comment */
 
-#import std.jr
 
 enum colors
 {
@@ -11,6 +10,8 @@ enum colors
     green,
     yellow
 }
+
+#import std.jr
 
 struct string {
     value: string
