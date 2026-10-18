@@ -3,7 +3,7 @@
 
 //- cstring
 
-typedef const char *cstring;
+typedef char *cstring;
 
 // - str8
 typedef struct String8 String8;
@@ -21,53 +21,53 @@ typedef struct String32List String32List;
 //- strings
 
 struct String8 {
-    u8 *data;
-    u64 size;
+ u8 *data;
+ u64 size;
 };
 
 struct String16 {
-    u16 *data;
-    u64 size;
+ u16 *data;
+ u64 size;
 };
 
 struct String32 {
-    u32 *data;
-    u64 size;
+ u32 *data;
+ u64 size;
 };
 
 //- nodes
 struct String8Node {
-    String8Node *next;
-    String8 value;
+ String8Node *next;
+ String8 value;
 };
 
 struct String16Node {
-    String16Node *next;
-    String16 string;
+ String16Node *next;
+ String16 string;
 };
 
 struct String32Node {
-    String32Node *next;
-    String32 value;
+ String32Node *next;
+ String32 value;
 };
 
 //- lists
 struct String8List {
-    String8Node *first;
-    String8Node *last;
-    u64 count;
+ String8Node *first;
+ String8Node *last;
+ u64 count;
 };
 
 struct String16List {
-    String16Node *first;
-    String16Node *last;
-    u64 count;
+ String16Node *first;
+ String16Node *last;
+ u64 count;
 };
 
 struct String32List {
-    String32Node *first;
-    String32Node *last;
-    u64 count;
+ String32Node *first;
+ String32Node *last;
+ u64 count;
 };
 
 //- nil / zero-value checks and constructors
@@ -128,8 +128,13 @@ internal b32 cstring_is_whitespace(u8 point);
 internal b32 cstring_is_slash(u8 point);
 internal b32 cstring_is_newline(u8 point);
 
+#define CstringIsMatch(a, b) cstring_is_match((u8 *)(a), (u8 *)(b))
+#define CstringAnyMatch(a, b) cstring_any_match((u8 *)(a), (u8 *)(b))
+
+
 //- cstring matching, length, search
 internal b32 cstring_is_match(u8 *a, u8 *b);
+internal b32 cstring_any_match(u8 *a, u8 *b);
 internal u64 cstring8_length(u8 *c);
 internal u64 cstring16_length(u16 *c);
 internal u64 cstring32_length(u32 *c);
@@ -165,29 +170,29 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {}};
 // null terminated and when not. because in thi case I am the one passing a string "/" or something
 // like that. is that null terminated or not?
 #define ToString8(data)                                                                            \
-    String8 { (u8 *)(data), (u64)(cstring8_length((u8 *)data)) }
+ String8 { (u8 *)(data), (u64)(cstring8_length((u8 *)data)) }
 #define ToString16(data)                                                                           \
-    String16 { (u16 *)(data), (u64)(cstring16_length((u16 *)data)) }
+ String16 { (u16 *)(data), (u64)(cstring16_length((u16 *)data)) }
 #define ToString32(data)                                                                           \
-    String32 { (u32 *)(data), (u64)(cstring32_length((u32 *)data)) }
+ String32 { (u32 *)(data), (u64)(cstring32_length((u32 *)data)) }
 
 #define str8(buffer) ToString8(buffer)
 #define str16(buffer) ToString16(buffer)
 #define str32(buffer) ToString32(buffer)
 
 #define ToString8Size(data, size)                                                                  \
-    String8 { (u8 *)(data), (u64)(size) }
+ String8 { (u8 *)(data), (u64)(size) }
 #define ToString16Size(data, size)                                                                 \
-    String16 { (u16 *)(data), (u64)(size) }
+ String16 { (u16 *)(data), (u64)(size) }
 #define ToString32Size(data, size)                                                                 \
-    String32 { (u32 *)(data), (u64)(size) }
+ String32 { (u32 *)(data), (u64)(size) }
 
 #define ToString8Node(string)                                                                      \
-    String8Node { &nil_str8_node, string }
+ String8Node { &nil_str8_node, string }
 #define ToString16Node(string)                                                                     \
-    String16Node { &nil_str8_node, string }
+ String16Node { &nil_str8_node, string }
 #define ToString32Node(string)                                                                     \
-    String32Node { &nil_str8_node, string }
+ String32Node { &nil_str8_node, string }
 
 #define str8_node(text) ToString8Node(str8(text))
 #define str16_node(text) ToString16Node(str16(text))
@@ -202,21 +207,21 @@ ReadOnly global_variable String32List nil_str32_list = {NULL, {}};
 #define FOR_STR8_CHOP_LEFT(index, buffer, count) FOR_STR8_CHOP(index, buffer, count, str8_chop_left)
 
 #define FOR_STR8_CHOP_RIGHT(index, buffer, count)                                                  \
-    FOR_STR8_CHOP(index, buffer, count, str8_chop_right)
+ FOR_STR8_CHOP(index, buffer, count, str8_chop_right)
 
 // NOTE: we face an issue with returning an rvalue. to solve this we should only use the pointer
 // functions that we create (str8_chop_left_ptr and str8_chop_right_ptr)
 #define FOR_STR8_CHOP(index, buffer, count, function)                                              \
-    for (u64 index = 0; (index < (buffer.size)) && ((buffer.size) > (count));                      \
-         function((buffer), (count)), ++index)
+ for (u64 index = 0; (index < (buffer.size)) && ((buffer.size) > (count));                      \
+      function((buffer), (count)), ++index)
 
 #define FOR_STR8_ARB_FN(expr, function, ...) LOOP(expr, function(__VA_ARGS__))
 
 #define FOR_STR8_MATCH(buffa, buffb) LOOP(str8_is_match(buffa, buffb), str8_chop_left(buffa, 1))
 
 #define FOR_STR8_NODE(str8_list, current)                                                          \
-    for (String8Node *current = str8_list->first; !is_nil_str8_node(current);                      \
-         current              = current->next)
+ for (String8Node *current = str8_list->first; !is_nil_str8_node(current);                      \
+      current              = current->next)
 
 internal b32 is_nil_str8(String8 *a);
 internal b32 is_nil_str8_node(String8Node *a);
@@ -230,6 +235,6 @@ internal b32 is_nil_str32_node(String32Node *a);
 #endif
 
 #define Str8Fmt "%.*s"
-#define Str8Arg(buffer) (unsigned int)((buffer).size), (char *)((buffer).data)
+#define Str8Arg(buffer) (u64)((buffer).size), (char *)((buffer).data)
 
 #endif /* BASE_STRING_H */
