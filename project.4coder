@@ -2,75 +2,75 @@ version(2);
 project_name = "compiler";
 
 patterns = {
- "*.c",
- "*.cpp",
- "*.h",
- "*.m",
- "*.bat",
- "*.sh",
- "*.4coder",
- "*.jr",
+    "*.c",
+    "*.cpp",
+    "*.h",
+    "*.m",
+    "*.bat",
+    "*.sh",
+    "*.4coder",
+    "*.jr",
 };
 
 blacklist_patterns = {
- ".*",
+    ".*",
 };
 
 paths = {
- { "./source/code", .relative = true, .recursive = true, },
- { "./source/base", .relative = true, .recursive = true, },
+    { "./source/code", .relative = true, .recursive = true, },
+    { "./source/base", .relative = true, .recursive = true, },
 };
 
 linux_paths = {
- { "./source/code", .relative = true, .recursive = true, },
- { "./source/base", .relative = true, .recursive = true, },
- { "/usr/include",  .relative = false, .recursive = false, },
+    { "./source/code", .relative = true, .recursive = true, },
+    { "./source/base", .relative = true, .recursive = true, },
+    { "/usr/include",  .relative = false, .recursive = false, },
 };
 
 load_paths = {
- .win   = paths,
- .linux = linux_paths,
- .mac   = linux_paths,
+    .win   = paths,
+    .linux = linux_paths,
+    .mac   = linux_paths,
 };
 
 commands = {
- .build = {
-  .linux            = "./build.sh",
-  .mac              = "./build.sh",
-  .out              = "*compilation*",
-  .footer_panel     = false,
-  .save_dirty_files = true,
-  .cursor_at_end    = true,
- },
- .run = {
-  .linux            = "./build/compiler",
-  .mac              = "./build/compiler",
-  .out              = "*compilation*",
-  .footer_panel     = false,
-  .save_dirty_files = true,
-  .cursor_at_end    = true,
- },
- .test_build = {
-  .linux            = "./test.sh",
-  .mac              = "./test.sh",
-  .out              = "*compilation*",
-  .footer_panel     = false,
-  .save_dirty_files = true,
-  .cursor_at_end    = true,
- },
- .test_run = {
-  .linux            = "setarch $(uname -m) -R ./build/test", // disables address randomization
-  .mac              = "./test/build",
-  .out              = "*compilation*",
-  .footer_panel     = false,
-  .save_dirty_files = true,
-  .cursor_at_end    = true,
- },
+    .build = {
+        .linux            = "./build.sh",
+        .mac              = "./build.sh",
+        .out              = "*compilation*",
+        .footer_panel     = false,
+        .save_dirty_files = true,
+        .cursor_at_end    = true,
+    },
+    .run = {
+        .linux            = "./build/compiler",
+        .mac              = "./build/compiler",
+        .out              = "*compilation*",
+        .footer_panel     = false,
+        .save_dirty_files = true,
+        .cursor_at_end    = true,
+    },
+    .test_build = {
+        .linux            = "./test.sh",
+        .mac              = "./test.sh",
+        .out              = "*compilation*",
+        .footer_panel     = false,
+        .save_dirty_files = true,
+        .cursor_at_end    = true,
+    },
+    .test_run = {
+        .linux            = "setarch $(uname -m) -R ./build/test", // disables address randomization
+        .mac              = "./test/build",
+        .out              = "*compilation*",
+        .footer_panel     = false,
+        .save_dirty_files = true,
+        .cursor_at_end    = true,
+    },
 };
 
 fkey_command = {
- .F1 = "build",
- .F2 = "run",
- .F3 = "test_build",
- .F4 = "test_run",
+    .F1 = "build",
+    .F2 = "run",
+    .F3 = "test_build",
+    .F4 = "test_run",
 };

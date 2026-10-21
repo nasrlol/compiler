@@ -7,26 +7,26 @@
 
 //- Types
 
-typedef void (LibSym)(void *);
+typedef void(LibSym)(void *);
 
 
 typedef struct LibrarySymbols LibrarySymbols;
 struct LibrarySymbols {
- LibSym *current_sym;
- LibSym *next_sym;
- LibSym *previous_sym;
+    LibSym *current_sym;
+    LibSym *next_sym;
+    LibSym *previous_sym;
 };
 
 typedef struct SharedLibrary SharedLibrary;
 struct SharedLibrary {
- void *mem;
- cstring name;
- LibrarySymbols *symbols;
+    void           *mem;
+    cstring         name;
+    LibrarySymbols *symbols;
 };
 
 typedef struct Directory Directory;
 struct Directory {
- String8List *file_names;
+    String8List *file_names;
 };
 
 #if 1
@@ -36,22 +36,22 @@ struct Directory {
 
 //- Shared libraries
 internal void *unix_shared_library_get_proc_from_name(SharedLibrary *library, const char *name);
-internal void unix_load_shared_library(MemArena *arena);
-internal int unix_shared_library_close(SharedLibrary *library);
+internal void  unix_load_shared_library(MemArena *arena);
+internal int   unix_shared_library_close(SharedLibrary *library);
 
 internal String8 unix_get_env(const char *var);
 
 //- File I/O
-internal b32 unix_file_write(String8 data, String8 path);
-internal String8 unix_file_load(MemArena *arena, String8 path);
-internal b32 unix_file_exists(String8 path);
+internal b32          unix_file_write(String8 data, String8 path);
+internal String8      unix_file_load(MemArena *arena, String8 path);
+internal b32          unix_file_exists(String8 path);
 internal String8List *unix_open_dir(MemArena *arena,
-                                    String8 *original_path); // TODO: change the return value
+                                    String8  *original_path); // TODO: change the return value
 
-internal s64 unix_read(int fd, const void *buf, u64 count);
+internal s64  unix_read(int fd, const void *buf, u64 count);
 internal void unix_os_exit() __attribute__((noreturn));
 
-internal s64 unix_log(int fd, const void *buf, u64 count);
+internal s64  unix_log(int fd, const void *buf, u64 count);
 internal void unix_log_with_args(const char *format, ...);
 
 #define FileLoad(arena, path) unix_file_load(arena, path)
@@ -70,7 +70,7 @@ internal void unix_log_with_args(const char *format, ...);
 #endif // disable comments when debug mode is disabled
 
 //- Entrypoint
-#define ENTRYPOINT() int main(int count, char **args)
+#define ENTRYPOINT() int main(int argc, char **args)
 
 //- Windows
 #elif PLATFORM_WINDOWS
@@ -81,17 +81,17 @@ internal void unix_log_with_args(const char *format, ...);
 
 //- Shared libraries
 internal void *win32_load_library();
-internal void win32_library_get_proc();
+internal void  win32_library_get_proc();
 
 //- File I/O
-internal b32 win32_file_exists(u8 *path);
-internal b32 win32_file_write(String8 data, String8 path);
-internal String8 win32_file_load(MemArena *arena, String8 file);
+internal b32         win32_file_exists(u8 *path);
+internal b32         win32_file_write(String8 data, String8 path);
+internal String8     win32_file_load(MemArena *arena, String8 file);
 internal String8List win32_open_dir(MemArena *arena, String8 *original_path); // TODO: ...
 
-internal b32 win32_os_exit();
+internal b32  win32_os_exit();
 internal void win32_handle_error(MemArena *arena, DWORD error);
-internal u64 safe_truncate_64(u64 value);
+internal u64  safe_truncate_64(u64 value);
 
 internal void win32_log(String8List messages);
 
@@ -118,8 +118,8 @@ internal void win32_logf(_Printf_format_string_ const char *fmt, ...);
 //- Entrypoint
 #if COMPILER_MSVC
 #pragma warning(disable : 28251) // disabled the annotations warning that are defined in winbase.h
-#define ENTRYPOINT(hinstance, prev_instance, cmd_line, show_cmd)                                   \
- int WINAPI WinMain(hinstance, prev_instance, cmd_line, show_cmd)
+#define ENTRYPOINT(hinstance, prev_instance, cmd_line, show_cmd) \
+    int WINAPI WinMain(hinstance, prev_instance, cmd_line, show_cmd)
 #endif // COMPIPILER_MSVC DISABLE WARNING
 
 #endif // PLATFORM_LINUX || PLATFORM_WINDOWS

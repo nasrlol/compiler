@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-echo
 date
 echo "Compiling compiler"
 echo
