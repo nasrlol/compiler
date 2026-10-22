@@ -3,8 +3,8 @@
 
 typedef struct params params;
 struct params {
-    String8List desired_context;
-    String8    *current_context;
+ String8List desired_context;
+ String8    *current_context;
 };
 
 #endif COMPILER_H

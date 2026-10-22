@@ -7,7 +7,7 @@
 #define CheckSIMDNeon() do { CheckFPAdvSIMDEnabled64(); } while(0);
 internal void neon_compare_u8(u8 *a,u8 *b) {
 
-    // TODO: ...
+ // TODO: ...
 
 }
 
