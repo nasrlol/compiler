@@ -3,17 +3,17 @@
 
 //-
 #define DEBUG_STR8_DIFF(tree, arena, diff_size) \
-                                                  debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
+ debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
- #define TokenNodeContainsFlag(node, flag) \
+#define TokenNodeContainsFlag(node, flag) \
  if (((node->flags) & (flag)) != (0))  \
  return false
 
- #define FillTokenNodeFieldWithNilNode(field)             \
+#define FillTokenNodeFieldWithNilNode(field)             \
  if (node->field == NULL || !is_token_node_nil(node)) \
  node->field = &nil_token_node;
 
- enum TokenType {
+enum TokenType {
  // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying
  // the properties of the identifier
  Illegal = 256,
@@ -35,32 +35,32 @@
  Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
  C_Style_Comment_Start,
  C_Style_Comment_End,
- };
+};
 
- enum TokenNodeFlags : int {
+enum TokenNodeFlags : int {
  Invalid = 1,
  Root    = 2,
  Child   = 3,
  Eof     = 4,
  Bad     = 5,
- };
+};
 
- typedef union TokenValue TokenValue;
- union TokenValue {
+typedef union TokenValue TokenValue;
+union TokenValue {
  String8 as_str;
  f64     as_float;
  u64     as_int;
- };
+};
 
- typedef struct Token Token;
- struct Token {
+typedef struct Token Token;
+struct Token {
  enum TokenType type;
  u64            line;
  TokenValue     value;
- };
+};
 
- typedef struct TokenNode TokenNode;
- struct TokenNode {
+typedef struct TokenNode TokenNode;
+struct TokenNode {
  TokenNodeFlags flag;
  TokenNode     *next;
  TokenNode     *previous;
@@ -70,37 +70,37 @@
  TokenNode     *last;
  Token         *token;
  u64            buffer_position;
- };
+};
 
- typedef struct Lexeme Lexeme;
- struct Lexeme {
+typedef struct Lexeme Lexeme;
+struct Lexeme {
  String8 *buffer;
  u64      index;
- };
+};
 
- // Find a way to do this without allocating the tokens on the heap. It's a huge toll on the
- // performance of the program
- typedef struct TokenTree TokenTree;
- struct TokenTree {
+// Find a way to do this without allocating the tokens on the heap. It's a huge toll on the
+// performance of the program
+typedef struct TokenTree TokenTree;
+struct TokenTree {
  TokenNode *root;
  TokenNode *current;
  String8   *buffer;
  u64        amount_of_new_lines;
  u64        index;
- };
+};
 
- typedef struct TranslationUnit TranslationUnit;
- struct TranslationUnit {
+typedef struct TranslationUnit TranslationUnit;
+struct TranslationUnit {
  // stored as an array
  // per omdule one unit, to handle namespace issues
  TokenTree *tree_units;
- };
+};
 
 
- //- nil variables
- ReadOnly global_variable Token nil_token = {TokenType::Illegal, 0, {}};
+//- nil variables
+ReadOnly global_variable Token nil_token = {TokenType::Illegal, 0, {}};
 
- ReadOnly global_variable TokenNode nil_token_node = {TokenNodeFlags::Invalid,
+ReadOnly global_variable TokenNode nil_token_node = {TokenNodeFlags::Invalid,
  &nil_token_node, // next
  &nil_token_node, // previous
  &nil_token_node, // child
@@ -110,18 +110,18 @@
  {}};
 
 
- ReadOnly TokenTree nil_token_tree{
+ReadOnly TokenTree nil_token_tree{
 
  &nil_token_node, // root
  &nil_token_node, // current;
  {},              //*buffer;
  0,               // amount_of_new_lines
  0,               // index;
- };
+};
 
 
- typedef struct TokenNodeList TokenNodeList;
- struct TokenNodeList{
+typedef struct TokenNodeList TokenNodeList;
+struct TokenNodeList{
  TokenNode *current;
  TokenNode *root;
 };

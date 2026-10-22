@@ -4,24 +4,24 @@ print(buffer: string) {
 
 struct vec {
 
-  x: int
+ x: int
   y: int
 
-  }
+}
 
-  calculate_vector_length(vector: vec): f32 {
+calculate_vector_length(vector: vec): f32 {
 
 
-  // This is another comment
-  // And this is one more
+ // This is another comment
+ // And this is one more
 
-  while true {
+ while true {
   vec.x += 1
-  vec.y += 1
-  }
+   vec.y += 1
+ }
 
 
-  print(vec.x)
+ print(vec.x)
   print(vec.y)
 
 }

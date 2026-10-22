@@ -5,18 +5,18 @@
 typedef struct Profile Profile;
 struct Profile {
  f32 start, end;
- };
+};
 
- #if ARCH_x86_64
+#if ARCH_x86_64
 
- #define StartProfile(arena, callback) internal Profile *x86_start_profile(MemArena *arena, void *callback);
- #define EndProfile(profile, scratch)  internal void x86_end_profile(Profile *profile, ScratchArena *scratch);
+#define StartProfile(arena, callback) internal Profile *x86_start_profile(MemArena *arena, void *callback);
+#define EndProfile(profile, scratch)  internal void x86_end_profile(Profile *profile, ScratchArena *scratch);
 
 
- #define GetCycles(high, low) do { \
- asm volatile ("RDTSC\n\t" \
- "mov %%edx, %0\n\t" \
- "mov %%eax, %1\n\t": "=r" (high), "=r" (low):: "%eax", "%edx"); \
+#define GetCycles(high, low) do { \
+  asm volatile ("RDTSC\n\t" \
+                "mov %%edx, %0\n\t" \
+                "mov %%eax, %1\n\t": "=r" (high), "=r" (low):: "%eax", "%edx"); \
  } \
  while(0);
 

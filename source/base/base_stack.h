@@ -17,9 +17,9 @@ typedef struct MemStack       MemStack;
 struct MemStackHeader {
  u8 padding;
  u8 previous_offset;
- };
+};
 
- struct MemStack {
+struct MemStack {
  MemStackHeader *header;
  u64             current_offset;
  u64             capacity;

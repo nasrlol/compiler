@@ -14,10 +14,10 @@ internal Profile *x86_start_profile(MemArena *arena, F callback)
  GetCycles(end_high, end_low);
  p->end = end_high - end_low;
  return p;
- }
+}
 
- internal void x86_end_profile(Profile *profile, ScratchArena *scratch)
- {
+internal void x86_end_profile(Profile *profile, ScratchArena *scratch)
+{
  Log("log the profile or something");
  scratch_end(scratch);
 }

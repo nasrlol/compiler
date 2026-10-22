@@ -8,15 +8,15 @@ struct Module {
  String8    name;
  Module    *next;
  Module    *prev;
- };
+};
 
- typedef struct ModuleList ModuleList;
- struct ModuleList {
+typedef struct ModuleList ModuleList;
+struct ModuleList {
  Module *current;
  u64 count;
- };
+};
 
- ReadOnly Module nil_module = {
+ReadOnly Module nil_module = {
  &nil_token_tree,
  {},
  &nil_module,
