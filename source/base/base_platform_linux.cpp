@@ -182,5 +182,3 @@ internal String8 unix_get_env(const char *var)
  closedir(dir);
  return files_list;
 }
-
-internal void

@@ -38,6 +38,9 @@ internal String8 handle_compiler_param(char *argv) {
  b32 import_chasing = false;
  String8 main_target_path = PushString8(arena, 0);
 
+ ModuleList *modules = PushStruct(arena, ModuleList);
+ ModuleList *module_list = PushStruct(arena, ModuleList);
+
  if (argc <= 1) {
  main_target_path = str8("./tests/main.jr");
  Log("loaded: " Str8Fmt, Str8Arg(main_target_path));
@@ -101,8 +104,6 @@ internal String8 handle_compiler_param(char *argv) {
  String8 entry_file_buffer = FileLoad(arena, main_target_path);
  Log("Files in the current directory: " Str8Fmt, Str8Arg(total_files_buffer));
 
- ModuleList *modules = PushStruct(arena, ModuleList);
- ModuleList *module_list = PushStruct(arena, ModuleList);
 
  u64 insertion_position = 0;
 
@@ -133,7 +134,7 @@ internal String8 handle_compiler_param(char *argv) {
  // file or that the directive used isnt known. or some other edge case. this will be logged
  // from inside the consume_token_from_buffer function
  Log("preprocessor early exit, no file specified");
- goto end;
+ OSExit(0);
  }
 
  if(import_chasing){
@@ -177,22 +178,23 @@ internal String8 handle_compiler_param(char *argv) {
  new_module->name = token->value.as_str;
  if(module_list->current != &nil_module) {
  module_list->current = new_module;
- module_list->next    = &nil_module;
+ module_list->current->next    = &nil_module;
  } else {
- if(moduels->list == &nil_module) modules_list->next = new_module;
- modules_list->current = new_module;
+ if(modules->current == &nil_module) module_list->current->next = new_module;
+ ++module_list->count;
+ module_list->current = new_module;
  }
  }
  }
 
- }
  }
 
  insertion_position = 0;
  if(included_module_buffer.size > 0) {
- b32 inserted = str8_insert(arena, buffer, &included_module_buffer, insertion_position);
+ b32 inserted = str8_insert(arena, &entry_file_buffer, &included_module_buffer, insertion_position); // TODO: ii dont know on which buffer we are actually working
  AssertLog(inserted, "Failed to insert module buffer, even though it wasn't emptyh");
 
+ }
  }
 
  #if DEBUG
@@ -204,24 +206,24 @@ internal String8 handle_compiler_param(char *argv) {
 
  Log("creating new intermediate debug file");
  if(1) { // TODO: this result needs to be retrieved from the insertion
- b32 debug_output_result = FileWrite(*buffer, str8("output.jr.ps"));
+ b32 debug_output_result = FileWrite(total_files_buffer, str8("output.jr.ps"));
  Assert(debug_output_result);
  }
 
  #endif
 
 
- if (modules->current != NULL) { // TODO: ... nothing for now
- Log("no external libraries found");
+ if (module_list->count == 0) {
+ AssertLog(0, "no external libraries found");
  } else {
  for (Module *current = modules->current; current->next != &nil_module && current->next != NULL; current = current->next) {
- String8 module_buffer = FileLoad(arena, path);
+ String8 module_buffer = FileLoad(arena, main_target_path);
  current->tree         = tokenize_tree_fmt(arena, &module_buffer);
  }
  }
 
  //- start the lexing and parsing
- TokenTree *tree = tokenize_tree_fmt(arena, &buffer);
+ TokenTree *tree = tokenize_tree_fmt(arena, &total_files_buffer);
  if (!tree)
  Log("Failed to create Token Tree");
 

@@ -31,7 +31,7 @@ struct LibrarySymbols {
 
  #define LinuxLoadSharedLibrary(arena, name) unix_load_shared_library(arena, name)
  #define LoadSharedLibrary (arena, name) LinuxLoadSharedLibrary(arena, name)
- #deifne PlatformGetCurrentTime(format) unix_get_current_time(format)
+ #define PlatformGetCurrentTime(format) unix_get_current_time(format)
 
  //- Shared libraries
  internal void *unix_shared_library_get_proc_from_name(SharedLibrary *library, const char *name);

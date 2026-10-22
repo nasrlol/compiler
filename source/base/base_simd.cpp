@@ -1,6 +1,6 @@
-#if 1
+#if ARCH_ARM
 #include <arm_neon.h>
-#endif // ARCH_ARM
+#
 
 #define u8x16 uint8x16_t
 
@@ -11,8 +11,9 @@ internal void neon_compare_u8(u8 *a,u8 *b) {
 
 }
 
+#elif ARCH_X86
 
-
-#if 0
 #include <intrin.h>
-#endif
+// TODO: ...
+
+#endif // ARCH
