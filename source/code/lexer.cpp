@@ -42,7 +42,7 @@ internal void push_token_children(MemArena *arena, TokenTree *tree, String8List 
 
 internal void push_token_node(TokenTree *tree, TokenNode *node)
 {
- if (is_token_node_nil(tree->root)) {
+ if (is_token_node_nil(tree->root) || is_token_node_nil(tree->current)) {
   tree->root    = node;
   tree->current = node;
   return;
@@ -70,12 +70,11 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
  }
 
  TokenTree *tree = PushStruct(arena, TokenTree);
+ tree->buffer    = PushStruct(arena, String8);
+
  Assert(tree);
 
- tree->buffer = PushStruct(arena, String8);
-
  MemCpy(tree->buffer, buffer_from_file, buffer_from_file->size);
-
  tree->buffer->size = buffer_from_file->size;
  tree->index        = 0;
 
@@ -115,7 +114,7 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
    }
 #endif
 
-   // 8/2/2026 TODO: but we don"t initialize the root node at all?
+   // 8/2/2026 TODO: but we don"t initialiit the ze the root node at all?
    // we talk about the children but we ignore the root node
    // and what is the point of focussing on this here when we have a function that handles
    // this?

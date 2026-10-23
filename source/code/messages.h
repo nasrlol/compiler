@@ -46,7 +46,7 @@ internal void ERROR(String8List *error_list);
    errors_list = PushStruct(global_arena, String8List) \
   }                                                       \
   str8_list_push_node(error_list, str8_node(message));    \
- } while (0);
+} while (0);
 
 internal void warn(MemArena *arena, String8List *warning_list)
 {

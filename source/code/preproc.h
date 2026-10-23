@@ -13,7 +13,7 @@ struct Module {
 typedef struct ModuleList ModuleList;
 struct ModuleList {
  Module *current;
- u64 count;
+u64 count;
 };
 
 ReadOnly Module nil_module = {

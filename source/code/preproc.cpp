@@ -1,48 +1,39 @@
-internal Token *consume_token_from_buffer(MemArena *arena, String8 *buffer)
+internal String8 handle_all_comments(String8 buffer) {
+		b32 found = false;
+		while(!found) {
+			u64 comment_position = 0;
+			found = str8_find(buffer, 0, str8("//"), &comment_position);
+			{
+				// TODO: I dont know if this check works?
+				// TODO: What if we are at the beginning of the file.
+				// if(start_pos != 0) { // TODO: this logic is inverted i think
+				// if(buffer->data[start_pos - 1] == '\n') { // is the current line the start of the line
+				
+				u64 start_pos = 0;
+				
+				if(false) {
+					Log("not the beginning of the line");
+				} else {
+					u64 new_line = 0;
+					str8_find(buffer, start_pos, str8("\n"), &new_line);
+					str8_chop_left_ptr(buffer,  new_line);
+				}
+			}
+		}
+	}
+	
+
+// What does this function do again?
+internal String8 handle_directives(MemArena *arena, String8 buffer)
 {
- Assert(buffer);
-
- // NOTE: skip comments
- // 18/10 I encountered a bug where placing a pound sign within a commented section caused us to believe that was an import
- // the comments handling should be something done in the preprocessor maybe
-
-
- //- cleanup the buffer from comments etc
- // 19/10 doing a comment cleanup
- {
-  b32 found = false;
-  while(!found) {
-   u64 comment_position = 0;
-   found = str8_find(buffer, 0, str8("//"), &comment_position);
-   {
-    // TODO: I dont know if this check works?
-    // TODO: What if we are at the beginning of the file.
-    // if(start_pos != 0) { // TODO: this logic is inverted i think
-    // if(buffer->data[start_pos - 1] == '\n') { // is the current line the start of the line
-
-    u64 start_pos = 0;
-
-    if(false) {
-     Log("not the beginning of the line");
-     // TODO: i was returning here
-    } else {
-     u64 new_line = 0;
-     str8_find(buffer, start_pos, str8("\n"), &new_line);
-     str8_chop_left_ptr(buffer,  new_line);
-    }
-   }
-  }
- }
-
+ Assert(buffer.size);
  TokenNodeList *list_pound_token_values = PushStruct(arena, TokenNodeList);
+ u64 offset_to_first_pound              = 0;
+ b32 found                              = str8_find(buffer, 0, str8("#"), &offset_to_first_pound);
 
- u64 offset_to_first_pound = 0;
- b32 found = str8_find(buffer, 0, str8("#"), &offset_to_first_pound);
+// if no pound sign was found in the entire buffer we can just leave
+ if(!found){ return buffer; }
 
- if (!found){
-  Log("\nNo pound token found.");
-  return &nil_token;
- }
  // NOTE: do +1 to remove the pound sign and enable us to start parsing the directive
  str8_chop_left_ptr(buffer, offset_to_first_pound + 1);
 

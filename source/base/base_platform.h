@@ -56,7 +56,7 @@ internal void unix_log_with_args(const char *format, ...);
 #define FileLoad(arena, path) unix_file_load(arena, path)
 #define FileWrite(data, path) unix_file_write(data, path)
 #define FileExists(path) unix_file_exists(path)
-#define DirLoad(arena, path) unix_open_dir(arena, path)
+#define DirLoadFileNames(arena, path) unix_open_dir(arena, path)
 
 #if DEBUG
 #define OSExit(code) _exit(code)

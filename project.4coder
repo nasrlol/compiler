@@ -42,10 +42,13 @@ commands = {
   .save_dirty_files = true,
   .cursor_at_end    = true,
  },
+ // NOTE: run/test_run go through the RAD Debugger (debug.sh). The debugger closes
+ // itself again when the program exits cleanly, and stays open on a crash, trap or
+ // breakpoint. If it is already open, the command is sent to it instead.
  .run = {
-  .linux            = "./build/compiler",
+  .linux            = "./debug.sh run compiler",
   .mac              = "./build/compiler",
-  .out              = "*compilation*",
+  .out              = "",
   .footer_panel     = false,
   .save_dirty_files = true,
   .cursor_at_end    = true,
@@ -59,6 +62,34 @@ commands = {
   .cursor_at_end    = true,
  },
  .test_run = {
+  .linux            = "./debug.sh run test", // debug.sh disables address randomization for the tests
+  .mac              = "./test/build",
+  .out              = "",
+  .footer_panel     = false,
+  .save_dirty_files = true,
+  .cursor_at_end    = true,
+ },
+ 
+ // debugger control (talks to this project's raddbg instance over IPC)
+ .debug_step        = { .linux = "./debug.sh step compiler", .out = "", .footer_panel = false, .save_dirty_files = true,  },
+ .debug_step_over   = { .linux = "./debug.sh over",          .out = "", .footer_panel = false, .save_dirty_files = false, },
+ .debug_step_out    = { .linux = "./debug.sh out",           .out = "", .footer_panel = false, .save_dirty_files = false, },
+ .debug_halt        = { .linux = "./debug.sh halt",          .out = "", .footer_panel = false, .save_dirty_files = false, },
+ .debug_restart     = { .linux = "./debug.sh restart",       .out = "", .footer_panel = false, .save_dirty_files = true,  },
+ .debug_kill        = { .linux = "./debug.sh kill",          .out = "", .footer_panel = false, .save_dirty_files = false, },
+ .debug_open        = { .linux = "./debug.sh open compiler", .out = "", .footer_panel = false, .save_dirty_files = false, },
+ .debug_test_step   = { .linux = "./debug.sh step test",     .out = "", .footer_panel = false, .save_dirty_files = true,  },
+ 
+ // the same programs without the debugger
+ .run_plain = {
+  .linux            = "./build/compiler",
+  .mac              = "./build/compiler",
+  .out              = "*compilation*",
+  .footer_panel     = false,
+  .save_dirty_files = true,
+  .cursor_at_end    = true,
+ },
+ .test_run_plain = {
   .linux            = "setarch $(uname -m) -R ./build/test", // disables address randomization
   .mac              = "./test/build",
   .out              = "*compilation*",
@@ -69,8 +100,18 @@ commands = {
 };
 
 fkey_command = {
- .F1 = "build",
- .F2 = "run",
- .F3 = "test_build",
- .F4 = "test_run",
+ .F1  = "build",
+ .F2  = "run",
+ .F3  = "test_build",
+ .F4  = "test_run",
+ .F5  = "debug_step",
+ .F6  = "debug_step_over",
+ .F7  = "debug_step_out",
+ .F8  = "debug_halt",
+ .F9  = "debug_restart",
+ .F10 = "debug_kill",
+ .F11 = "debug_open",
+ .F12 = "debug_test_step",
+ .F13 = "run_plain",
+ .F14 = "test_run_plain",
 };
