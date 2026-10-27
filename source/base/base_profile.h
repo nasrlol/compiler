@@ -17,7 +17,8 @@ struct Profile {
  asm volatile ("RDTSC\n\t" \
  "mov %%edx, %0\n\t" \
  "mov %%eax, %1\n\t": "=r" (cycles_high), "=r" (cycles_low):: “%eax”, “%edx”); \
-*/ while(0);
+ while(0); */
+
 
 #elif ARCH_ARM
 

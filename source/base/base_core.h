@@ -129,6 +129,14 @@ typedef intptr_t  smm;
 #pragma warning(disable : 6246) // disable the same name within a certain scope
 #endif
 
+
+
+//-
+
+
+#define FOR_NODE(node_list, node_current, node_next)
+
+
 //-
 
 #define Assert(expression)   \

@@ -82,6 +82,11 @@ internal b32 str8_is_match(String8 a, String8 b)
  return (b32)(memcmp(a.data, b.data, b.size) == 0);
 }
 
+
+internal b32  str8_is_whitespace(String8 buffer) {
+return (buffer.data[0] == " ");
+}
+
 internal b32 str8_find_needle(String8 *buffer, u64 start_pos, u8 *needle, u64 *pos) {
  for(u64 index = 0; index < buffer->size; ++index) {
 

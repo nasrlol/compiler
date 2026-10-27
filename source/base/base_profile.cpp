@@ -1,22 +1,24 @@
 #if ARCH_x86_64
-internal Profile *x86_start_profile(MemArena *arena, void *callback)
+internal Profile *x86_start_profile(MemArena *arena, void (*callback)(), void *callback_arg)
 {
- ScratchArena *scratch = scratch_start(arena);
+ ScratchArena scratch = scratch_start(arena);
+Unused(scratch);
  u64 start_high, start_low, end_high, end_low;
- GetCycles(start_high, start_low);
+
+ // GetCycles(start_high, start_low);
+
  Profile *p = PushStruct(arena, Profile);
  p->start = start_high - start_low;
- callback;
- GetCycles(end_high, end_low);
+ callback(arg);
+
+ // GetCycles(end_high, end_low);
  p->end = end_high - end_low;
  return p;
-}
-
-
-internal void x86_end_profile(Profile *profile, ScratchArena *scratch)
+// do the logging inline
 {
  Log("log the profile or something");
- end_scratch(scratch);
+}
+ scratch_end(scratch);
 }
 
 #elif ARCH_ARM
