@@ -1,8 +1,8 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-typedef struct params params;
-struct params {
+typedef struct ParamsList ParamsList;
+struct ParamsList {
  String8List desired_context;
  String8    *current_context;
 };

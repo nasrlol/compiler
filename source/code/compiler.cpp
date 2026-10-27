@@ -1,18 +1,15 @@
-// author: nasr
 #define DBEUG 1
 #include "base/base_include.h"
-
 #include "lexer.h"
 #include "messages.h"
 #include "parse_table.h"
 #include "parser.h"
 #include "preproc.h"
-
 #include "lexer.cpp"
 #include "parser.cpp"
 #include "preproc.cpp"
 
-// returns the value fter the equal sign
+// Returns the value after the equal sign
 internal String8 consume_param(char *argv) {
 
  String8 param = str8(argv);
@@ -75,14 +72,14 @@ main_target_path = consume_param(a);
  Log("context directory: " Str8Fmt, Str8Arg(context_path));
 
 
- if(main_target_path.size = 0) {
+ if(main_target_path.size == 0) {
   files = DirLoadFileNames(arena, &context_path);
 
   FOR_STR8_NODE(files, current) {
    String8 extension = str8_get_file_extension(current->value);
    if(str8_is_match(str8(".jr"), extension)) {
 					Module *new_module = &nil_module;
-					new_module->name = token->value.as_str;
+					new_module->name = current->value;
 					if(module_list->current != &nil_module) {
 						module_list->current = new_module;
 						module_list->current->next    = &nil_module;
@@ -98,6 +95,7 @@ main_target_path = consume_param(a);
 
  } else {
 
+#if 0
   String8 main_target_buffer = FileLoad(arena, main_target_path);
   u64 insertion_position     = 0;
 main_target_buffer         = handle_all_comments(buffer);
@@ -114,7 +112,7 @@ main_target_buffer         = handle_all_comments(buffer);
   // TODO: remove one of these in the future when we have a proper seperation between the directory and per file loading
 
   String8 included_module_buffer = {};
-  if (!is_token_nil(token)) {
+  if(!is_token_nil(token)) {
 
    Module *module = PushStruct(arena, Module);
 
@@ -155,6 +153,7 @@ Assert(0);
    }
 }
 
+#endif
 
 //- NOTE: the current compilation output. per stage this will result in a representation of the result
 

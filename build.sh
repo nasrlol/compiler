@@ -9,7 +9,7 @@ echo
 BUILD_DIR=build
 SOURCE_DIR=source
 INCLUDES="-I${SOURCE_DIR}/code -I${SOURCE_DIR} -I${SOURCE_DIR}/base"
-CFLAGS="-fno-rtti -fno-exceptions -Wall -Wundef -Werror -fanalyzer -no-pie -Wno-unused-function -Wno-unused-variable -O0"
+CFLAGS="-fno-rtti -fno-exceptions -Wall -Wundef -Werror -fanalyzer -no-pie -Wno-unused-function -Wno-unused-variable -O0 -fno-omit-frame-pointer"
 LIBS="-pthread"
 TARGET="compiler"
 
@@ -17,7 +17,7 @@ TARGET="compiler"
 DEBUG=1
 
 if [ $DEBUG -eq 1 ]; then
-	CFLAGS+=" -g -DDEBUG=1"
+	CFLAGS+=" -g3 -DDEBUG=1"
 fi
 
 mkdir -p "$BUILD_DIR"

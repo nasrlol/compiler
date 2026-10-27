@@ -1,7 +1,7 @@
 #if ARCH_ARM
 #include <arm_neon.h>
 
-typedef __m128i m128i;
+typedef __u128 __u128;
 
 #define u8x16 uint8x16_t
 

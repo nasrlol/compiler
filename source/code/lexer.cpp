@@ -25,7 +25,7 @@ internal void push_token_children(MemArena *arena, TokenTree *tree, String8List 
 
    // NOTE: we can assume that if the first node is nil that the last node will be nill
    // aswell
-   if (!is_token_node_nil(current->first)) {
+   if(!is_token_node_nil(current->first)) {
     current->first = node;
     current->last  = node;
    } else {
@@ -42,7 +42,7 @@ internal void push_token_children(MemArena *arena, TokenTree *tree, String8List 
 
 internal void push_token_node(TokenTree *tree, TokenNode *node)
 {
- if (is_token_node_nil(tree->root) || is_token_node_nil(tree->current)) {
+ if(is_token_node_nil(tree->root) || is_token_node_nil(tree->current)) {
   tree->root    = node;
   tree->current = node;
   return;
@@ -64,7 +64,7 @@ internal void push_token_node(TokenTree *tree, TokenNode *node)
 internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
 {
  b32 is_empty = str8_is_empty(buffer_from_file);
- if (is_empty) {
+ if(is_empty) {
   Log("No buffer passed as argument");
   Assert(0);
  }
@@ -83,12 +83,12 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
 
   // Handle skipping
   b32 is_whitespace = cstring_is_whitespace(current_character);
-  if (is_whitespace) {
+  if(is_whitespace) {
    continue;
   }
 
   b32 is_newline = cstring_is_newline(current_character);
-  if (is_newline) { // NOTE: do one extra iteration to skip the new line. we keep getting
+  if(is_newline) { // NOTE: do one extra iteration to skip the new line. we keep getting
    // stuck on the current character otherwse
    tree->amount_of_new_lines += 1;
    str8_chop_left_ptr(tree->buffer, 1); // TODO: dit mag niet, je mag de oorspronkelijke buffer niet aanpassen. text transformations zijn enkel toegelaten in de preprocessor
@@ -99,7 +99,7 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
   Token       *token      = PushStruct(arena, Token);
   String8List *delimiters = PushStruct(arena, String8List);
 
-  if (cstring_is_alpha(current_character)) {
+  if(cstring_is_alpha(current_character)) {
    u64 index = 0;
 
    // TODO: iterate and check if the character is ???
@@ -124,27 +124,27 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
    // is only appropriate when working with translation units. i think we could have a
    // forest of trees. where the root nodes/ stand for the translation units. and therefor
    // allow the multiple notes to interact with each other. initialize root node
-   if (is_token_node_nil(tree->root)) {
+   if(is_token_node_nil(tree->root)) {
     tree->root->child = node;
    }
    ////////////////////////////////
 
    // TODO: try replacign this with an assertion a bit earlier than this
-   if (token) {
+   if(token) {
     token->value.as_str = str8_chop_left(*tree->buffer, index);
     token->type         = TokenType::IdentToken;
    }
   }
 
-  else if (cstring_is_digit(current_character)) {
-   if (node->parent->token->type == TokenType::IdentToken) {
+  else if(cstring_is_digit(current_character)) {
+   if(node->parent->token->type == TokenType::IdentToken) {
     node->parent->flag        = (TokenNodeFlags)0;
     node->parent->token->type = TokenType::IdentToken;
    } else {
     node->parent->flag = TokenNodeFlags::Bad;
     break;
    }
-  } else if (current_character == '{') {
+  } else if(current_character == '{') {
    tree->current->next           = node;
    node->token->type             = (enum TokenType)'{';
    String8Node right_paran_delim = str8_node("}");
@@ -183,17 +183,17 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
      temp_current_token_node->parent    = tree->current->last->parent;
     }
    }
-  } else if (current_character == '(') {
-   if (tree->current->parent) {
+  } else if(current_character == '(') {
+   if(tree->current->parent) {
     String8Node *right_paran = PushStruct(arena, String8Node);
     *right_paran             = str8_node(")");
     str8_list_push_node(delimiters, right_paran);
     push_token_children(arena, tree, delimiters);
     push_token_node(tree, node);
    }
-  } else if (current_character == ')') {
+  } else if(current_character == ')') {
    // TODO: fix this ugly thing
-   if (str8_is_match(tree->current->first->token->value.as_str, str8(")"))) {
+   if(str8_is_match(tree->current->first->token->value.as_str, str8(")"))) {
     push_token_node(tree, node);
    } else {
     Log("Error: No opening brace found on line %llu", tree->amount_of_new_lines);
@@ -201,18 +201,18 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
   }
   // NOTE: handle arrays --  an array consists of children of the variable name
   // so we just do a children until we hit the delimiter
-  else if (current_character == '[') {
+  else if(current_character == '[') {
    String8List *delimiters    = PushStruct(arena, String8List);
    String8Node *right_bracket = PushStruct(arena, String8Node);
    *right_bracket             = str8_node("]");
    str8_list_push_node(delimiters, right_bracket);
    push_token_node(tree, node);
-  } else if (current_character == ']') {
-   if (tree->current->first->token->type != (enum TokenType)'[') {
+  } else if(current_character == ']') {
+   if(tree->current->first->token->type != (enum TokenType)'[') {
     Log("didn't close the bracket you moron");
    }
-  } else if (current_character == ':') {
-   if (tree->current->parent &&
+  } else if(current_character == ':') {
+   if(tree->current->parent &&
        tree->current->parent->token->type == TokenType::IdentToken) {
     String8List *delimiters = PushStruct(arena, String8List);
     String8Node *colon_node = PushStruct(arena, String8Node);
