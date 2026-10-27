@@ -25,20 +25,18 @@ return buffer;
 	}
 	
 
-// What does this function do again?
-internal String8 handle_directives(MemArena *arena, String8 buffer)
+// NOTE: we return a list a of  all pound signs that we found  within the current bufferr
+// when find any 1..n we return the next tokens in a String8List.
+internal String8List *handle_directives(MemArena *arena, String8 buffer, String8 seperator)
 {
  Assert(buffer.size);
+String8List *list = PushStruct(arena, String8List);
  TokenNodeList *list_pound_token_values = PushStruct(arena, TokenNodeList);
  u64 offset_to_first_pound              = 0;
- b32 found                              = str8_find(&buffer, 0, str8("#"), &offset_to_first_pound);
-
-// if no pound sign was found in the entire buffer we can just leave
+ b32 found                              = str8_find(&buffer, 0, seperator, &offset_to_first_pound);
  if(!found){ return buffer; }
-
  // NOTE: do +1 to remove the pound sign and enable us to start parsing the directive
- str8_chop_left_ptr(&buffer, offset_to_first_pound + 1);
-
+ buffewr = str8_chop_left(buffer, offset_to_first_pound + 1);
 
  //-
  u64 idx           = 0;
@@ -54,7 +52,7 @@ internal String8 handle_directives(MemArena *arena, String8 buffer)
 
  if (end_offset != 0) {
   substr = str8_create_substr(&buffer, 0, end_offset);
-  str8_chop_left_ptr(&buffer, end_offset);
+  buffer = str8_chop_left(buffer, end_offset);
  }
 
  //- handle directives
@@ -62,10 +60,7 @@ internal String8 handle_directives(MemArena *arena, String8 buffer)
  if (str8_is_match(substr, str8("import"))) {
 
   substr = str8_chop_left(buffer, substr.size);
-
-  while (cstring_is_whitespace(*buffer.data)) {
-   buffer = str8_chop_left(buffer, 1);
-  }
+  while (cstring_is_whitespace(*buffer.data)) { buffer = str8_chop_left(buffer, 1); }
 
   u64 end_pos = 0;
   b32 found_first_newline_or_whitespace = false;
@@ -111,7 +106,20 @@ internal String8 handle_directives(MemArena *arena, String8 buffer)
  new_token->line         = 0;
  new_token->value.as_str = substr;
 
-// TODO: handle return
- // return new_token;
 return {};
+}
+
+internal String8 handle_all_modules_into_buffer(MemArena *arena, ModuleList *modules)
+{
+	String8 buffer = PushString8(arena, modules.count * 100);
+ScratchArena scratch  = scratch_start(arena);
+	FOR_STR8_NODE(files, current)
+	{
+		if(str8_is_match(current->value, token->value.as_str))
+{
+			str8_append(&temp, FileLoad(arena, current->value));
+		}
+	}
+scratch_end(&scratch);
+return buffer;
 }

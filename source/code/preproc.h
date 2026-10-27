@@ -1,7 +1,6 @@
 #ifndef PREPROC_H
 #define PREPROC_H
 
-
 typedef struct Module Module;
 struct Module {
  TokenTree *tree;

@@ -31,13 +31,11 @@ ENTRYPOINT()
  MemArena *arena = ArenaCreate(MiB(256));
  AssertLog(arena, "Failed to allocate memory");
 
- b32 import_chasing               = false;
+ b32          import_chasing       = false;
  String8List *context_directories = PushStruct(arena, String8List);
-	String8 main_target_path         = PushString8(arena, 0);
-// a module is a converted file
- String8List *files               = PushStruct(arena, String8List);
-	ModuleList *modules              = PushStruct(arena, ModuleList);
-	ModuleList *module_list          = PushStruct(arena, ModuleList);
+	String8      main_target_path     = PushString8(arena, 0);
+	ModuleList  *modules              = PushStruct(arena, ModuleList);
+	ModuleList  *module_list          = PushStruct(arena, ModuleList);
 
  if(argc <= 1) {
 Log("help [--source=] \"example.jr\" [--include=] [--output=] example[.exe]]\n");
@@ -72,105 +70,58 @@ main_target_path = consume_param(a);
  Log("context directory: " Str8Fmt, Str8Arg(context_path));
 
 
- if(main_target_path.size == 0) {
-  files = DirLoadFileNames(arena, &context_path);
-
-  FOR_STR8_NODE(files, current) {
-   String8 extension = str8_get_file_extension(current->value);
-   if(str8_is_match(str8(".jr"), extension)) {
-					Module *new_module = &nil_module;
-					new_module->name = current->value;
-					if(module_list->current != &nil_module) {
-						module_list->current = new_module;
-						module_list->current->next    = &nil_module;
-					} else {
-						if(module_list->current == &nil_module) module_list->current->next = new_module;
-						module_list->current = new_module;
-					}
-					++module_list->current;
-   } else {
-    Log(Str8Fmt "No source files found." , Str8Arg(current->value));
-   }
-  }
-
- } else {
-
-#if 0
-  String8 main_target_buffer = FileLoad(arena, main_target_path);
-  u64 insertion_position     = 0;
-main_target_buffer         = handle_all_comments(buffer);
-  Token *token               = handle_directives(arena, &main_target_buffer);
-
-// TODO: here the first issue arrises from combining the 2. the token is not ment for imput chasing so i dont see why we need to do an if check on it later
-  if(is_token_nil(token)) {
-   Log("Consuming a token from the buffer returned a nil token");
-  }
-
-  // TODO: auto per directory include module feature
-  // compile time arguments
-
-  // TODO: remove one of these in the future when we have a proper seperation between the directory and per file loading
-
-  String8 included_module_buffer = {};
-  if(!is_token_nil(token)) {
-
-   Module *module = PushStruct(arena, Module);
-
-   included_module_buffer = FileLoad(arena, token->value.as_str);
-   if(included_module_buffer.size == 0) {
-    Log("include not found in current directory. the buffer size that is passed is 0\n, this happened while trying to include" Str8Fmt,  Str8Arg(token->value.as_str));
-Assert(0);
-   }
-
-   module->name = token->value.as_str;
-
-  } else {
-
-  }
-
-//- load all the files in the current directory into a single temp buffer
+ if(main_target_path.size != 0)
 {
-   String8 temp = {};
-   FOR_STR8_NODE(files, current)
-   {
-    if(str8_is_match(current->value, token->value.as_str)) {
+		string8 main_target_buffer = fileload(arena, main_target_path);
+		u64 insertion_position     = 0;
+		main_target_buffer         = handle_all_comments(main_target_buffer);
+		string8list *directives    = handle_directives(arena, &main_target_buffer);
+		if(directives.count == 0) goto preproc_end;
+ }
+ else
+{
 
-     String8 current_file_path = current->value;
+ String8List *files = PushStruct(arena, String8List);
+		files = DirLoadFileNames(arena, &context_path);
+		FOR_STR8_NODE(files, current) {
+			String8 extension = str8_get_file_extension(current->value);
+			if(str8_is_match(str8(".jr"), extension))
+{
+				Module *new_module = &nil_module;
+				new_module->name = current->value;
+				if(modules->current != &nil_module) {
+					modules->current = new_module;
+					modules->current->next    = &nil_module;
+				} else if(modules->current == &nil_module) modules->current->next = new_module;
+			}
+		}
+		else {
+			Log(Str8Fmt "No source files found." , Str8Arg(current->value));
+			Assert(0);
+		}
 
-     if (!temp.size) {
-      temp= FileLoad(arena, current_file_path);
-     } else {
-      str8_append(&temp, FileLoad(arena, current_file_path));
-     }
-     temp= FileLoad(arena, current->value);
-     b32 result = str8_insert(arena, &temp, &entry_file_buffer, 0);
-     if(result) {
-      Log("preprocessor handled " Str8Fmt, current_file_path);
-
-     }
-    }
+		buffer = handle_all_modules_into_buffer(arena, modules);
+		
 }
-   }
-}
 
-#endif
+preproc_end:
+// PREPROCESSOR END
+	////////////////////////////////
 
-//- NOTE: the current compilation output. per stage this will result in a representation of the result
 
+// produce a preprocrssor intermediate representation
  if(FileExists(str8("output.jr.ps"))) {
   Log("Deleting previous output file");
   FileWrite(str8("placeholder"), str8("output.jr.ps"));
  }
-
-// TODO: this result needs to be retrieved from the insertion
  Log("Creating new intermediate debug file");
  if(1) {
-  b32 debug_output_result = FileWrite(/*TODO: what buffer do we insert in?*/, str8("output.jr.ps"));
+  b32 debug_output_result = FileWrite(buffer, str8("output.jr.ps"));
   AssertLog(debug_output_result, "Failed to fill in the buffer");
  }
 
  if (module_list->count != 0) {
-  for (Module *current = modules->current; current->next != &nil_module && current->next != NULL;
+  for(Module *current = modules->current; current->next != &nil_module && current->next != NULL;
  current = current->next) {
    String8 module_buffer = FileLoad(arena, main_target_path);
    current->tree         = tokenize_tree_fmt(arena, &module_buffer);
