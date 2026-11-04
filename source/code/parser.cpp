@@ -14,7 +14,7 @@ internal void handle_binary_expression(TokenNode *current_node, AstNode *new_nod
  ast->current->first        = temp_current_node;
 
  // TODO: i think we should categorize these better in the future
- if (current_node->next->token->type == TokenType::IdentToken ||
+ if(current_node->next->token->type == TokenType::IdentToken ||
      current_node->next->token->type == TokenType::Number ||
      current_node->next->token->type == TokenType::String) {
   TokenNode *next_token = current_node->next;
@@ -38,23 +38,23 @@ internal void adopt_ast_node(Ast *ast, AstNode *node)
 }
 
 // TODO: do we want a reference or copy fo the token we are working on?
-internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
+internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 {
  // TODO: replace with something containing a breakpoint, Assert or something like that
  // currently it still throws that asm junk
  // im going to ignore it for now and just put if checks. do a scan of the code later and fix it
  // up
- if (!token_tree || !arena)
+ if(!token_tree || !arena)
   return NULL;
 
  Ast      *ast = PushStruct(arena, Ast);
  MemStack *stack;
  stack = ArenaToStack(arena, MiB(10));
 
- for (TokenNode *current_node = token_tree->current; !is_token_node_nil(current_node); current_node = current_node->next) {
+ for(TokenNode *current_node = token_tree->current; !is_token_node_nil(current_node); current_node = current_node->next) {
   AstNode *new_node = StackPushStruct(stack, AstNode);
   // TODO: cleanup after scan
-  if (!new_node) {
+  if(!new_node) {
    // NOTE: this doesn't need to be part of the compiler output because it should never fail
    Log("Failed to push new node on to the stack");
    return NULL;
@@ -67,14 +67,14 @@ internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
 
   switch (current_node->token->type) {
    case TokenType::IdentToken: {
-    if (is_ast_node_nil(ast->current)) {
+    if(is_ast_node_nil(ast->current)) {
      ast->current       = new_node;
      ast->current->type = AstNodeType::IdentExpr;
     }
    } break;
 
    case TokenType::Value: {
-    if (is_ast_node_nil(ast->current->first) &&
+    if(is_ast_node_nil(ast->current->first) &&
         ast->current->type == AstNodeType::Literal) {
      new_node->type = AstNodeType::Assignment;
      ast->current   = new_node;
@@ -84,14 +84,14 @@ internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree)
    // TODO: or do we mark this as an expression and evaluate it later?
    // this can be taken as a value or parameter
    case TokenType::String: {
-    if (ast->current->type == AstNodeType::Function ||
+    if(ast->current->type == AstNodeType::Function ||
         ast->current->type == AstNodeType::IdentExpr) {
      // TODO: handle this as an expression
     }
    } break;
 
    case TokenType::Number: {
-    if (ast->current->type == AstNodeType::Function ||
+    if(ast->current->type == AstNodeType::Function ||
         ast->current->type == AstNodeType::IdentExpr) {
     }
 

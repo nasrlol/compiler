@@ -1,14 +1,6 @@
 #ifndef BASE_STACK_H
 #define BASE_STACK_H
 
-#if defined(PLATFORM_UNIX)
-#define StackCreate(size) unix_stack_create(size)
-#define StackDestroy(stack) unix_stack_destroy(stack)
-#elif defined(PLATFORM_WINDOWS)
-#define StackCreate(size) win32_stack_create(size)
-#define StackDestroy(stack) win32_stack_destroy(stack)
-#endif
-
 //-
 
 typedef struct MemStackHeader MemStackHeader;
@@ -35,7 +27,7 @@ internal void     *stack_push(MemStack *stack, u64 size);
 internal void      stack_pop(MemStack *stack, void *pointer);
 internal void      stack_clear(MemStack *stack);
 internal u8        calculate_padding(u64 pointer, u8 alignment, u64 header_size);
-internal MemStack *arena_to_stack(MemArena *arena, u64 size, u64 alignment);
+internal MemStack *arena_to_stack(Arena *arena, u64 size, u64 alignment);
 
 
 #define ArenaToStack(arena, size) arena_to_stack(arena, size);

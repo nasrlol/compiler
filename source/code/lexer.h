@@ -6,11 +6,11 @@
  debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
 #define TokenNodeContainsFlag(node, flag) \
- if (((node->flags) & (flag)) != (0))  \
+ if(((node->flags) & (flag)) != (0))  \
  return false
 
 #define FillTokenNodeFieldWithNilNode(field)             \
- if (node->field == NULL || !is_token_node_nil(node)) \
+ if(node->field == NULL || !is_token_node_nil(node)) \
  node->field = &nil_token_node;
 
 enum TokenType {
@@ -130,9 +130,9 @@ struct TokenNodeList{
 // - functions
 internal b32        is_token_node_nil(TokenNode *node);
 internal b32        is_token_nil(Token *token);
-internal void       push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters);
+internal void       push_token_children(Arena *arena, TokenTree *tree, String8List *delimiters);
 internal void       push_token_node(TokenTree *tree, TokenNode *node);
-internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file);
+internal TokenTree *tokenize_tree_fmt(Arena *arena, String8 *buffer_from_file);
 internal Token      consume_token(String8 *buffer);
 internal TokenNode  create_node_from_token();
 

@@ -1,7 +1,7 @@
 
-internal ThreadPool thread_pool_create(MemArena *arena, u64 count)
+internal ThreadPool thread_pool_create(Arena *arena, u64 count)
 {
- for (u64 index = 0; index < count; ++index) {
+ for(u64 index = 0; index < count; ++index) {
   pthread_t *out = PushStruct(arena, pthread_t);
   // pthread_create(out,  0, , 0);
  }
@@ -16,7 +16,7 @@ internal Thread thread_launch(ThreadProc proc)
 
  pthread_t out;
  int       error = pthread_create(&out, 0, (void *(*)(void *))proc, NULL);
- if (!error) {
+ if(!error) {
   // TODO: the thread pool impelemtnation will follow in the future so i don't know how to handle this properly yet
   Assert(0);
  }

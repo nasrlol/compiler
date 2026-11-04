@@ -12,9 +12,9 @@ win32_logf(_Printf_format_string_ const char *fmt, ...)
  int len = vsnprintf(buffer, sizeof(buffer), fmt, args);
  va_end(args);
 
- if (len < 0)
+ if(len < 0)
   return;
- if ((u64)len >= sizeof(buffer))
+ if((u64)len >= sizeof(buffer))
   len = sizeof(buffer) - 1;
 
  HANDLE handle_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -26,7 +26,7 @@ internal void win32_log(String8List messages)
 {
  HANDLE handle_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
  u64    count         = 0;
- for (String8Node *node = messages.first; count < messages.count; node = node->next) {
+ for(String8Node *node = messages.first; count < messages.count; node = node->next) {
   DWORD written = 0;
   WriteConsoleA(handle_stdout, node->value.data, (DWORD)(node->value.size), &written, NULL);
   ++count;
@@ -43,7 +43,7 @@ internal b32 win32_os_exit()
 }
 
 // TODO: remove FORMAT_MESSAGE_ALLOCATE_BUFFER flag
-internal void win32_handle_error(MemArena *arena, DWORD error)
+internal void win32_handle_error(Arena *arena, DWORD error)
 {
  ScratchArena scratch      = scratch_start(arena);
  String8      error_buffer = PushString8(arena, 255);
@@ -76,9 +76,9 @@ internal b32 win32_file_write(String8 data, String8 path)
 
  HANDLE file_handle = CreateFileA((LPCSTR)path.data, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
 
- if (file_handle != INVALID_HANDLE_VALUE) {
+ if(file_handle != INVALID_HANDLE_VALUE) {
   DWORD bytes_written;
-  if (WriteFile(file_handle, data.data, (DWORD)data.size, &bytes_written, 0)) {
+  if(WriteFile(file_handle, data.data, (DWORD)data.size, &bytes_written, 0)) {
    result = (bytes_written == data.size);
   } else {
    Log("Writing the file was unsuccessful");
@@ -91,13 +91,13 @@ internal b32 win32_file_write(String8 data, String8 path)
  return result;
 }
 
-internal String8 win32_file_load(MemArena *arena, String8 file)
+internal String8 win32_file_load(Arena *arena, String8 file)
 {
  String8 result = {0};
  HANDLE  file_handle =
   CreateFileA((LPCSTR)file.data, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
 
- if (file_handle == INVALID_HANDLE_VALUE) {
+ if(file_handle == INVALID_HANDLE_VALUE) {
   Log("Failed to open file\n");
   return result;
  }
@@ -105,7 +105,7 @@ internal String8 win32_file_load(MemArena *arena, String8 file)
  LARGE_INTEGER size;
 
  DWORD get_file_size_result = GetFileSizeEx(file_handle, &size);
- if (!get_file_size_result) {
+ if(!get_file_size_result) {
   Log("Failed to get file size");
   win32_handle_error(arena, get_file_size_result);
   CloseHandle(file_handle);
@@ -122,7 +122,7 @@ internal String8 win32_file_load(MemArena *arena, String8 file)
  ;
  DWORD read_file_result = ReadFile(file_handle, (LPSTR)result.data, file_size32, &bytes_read, 0);
 
- if (!read_file_result || (file_size32 != bytes_read)) {
+ if(!read_file_result || (file_size32 != bytes_read)) {
   Log("Failed to read file\n");
   win32_handle_error(arena, read_file_result);
   CloseHandle(file_handle);
@@ -145,7 +145,7 @@ internal void win32_library_get_proc()
  // TODO: ...
 }
 
-internal String8List win32_open_dir(MemArena *arena, String8 *original_path)
+internal String8List win32_open_dir(Arena *arena, String8 *original_path)
 {
  // TODO: ...
 }

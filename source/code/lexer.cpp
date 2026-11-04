@@ -1,5 +1,5 @@
 // TODO: replace the logs with this
-internal void debug_str8_diff(TokenTree *tree, MemArena *arena, u64 diff_size,
+internal void debug_str8_diff(TokenTree *tree, Arena *arena, u64 diff_size,
                               const char *function_name)
 {
  ScratchArena scratch   = scratch_start(arena);
@@ -13,7 +13,7 @@ internal void debug_str8_diff(TokenTree *tree, MemArena *arena, u64 diff_size,
 
 // create tokens, from a certain starting position until a certain
 // delimiter. build the tokens and push them onto the tree
-internal void push_token_children(MemArena *arena, TokenTree *tree, String8List *delimiters)
+internal void push_token_children(Arena *arena, TokenTree *tree, String8List *delimiters)
 {
  String8 *temp_buffer = PushStruct(arena, String8);
  MemCpy(temp_buffer, tree->buffer, tree->buffer->size);
@@ -61,7 +61,7 @@ internal void push_token_node(TokenTree *tree, TokenNode *node)
  }
 }
 
-internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file)
+internal TokenTree *tokenize_tree(Arena *arena, String8 *buffer_from_file)
 {
  b32 is_empty = str8_is_empty(buffer_from_file);
  if(is_empty) {
@@ -150,11 +150,11 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
    String8Node right_paran_delim = str8_node("}");
    str8_list_push_node(delimiters, &right_paran_delim);
 
-  } else if (current_character == '\"') {
+  } else if(current_character == '\"') {
    // token->type == TokenType:IdentToken;
 
-  } else if (current_character == '}') {
-   if (node->first->token->type != (enum TokenType)'{') {
+  } else if(current_character == '}') {
+   if(node->first->token->type != (enum TokenType)'{') {
     Log("Error: closing brace not matching opening brace");
    } else {
     Token *token        = PushStruct(arena, Token);
@@ -164,7 +164,7 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
     token->line         = tree->amount_of_new_lines;
     token->value.as_str = str8("}");
 
-    if (is_token_node_nil(tree->current->last)) {
+    if(is_token_node_nil(tree->current->last)) {
      node->token    = token;
      node->flag     = TokenNodeFlags::Child;
      node->previous = tree->current;
@@ -233,3 +233,4 @@ internal TokenTree *tokenize_tree_fmt(MemArena *arena, String8 *buffer_from_file
 
  return tree;
 }
+

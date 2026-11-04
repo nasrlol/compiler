@@ -25,3 +25,9 @@ watch_pin:
   expression: nil_token_node
   source_location: "source/code/lexer.h:103:1"
 }
+target:
+{
+  executable: "tests/main.jr"
+  working_directory: tests
+  enabled: 0
+}

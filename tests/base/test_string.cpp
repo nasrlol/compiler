@@ -1,6 +1,6 @@
 void tests()
 {
- MemArena *arena  = ArenaCreate(MiB(1));
+ Arena *arena  = ArenaCreate(MiB(1));
  String8   buffer = PushString8(arena, 100);
  String8   hw     = str8("Bar\n");
  str8_copy(&buffer, &hw);

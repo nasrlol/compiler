@@ -5,7 +5,7 @@ internal b32 is_pow(umm x)
 
 internal u64 align(u64 pointer, umm alignment)
 {
- if ((alignment & (alignment - 1)) != 0) {
+ if((alignment & (alignment - 1)) != 0) {
   return pointer;
  }
 

@@ -13,7 +13,7 @@ extern void test_nil_checks();
 int main()
 {
  Log("\n\n\n>> Before resizing\n");
- MemArena *arena = ArenaCreate(MiB(100));
+ Arena *arena = ArenaCreate(MiB(100));
  Assert(arena);
  LogArena(arena);
 

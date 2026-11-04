@@ -1,5 +1,4 @@
-#if ARCH_x86_64
-internal Profile *x86_start_profile(MemArena *arena, void (*callback)(), void *callback_arg)
+internal Profile *x86_start_profile(Arena *arena, void (*callback)(), void *callback_arg)
 {
  ScratchArena scratch = scratch_start(arena);
 Unused(scratch);
@@ -20,9 +19,3 @@ Unused(scratch);
 }
  scratch_end(scratch);
 }
-
-#elif ARCH_ARM
-
-#else
-#error platform not supported for profiling
-#endif

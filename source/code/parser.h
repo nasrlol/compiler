@@ -40,12 +40,12 @@ ReadOnly global_variable Ast nil_ast = {
 };
 
 #define PeekForward(node, type, nil_node)                          \
- for (; (node) && (node) != &(nil_node); (node) = (node)->next) \
- if ((node)->token->type == (type))                         \
+ for(; (node) && (node) != &(nil_node); (node) = (node)->next) \
+ if((node)->token->type == (type))                         \
  break;
 
 //-
-internal Ast *parse_tokenized_tree_fmt(MemArena *arena, TokenTree *token_tree);
+internal Ast *parse_tokenized_tree_fmt(Arena *arena, TokenTree *token_tree);
 internal b32  is_ast_node_nil(AstNode *node);
 internal void adopt_ast_node(AstNode *tree_node, AstNode *new_node);
 
@@ -64,7 +64,7 @@ global_variable String8 reserved_words[] = {
 };
 
 #define FillAstNodeFieldWIthNilNode(node, field)       \
- if (node->field == NULL || !is_ast_node_nil(node)) \
+ if(node->field == NULL || !is_ast_node_nil(node)) \
  node->field = &nil_ast_node;
 
 internal void adopt_ast_node(AstNode *node, AstNode *new_node);
