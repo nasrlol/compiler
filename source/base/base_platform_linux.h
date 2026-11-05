@@ -8,21 +8,21 @@ typedef void(LibSym)(void *);
 
 typedef struct LibrarySymbols LibrarySymbols;
 struct LibrarySymbols {
- LibSym *current_sym;
- LibSym *next_sym;
- LibSym *previous_sym;
+	LibSym *current_sym;
+	LibSym *next_sym;
+	LibSym *previous_sym;
 };
 
 typedef struct SharedLibrary SharedLibrary;
 struct SharedLibrary {
- void           *mem;
- cstring         name;
- LibrarySymbols *symbols;
+	void           *mem;
+	cstring         name;
+	LibrarySymbols *symbols;
 };
 
 typedef struct Directory Directory;
 struct Directory {
- String8List *file_names;
+	String8List *file_names;
 };
 
 #define LibraryLoad(arena, path) linux_load_shared_library(arena, path)
@@ -42,7 +42,7 @@ internal b32          linux_file_write(String8 data, String8 path);
 internal String8      linux_file_load(Arena *arena, String8 path);
 internal b32          linux_file_exists(Arena *arena, String8 path);
 internal String8List *linux_open_dir(Arena *arena,
-                                    String8  *original_path); // TODO: change the return value
+									 String8  *original_path); // TODO: change the return value
 
 internal s64  linux_read(int fd, const void *buf, u64 count);
 internal void linux_os_exit() __attribute__((noreturn));

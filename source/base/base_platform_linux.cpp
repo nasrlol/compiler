@@ -1,26 +1,26 @@
 internal String8 linux_get_env(const char *var)
 {
     AssertLog(environ, "Environment not loaded");
-
+	
     String8 buffer  = {0};
     u64     index   = 0;
     char   *current = environ[index];
     while (environ[index] != NULL) {
         if(CstringAnyMatch(environ[index], var)) {
             buffer = str8(environ[index]);
-
+			
             u64 equal_sign_pos   = 0;
             b32 found_equal_sign = str8_find(&buffer, 0, str8("="), &equal_sign_pos);
-
+			
             if(equal_sign_pos) {
                 buffer = str8_chop_left(buffer, equal_sign_pos + 1);
             }
-
+			
             return buffer;
         }
         ++index;
     }
-
+	
     AssertLog(buffer.size != 0, "env value not found");
     return {0};
 }
@@ -50,7 +50,7 @@ internal int linux_shared_library_close(SharedLibrary *library)
     int result = dlclose(library->mem);
     AssertLog(result == 0, "failed to close the library: %s", dlerror());
     library->mem = NULL;
-
+	
     return result;
 }
 
@@ -87,52 +87,52 @@ internal String8 linux_file_load(Arena *arena, String8 path)
         Log("Can't find the file we we're supposed to open. This is an issue because we we're supposed to break way earlier");
         return {};
     }
-
+	
     String8     result = {0};
     struct stat sbuf   = {0};
-
+	
     if(!path.data) {
         Log("Invalid path file");
         return str8_zero();
     }
-
-
+	
+	
     ScratchArena scratch              = scratch_start(arena);
     const char  *null_terminated_path = null_terminate(scratch.arena, &path);
-
+	
     s32 file = open(null_terminated_path, O_RDONLY);
     scratch_end(&scratch);
     if(file == -1) {
         Log("File was not loaded: " Str8Fmt "", Str8Arg(path));
         return str8_zero();
     }
-
+	
     if(fstat(file, &sbuf) == -1) {
         close(file);
         return str8_zero();
     }
-
+	
     result = PushString8(arena, (u64)sbuf.st_size);
-
+	
     u64 file_size = (u64)sbuf.st_size;
     result.size   = file_size;
-
+	
     u64 total_bytes_read = 0;
-
+	
     while (total_bytes_read < file_size) {
         s64 bytes = read(file, result.data + total_bytes_read, file_size - total_bytes_read);
         if(bytes == -1) {
             Log("Failed, reading file was interrupted");
             return str8_zero();
         }
-
+		
         if(bytes == 0)
             break;
         total_bytes_read += (u64)bytes;
     }
-
+	
     result.size = total_bytes_read;
-
+	
     close(file);
     return result;
 }
@@ -144,7 +144,7 @@ internal b32 linux_file_write(String8 data, String8 path)
     if(file == -1) {
         return false;
     }
-
+	
     u64 written = 0;
     while (written < data.size) {
         s64 err = write(file, data.data + written, data.size - written);
@@ -154,7 +154,7 @@ internal b32 linux_file_write(String8 data, String8 path)
         }
         written += err;
     }
-
+	
     close(file);
     return true;
 }
@@ -188,27 +188,27 @@ internal String8List *linux_open_dir(Arena *arena, String8 *path)
         Log("opendir(%s) failed", cpath);
     }
     scratch_end(&scratch);
-
+	
     String8List *files_list = PushStructZero(arena, String8List);
     files_list->first       = &nil_str8_node;
     files_list->last        = &nil_str8_node;
-
+	
     if(!dir) {
         return files_list;
     }
-
+	
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if(entry->d_type != DT_REG) { // TODO: should symbolic files be handles aswell?
             continue;
         }
-
+		
         String8      name      = str8(entry->d_name);
         String8Node *file_node = PushStruct(arena, String8Node);
         *file_node             = ToString8Node(str8_clone(arena, &name));
         str8_list_push_node(files_list, file_node);
     }
-
+	
     closedir(dir);
     return files_list;
 }

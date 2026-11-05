@@ -3,53 +3,53 @@
 
 //-
 #define DEBUG_STR8_DIFF(tree, arena, diff_size) \
- debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
+debug_str8_diff(tree, arena, (diff_size), __FUNCTION__)
 
 #define TokenNodeContainsFlag(node, flag) \
- if(((node->flags) & (flag)) != (0))  \
- return false
+if(((node->flags) & (flag)) != (0))  \
+return false
 
 #define FillTokenNodeFieldWithNilNode(field)             \
- if(node->field == NULL || !is_token_node_nil(node)) \
- node->field = &nil_token_node;
+if(node->field == NULL || !is_token_node_nil(node)) \
+node->field = &nil_token_node;
 
 enum TokenType {
- // if this is the case. we fall through to use the TokenFlags which do a beter job at specifying
- // the properties of the identifier
- Illegal = 256,
- IdentToken,
-
- // TODO: what is this commentm man what are you saying
- // because an identfier could really be anything from a value, variable or function.
- Value,
-
- String,
- Number,
- Double_Equal,
- Greater_Equal,
- Lesser_Equal,
- Param,
- Right_Shift,
- Left_Shift,
- Asterisk,
- Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
- C_Style_Comment_Start,
- C_Style_Comment_End,
+	// if this is the case. we fall through to use the TokenFlags which do a beter job at specifying
+	// the properties of the identifier
+	Illegal = 256,
+	IdentToken,
+	
+	// TODO: what is this commentm man what are you saying
+	// because an identfier could really be anything from a value, variable or function.
+	Value,
+	
+	String,
+	Number,
+	Double_Equal,
+	Greater_Equal,
+	Lesser_Equal,
+	Param,
+	Right_Shift,
+	Left_Shift,
+	Asterisk,
+	Cpp_Style_Comment_Start, // TODO: implement the token type setting for these
+	C_Style_Comment_Start,
+	C_Style_Comment_End,
 };
 
 enum TokenNodeFlags : int {
- Invalid = 1,
- Root    = 2,
- Child   = 3,
- Eof     = 4,
- Bad     = 5,
+	Invalid = 1,
+	Root    = 2,
+	Child   = 3,
+	Eof     = 4,
+	Bad     = 5,
 };
 
 typedef struct Token Token;
 struct Token {
- enum TokenType type;
- u64            line;
-
+	enum TokenType type;
+	u64            line;
+	
 	union {
 		String8 as_str;
 		f64     as_float;
@@ -60,38 +60,38 @@ struct Token {
 
 typedef struct TokenNode TokenNode;
 struct TokenNode {
- TokenNodeFlags flag;
- TokenNode     *next;
- TokenNode     *previous;
- TokenNode     *child;
- TokenNode     *parent;
- TokenNode     *first;
- TokenNode     *last;
- Token         *token;
- u64            buffer_position;
+	TokenNodeFlags flag;
+	TokenNode     *next;
+	TokenNode     *previous;
+	TokenNode     *child;
+	TokenNode     *parent;
+	TokenNode     *first;
+	TokenNode     *last;
+	Token         *token;
+	u64            buffer_position;
 };
 
 typedef struct Lexeme Lexeme;
 struct Lexeme {
- String8 *text;
- u64      index;
+	String8 *text;
+	u64      index;
 };
 
 // Find a way to do this without allocating the tokens on the heap. It's a huge toll on the
 // performance of the program
 typedef struct TokenTree TokenTree;
 struct TokenTree {
- TokenNode *root;
- TokenNode *current;
- u64        nl_count;
- u64        index;
+	TokenNode *root;
+	TokenNode *current;
+	u64        nl_count;
+	u64        index;
 };
 
 typedef struct TranslationUnit TranslationUnit;
 struct TranslationUnit {
- // stored as an array
- // per omdule one unit, to handle namespace issues
- TokenTree *tree_units;
+	// stored as an array
+	// per omdule one unit, to handle namespace issues
+	TokenTree *tree_units;
 };
 
 
@@ -105,21 +105,21 @@ ReadOnly global_variable TokenNode nil_token_node = {TokenNodeFlags::Invalid,
 	&nil_token_node, // parent
 	&nil_token_node, // first
 	&nil_token_node, // last
- {}};
+	{}};
 
 
 ReadOnly TokenTree nil_token_tree{
- .root{&nil_token_node},
- .current{&nil_token_node},
- .nl_count{0},
- .index{0},
+	.root{&nil_token_node},
+	.current{&nil_token_node},
+	.nl_count{0},
+	.index{0},
 };
 
 
 typedef struct TokenNodeList TokenNodeList;
 struct TokenNodeList{
- TokenNode *current;
- TokenNode *root;
+	TokenNode *current;
+	TokenNode *root;
 };
 
 

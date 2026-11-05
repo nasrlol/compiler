@@ -37,3 +37,29 @@ target:
   output_label: output
   label: "compiler with arguments"
 }
+type_view:
+{
+  type: String8
+  expr: " array(data, size)"
+}
+type_view:
+{
+  type: String8Node
+  expr: value
+}
+type_view:
+{
+  type: Arena
+  expr: "rows($, current_position,  capacity, previous, base_position)"
+}
+type_view:
+{
+  type: TokenNodeList
+  expr: "list(root, next)"
+}
+type_view
+type_view:
+{
+  type: "Arena *"
+  expr: "rows($, current_position,  capacity, previous, base_position)"
+}

@@ -17,12 +17,12 @@ internal void push_token_children(Arena *arena, String8 buffer, TokenTree *tree,
 {
     String8 temp_buffer = PushString8(arena, buffer.size);
     MemCpy(&temp_buffer, &buffer, buffer.size);
-
+	
     FOR_STR8_NODE(delimiters, curr_delimiter) {
         FOR_STR8_MATCH(temp_buffer, curr_delimiter->value) {
             TokenNode *node    = PushStruct(arena, TokenNode);
             TokenNode *current = tree->current;
-
+			
             // NOTE: we can assume that if the first node is nil that the last node will be nill
             // aswell
             if(!is_token_node_nil(current->first)) {
@@ -49,7 +49,7 @@ internal void push_token_node(TokenTree *tree, TokenNode *node)
         tree->current->next     = node;
         node->parent            = tree->current;
         tree->current           = node;
-
+		
         FillTokenNodeFieldWithNilNode(next);
         FillTokenNodeFieldWithNilNode(previous);
         FillTokenNodeFieldWithNilNode(child);
@@ -63,37 +63,37 @@ internal TokenTree *tokenize_tree(Arena *arena, String8 buffer)
 {
     AssertLog(str8_is_empty(&buffer), "No buffer passed as argument");
     TokenTree *tree = PushStructZero(arena, TokenTree);
-
-ScratchArena iter_scratch = {};
-String8 loop_buffer = PushString8(arena, buffer.size);
-
-for(u64 buffer_index = 0; buffer_index < loop_buffer.size; ++buffer_index) {
-
-iter_scratch = scratch_start(arena);
-MemCpy(&loop_buffer, &buffer, buffer.size);
-
+	
+	ScratchArena iter_scratch = {};
+	String8 loop_buffer = PushString8(arena, buffer.size);
+	
+	for(u64 buffer_index = 0; buffer_index < loop_buffer.size; ++buffer_index) {
+		
+		iter_scratch = scratch_start(arena);
+		MemCpy(&loop_buffer, &buffer, buffer.size);
+		
         u8 current_character = loop_buffer.data[buffer_index];
-
+		
         b32 is_whitespace = cstring_is_whitespace(current_character);
         if(is_whitespace) {
             continue;
         }
-
+		
         b32 is_newline = cstring_is_newline(current_character);
         if(is_newline) {
-// NOTE: do one extra iteration to skip the new line. we keep getting
+			// NOTE: do one extra iteration to skip the new line. we keep getting
             // stuck on the current character otherwse
             tree->nl_count += 1;
             loop_buffer = str8_chop_left(loop_buffer, 1);
-// TODO: dit mag niet, je mag de oorspronkelijke buffer niet aanpassen. text transformations zijn enkel toegelaten in de preprocessor
+			// TODO: dit mag niet, je mag de oorspronkelijke buffer niet aanpassen. text transformations zijn enkel toegelaten in de preprocessor
             continue;
         }
-
+		
         TokenNode   *node       = PushStruct(arena, TokenNode);
         Token       *token      = PushStruct(arena, Token);
         String8List *delimiters = PushStruct(arena, String8List);
-
-         if(cstring_is_digit(current_character)) {
+		
+		if(cstring_is_digit(current_character)) {
             if(node->parent->token->type == TokenType::IdentToken) {
                 node->parent->flag        = (TokenNodeFlags)0;
                 node->parent->token->type = TokenType::IdentToken;
@@ -106,27 +106,27 @@ MemCpy(&loop_buffer, &buffer, buffer.size);
             node->token->type             = (enum TokenType)'{';
             String8Node right_paran_delim = str8_node("}");
             str8_list_push_node(delimiters, &right_paran_delim);
-
+			
         } else if(current_character == '\"') {
             // token->type == TokenType:IdentToken;
-
+			
         } else if(current_character == '}') {
             if(node->first->token->type != (enum TokenType)'{') {
                 Log("Error: closing brace not matching opening brace");
             } else {
                 Token *token        = PushStruct(arena, Token);
                 tree->current->last = node;
-
+				
                 token->type         = TokenType::Param;
                 token->line         = tree->nl_count;
                 token->as_str = str8("}");
-
+				
                 if(is_token_node_nil(tree->current->last)) {
                     node->token    = token;
                     node->flag     = TokenNodeFlags::Child;
                     node->previous = tree->current;
                     node->parent   = node->previous->parent;
-
+					
                     FillTokenNodeFieldWithNilNode(last);
                     FillTokenNodeFieldWithNilNode(first);
                     FillTokenNodeFieldWithNilNode(child); FillTokenNodeFieldWithNilNode(next); } else { TokenNode *temp_current_token_node = tree->current->last->next;
@@ -170,7 +170,7 @@ MemCpy(&loop_buffer, &buffer, buffer.size);
                 String8List *delimiters = PushStruct(arena, String8List);
                 String8Node *colon_node = PushStruct(arena, String8Node);
                 String8Node *komma_node = PushStruct(arena, String8Node);
-
+				
                 str8_list_push_node(delimiters, colon_node);
                 str8_list_push_node(delimiters, komma_node);
                 push_token_children(arena, loop_buffer, tree, delimiters);
@@ -178,49 +178,49 @@ MemCpy(&loop_buffer, &buffer, buffer.size);
                 // TODO: push a warning / error
                 Log("syntax error. Issue with the previous token. Unexpected token.");
             }
-
-    } else if(cstring_is_alpha(current_character)) {
-
 			
-				u64 index = 0;
-				if(is_token_node_nil(tree->root)) {
-					tree->root->child = node;
-				}
-
-				if(token) {
-					token->as_str = str8_chop_left(loop_buffer,  buffer_index);
-					token->type         = TokenType::IdentToken;
-node->token = token;
-				}
+		} else if(cstring_is_alpha(current_character)) {
 			
-
-if(str8_starts_with(buffer, str8("struct"))) {
-push_token_node(tree, node);
+			
+			u64 index = 0;
+			if(is_token_node_nil(tree->root)) {
+				tree->root->child = node;
+			}
+			
+			if(token) {
+				token->as_str = str8_chop_left(loop_buffer,  buffer_index);
+				token->type         = TokenType::IdentToken;
+				node->token = token;
+			}
+			
+			
+			if(str8_starts_with(buffer, str8("struct"))) {
+				push_token_node(tree, node);
 			} else if(str8_starts_with(buffer, str8("enum"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("if"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("else"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("for"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("in"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("while"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("switch"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("case"))) {
-			push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("return"))) {
-												push_token_node(tree, node);
-} else if(str8_starts_with(buffer, str8("defer"))) {
-push_token_node(tree, node);
-}
-
-}
-}
-
-return tree;
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("if"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("else"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("for"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("in"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("while"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("switch"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("case"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("return"))) {
+				push_token_node(tree, node);
+			} else if(str8_starts_with(buffer, str8("defer"))) {
+				push_token_node(tree, node);
+			}
+			
+		}
+	}
+	
+	return tree;
 }
 
