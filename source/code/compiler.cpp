@@ -9,12 +9,11 @@
 #include "parser.cpp"
 #include "preproc.cpp"
 
-internal String8 consume_param(char *argv)
+internal String8 consume_param(String8 param)
 {
-    String8 param                   = str8(argv);
     u64 equal_position              = 0;
     b32 found_equal_sign            = Str8FindNeedle(&param, 0, "=", &equal_position);
-    if(found_equal_sign) param      = str8_chop_left(param, equal_position);
+    if(found_equal_sign) param      = str8_chop_left(param, equal_position + 1);
     else {
         Log("wrong compiler param");
         return str8_zero();
@@ -40,14 +39,14 @@ ENTRYPOINT(argc, argv)
     } else {
         // NOTE: we are bigger then one arguments so we can start assuming that a source file was passed
         for(u64 argument_index = 1; argument_index < (u64)argc; ++argument_index) {
-            cstring a = argv[argument_index];
-            if(CstringIsMatch(a, "--include=") || CstringIsMatch(a, "-I=")) {
+             String8 a = str8(argv[argument_index]);
+            if(str8_starts_with(a, str8("--include=")) || str8_starts_with(a, str8("-I="))) {
                 String8 include = consume_param(a);
                 if(!str8_is_match(include, str8_zero())) {
                     String8Node include_node = ToString8Node(include);
                     str8_list_push_node(context_directories, &include_node);
                 }
-            }else if(CstringIsMatch(a, "--source=")) {
+            } else if(str8_starts_with(a, str8("--source="))) {
                 main_target_path = consume_param(a);
             }
         }
@@ -67,7 +66,7 @@ ENTRYPOINT(argc, argv)
     Log("context directory: " Str8Fmt, Str8Arg(context_path));
 
 
-    String8 main_target_buffer = {};
+    String8 main_target_buffer = PushString8(arena, 0);
     String8List *files = PushStruct(arena, String8List);
     if(main_target_path.size != 0)
     {
@@ -88,13 +87,15 @@ ENTRYPOINT(argc, argv)
             {
                 Module *new_module = &nil_module;
                 new_module->name = current->value;
+// NOTE: this is assinged a nil module because there is no owener to the target file.
+// but within this approach there bassically is never a file owner
                 if(modules->current != &nil_module) {
                     modules->current = new_module;
                     modules->current->next = &nil_module;
                 } else {
- modules->current->next       = new_module;
+ modules->current->next = new_module;
 modules->current->next->prev = modules->current;
-modules->current             = new_module;
+modules->current = new_module;
 }
 modules->count++;
             }
@@ -105,7 +106,6 @@ modules->count++;
 if(modules->count == 0)
 {
 AssertLog(0, Str8Fmt "No source files found." );
-
         main_target_buffer = handle_all_modules_into_buffer(arena, modules);
     }
 
@@ -135,12 +135,12 @@ AssertLog(0, Str8Fmt "No source files found." );
         for(Module *current = modules->current; current->next != &nil_module && current->next != NULL;
             current = current->next) {
             String8 module_buffer = FileLoad(arena, main_target_path);
-            current->tree         = tokenize_tree(arena, &module_buffer);
+            current->tree         = tokenize_tree(arena, module_buffer);
         }
     }
 
     //- start the lexing and parsing
-    TokenTree *tree = tokenize_tree(arena, &main_target_buffer);
+    TokenTree *tree = tokenize_tree(arena, main_target_buffer);
     AssertLog(tree, "Failed to create Token Tree");
     Ast *ast        = parse_tokenized_tree(arena, tree);
     AssertLog(ast, "Failed to create AST");

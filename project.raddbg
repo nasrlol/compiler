@@ -6,14 +6,12 @@ target:
   executable: "build/compiler"
   working_directory: "../compiler"
   label: compiler
-  enabled: 1
 }
 target:
 {
   executable: "build/test"
   working_directory: "../compiler"
   label: test
-  enabled: 0
 }
 watch_pin:
 {
@@ -29,5 +27,13 @@ target:
 {
   executable: "tests/main.jr"
   working_directory: tests
-  enabled: 0
+}
+target:
+{
+  executable: "build/compiler"
+  working_directory: "../compiler"
+  enabled: 1
+  arguments: "--source=./tests/main.jr"
+  output_label: output
+  label: "compiler with arguments"
 }

@@ -105,7 +105,7 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 se
     Token *new_token = PushStruct(arena, Token);
     new_token->type         = IdentToken;
     new_token->line         = 0;
-    new_token->value.as_str = substr;
+    new_token->as_str = substr;
 
     return {};
 }

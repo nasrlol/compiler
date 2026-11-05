@@ -45,18 +45,17 @@ enum TokenNodeFlags : int {
  Bad     = 5,
 };
 
-typedef union TokenValue TokenValue;
-union TokenValue {
- String8 as_str;
- f64     as_float;
- u64     as_int;
-};
-
 typedef struct Token Token;
 struct Token {
  enum TokenType type;
  u64            line;
- TokenValue     value;
+
+	union {
+		String8 as_str;
+		f64     as_float;
+		u64     as_int;
+	};
+	
 };
 
 typedef struct TokenNode TokenNode;
@@ -74,7 +73,7 @@ struct TokenNode {
 
 typedef struct Lexeme Lexeme;
 struct Lexeme {
- String8 *buffer;
+ String8 *text;
  u64      index;
 };
 
@@ -84,8 +83,7 @@ typedef struct TokenTree TokenTree;
 struct TokenTree {
  TokenNode *root;
  TokenNode *current;
- String8   *buffer;
- u64        amount_of_new_lines;
+ u64        nl_count;
  u64        index;
 };
 
@@ -101,22 +99,20 @@ struct TranslationUnit {
 ReadOnly global_variable Token nil_token = {TokenType::Illegal, 0, {}};
 
 ReadOnly global_variable TokenNode nil_token_node = {TokenNodeFlags::Invalid,
- &nil_token_node, // next
- &nil_token_node, // previous
- &nil_token_node, // child
- &nil_token_node, // parent
- &nil_token_node, // first
- &nil_token_node, // last
+	&nil_token_node, // next
+	&nil_token_node, // previous
+	&nil_token_node, // child
+	&nil_token_node, // parent
+	&nil_token_node, // first
+	&nil_token_node, // last
  {}};
 
 
 ReadOnly TokenTree nil_token_tree{
-
- &nil_token_node, // root
- &nil_token_node, // current;
- {},              //*buffer;
- 0,               // amount_of_new_lines
- 0,               // index;
+ .root{&nil_token_node},
+ .current{&nil_token_node},
+ .nl_count{0},
+ .index{0},
 };
 
 
@@ -127,15 +123,13 @@ struct TokenNodeList{
 };
 
 
-// - functions
-internal b32        is_token_node_nil(TokenNode *node);
-internal b32        is_token_nil(Token *token);
-internal void       push_token_children(Arena *arena, TokenTree *tree, String8List *delimiters);
-internal void       push_token_node(TokenTree *tree, TokenNode *node);
+internal b32 is_token_node_nil(TokenNode *node);
+internal b32 is_token_nil(Token *token);
+internal void push_token_children(Arena *arena, String8 buffer, TokenTree *tree, String8List *delimiters);
+internal void push_token_node(TokenTree *tree, TokenNode *node);
 internal TokenTree *tokenize_tree_fmt(Arena *arena, String8 *buffer_from_file);
-internal Token      consume_token(String8 *buffer);
-internal TokenNode  create_node_from_token();
-
+internal Token consume_token(String8 *buffer);
+internal TokenNode create_node_from_token();
 internal b32 is_token_node_nil(TokenNode *node) { return (node == &nil_token_node); }
 internal b32 is_token_nil(Token *token) { return (token == &nil_token); }
 
