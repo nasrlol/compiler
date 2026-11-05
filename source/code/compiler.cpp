@@ -27,7 +27,6 @@ ENTRYPOINT(argc, argv)
     Arena *arena = ArenaCreate(MiB(256));
     AssertLog(arena, "Failed to allocate memory");
 
-    b32          import_chasing       = false;
     String8List *context_directories  = PushStruct(arena, String8List);
     String8      main_target_path     = PushString8(arena, 0);
     ModuleList  *modules              = PushStruct(arena, ModuleList);
@@ -73,7 +72,7 @@ ENTRYPOINT(argc, argv)
         u64 insertion_position     = 0;
 
         main_target_buffer = FileLoad(arena, main_target_path);
-        main_target_buffer = handle_all_comments(main_target_buffer);
+        main_target_buffer = handle_comments(main_target_buffer);
 
         String8List *directives    = handle_directives(arena, main_target_buffer, str8("#"));
         if(directives->count == 0) goto preproc_end;

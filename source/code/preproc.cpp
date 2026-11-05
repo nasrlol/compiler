@@ -1,27 +1,13 @@
-internal String8 handle_all_comments(String8 buffer) {
-    b32 found = false;
-    while(!found) {
+internal String8 handle_comments(String8 buffer) {
         u64 comment_position = 0;
-        found = str8_find(&buffer, 0, str8("//"), &comment_position);
-        {
-            // TODO: I dont know if this check works?
-            // TODO: What if we are at the beginning of the file.
-            // if(start_pos != 0) { // TODO: this logic is inverted i think
-            // if(buffer->data[start_pos - 1] == '\n') { // is the current line the start of the line
-
-            u64 start_pos = 0;
-
-            if(false) {
-                Log("not the beginning of the line");
-            } else {
-                u64 new_line = 0;
+        b32 found = str8_find(&buffer, 0, str8("//"), &comment_position);
+if(found) {
+            u64 start_pos = 0; u64 new_line = 0;
                 str8_find(&buffer, start_pos, str8("\n"), &new_line);
                 buffer = str8_chop_left(buffer,  new_line);
-            }
-        }
-    }
-
-    return buffer;
+handle_comments(buffer);
+}
+return buffer;
 }
 
 

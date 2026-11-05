@@ -4,6 +4,6 @@ current = 0;
 
 tabs = {
 	{
-		{ .kind=3, .pixel_y=0x00000000, .line=1, .cursor=434, .mark=0, .file="/home/nasr/dev/compiler/build.sh", },
+		{ .kind=3, .pixel_y=0x00000000, .line=1, .cursor=185, .mark=218, .file="*compilation*", },
 	},
 };

@@ -1,10 +1,6 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-typedef struct ParamsList ParamsList;
-struct ParamsList {
- String8List desired_context;
- String8    *current_context;
-};
+global_variable import_chasing = false;
 
 #endif COMPILER_H
