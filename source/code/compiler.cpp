@@ -110,10 +110,8 @@ AssertLog(0, Str8Fmt "No source files found." );
     }
 
 
-    preproc_end:
-    // PREPROCESSOR END
-    ////////////////////////////////
-
+    preproc_end
+:
 
     // produce a preprocrssor intermediate representation
     if(FileExists(arena, str8("output.jr.ps"))) {
@@ -125,10 +123,6 @@ AssertLog(0, Str8Fmt "No source files found." );
         b32 debug_output_result = FileWrite(main_target_buffer, str8("output.jr.ps"));
         AssertLog(debug_output_result, "Failed to fill in the buffer");
     }
-
-
-    // IR END
-    ////////////////////////////////
 
     // NOTE: this means there has been no attempt to import any external modules
     if(module_list->count != 0){

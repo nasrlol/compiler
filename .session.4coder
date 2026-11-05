@@ -4,6 +4,8 @@ current = 0;
 
 tabs = {
 	{
-		{ .kind=3, .pixel_y=0x00000000, .line=1, .cursor=14, .mark=0, .file="/home/nasr/dev/compiler/output.jr.ps", },
+		{ .kind=2, .pixel_y=0x40800000, .line=69, .cursor=3702, .mark=829, .file="/home/nasr/dev/compiler/source/code/preproc.cpp", },
+		{ .kind=0, .split_t=0x3F00111C, .split=2, },
+		{ .kind=3, .pixel_y=0x40800000, .line=150, .cursor=7934, .mark=7935, .file="/home/nasr/dev/compiler/source/code/lexer.cpp", },
 	},
 };

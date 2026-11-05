@@ -107,7 +107,7 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 se
     new_token->line         = 0;
     new_token->as_str = substr;
 
-    return {};
+return list;
 }
 
 internal String8 handle_all_modules_into_buffer(Arena *arena, ModuleList *modules)
