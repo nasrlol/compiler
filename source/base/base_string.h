@@ -144,7 +144,7 @@ internal u64 cstring8_find_needle(u8 *buffer, u8 needle);
 
 //-
 
-#if COMPILER_GCC
+#if COMPILER_GCC || COMPILER_CLANG
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #endif

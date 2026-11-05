@@ -1,11 +1,15 @@
-internal String8 handle_comments(String8 buffer) {
-        u64 comment_position = 0;
-        b32 found = str8_find(&buffer, 0, str8("//"), &comment_position);
-if(found) {
-            u64 start_pos = 0; u64 new_line = 0;
-                str8_find(&buffer, start_pos, str8("\n"), &new_line);
-                buffer = str8_chop_left(buffer,  new_line);
-handle_comments(buffer);
+internal String8 handle_comments(Arena *arena, String8 buffer, u64 start_pos = 0) {
+
+u64 comment_position = 0;
+         while(str8_find(&buffer, start_pos, str8("//"), &comment_position)) {
+
+             u64 new_line = 0;
+str8_find(&buffer, start_pos, str8("\n"), &new_line);
+u64 tail = buffer.size - new_line;
+
+memmove((buffer.data + comment_position), (buffer.data + new_line + 1), (tail));
+buffer.size -= (new_line - comment_position);
+start_pos += 1;
 }
 return buffer;
 }

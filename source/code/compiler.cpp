@@ -72,7 +72,7 @@ ENTRYPOINT(argc, argv)
         u64 insertion_position     = 0;
 
         main_target_buffer = FileLoad(arena, main_target_path);
-        main_target_buffer = handle_comments(main_target_buffer);
+        main_target_buffer = handle_comments(arena, main_target_buffer);
 
         String8List *directives    = handle_directives(arena, main_target_buffer, str8("#"));
         if(directives->count == 0) goto preproc_end;
