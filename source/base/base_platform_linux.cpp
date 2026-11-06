@@ -171,7 +171,7 @@ internal void linux_log_with_args(const char *format, ...)
 
 internal String8 linux_read_self(Arena *arena) {
     char exe_path[PATH_MAX] = {};
-    ssize_t length = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+	u64 length = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
     AssertLog((length > 0), "failed to read /proc/self/exe\n");
     String8 view = {(u8 *)exe_path, (u64)length};
     return str8_clone(arena, &view);
@@ -212,3 +212,4 @@ internal String8List *linux_open_dir(Arena *arena, String8 *path)
     closedir(dir);
     return files_list;
 }
+

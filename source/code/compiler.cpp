@@ -23,8 +23,6 @@ internal String8 consume_param(String8 param)
 }
 ENTRYPOINT(argc, argv)
 {
-	
-	
     Arena *arena = ArenaCreate(MiB(256));
     AssertLog(arena, "Failed to allocate memory");
 	
@@ -54,11 +52,12 @@ ENTRYPOINT(argc, argv)
 	
 	
     // the directory of the input file: everything before the last slash, "." if there is none
-    String8 context_path = str8("./tests");
-    for(u64 index = main_target_path.size; index > 0; --index) {
+    String8 context_path = {};
+	for(u64 index = main_target_path.size; index > 0; --index) {
         if(cstring_is_slash(main_target_path.data[index - 1])) {
             u64 slash_pos = index - 1;
-            context_path  = str8_chop_right(main_target_path, main_target_path.size - (slash_pos ? slash_pos : 1)); // NOTE: this check makes sure we remove the last trailing slash in case we want to trim by 0
+			// NOTE: this check makes sure we remove the last trailing slash in case we want to trim by 0
+            context_path  = str8_chop_right(main_target_path, main_target_path.size - (slash_pos ? slash_pos : 1));
             break;
         }
     }
@@ -68,24 +67,27 @@ ENTRYPOINT(argc, argv)
 	
     String8 main_target_buffer = PushString8(arena, 0);
     String8List *files = PushStruct(arena, String8List);
+	Module *new_module = PushStruct(arena, Module);
+	new_module->name   = PushString8(arena, main_target_path.size);
     if(main_target_path.size != 0)
     {
-        u64 insertion_position     = 0;
-		
-        main_target_buffer = FileLoad(arena, main_target_path);
-        main_target_buffer = handle_comments(arena, main_target_buffer);
-		
-        String8List *directives    = handle_directives(arena, main_target_buffer, str8("#"));
-        if(directives->count == 0) goto preproc_end;
+		//  TODO: doing a +1 to handle the trailing slash. this needs to be fixed from the root
+		String8 name = str8_chop_left(main_target_path, (context_path.size + 1));
+		str8_copy(&new_module->name, &name);
+		// NOTE: we have no owner because we are target
+		new_module->owner = &nil_module;
     }
     else
     {
+		// TODO: find the files recursivly  first check  if the file is a folder
+		// if the file is a folder open the folder and read everything in there
+		
+		// NOTE: no file should have an owner i think
         files = DirLoadFileNames(arena, &context_path);
         FOR_STR8_NODE(files, current) {
             String8 extension = str8_get_file_extension(current->value);
             if(str8_is_match(str8(".jr"), extension))
             {
-                Module *new_module = &nil_module;
                 new_module->name = current->value;
 				// NOTE: this is assinged a nil module because there is no owener to the target file.
 				// but within this approach there bassically is never a file owner
@@ -103,36 +105,38 @@ ENTRYPOINT(argc, argv)
 	}
 	
 	
-	if(modules->count == 0)
+	// TODO:  build and  assign the relative path based on the name and save that in the module struct
+	// this maybe based on imports
 	{
-		AssertLog(0, Str8Fmt "No source files found." );
-        main_target_buffer = handle_all_modules_into_buffer(arena, modules);
-    }
+		
+		
+	}
 	
 	
-    preproc_end:
-    
-	// produce a preprocrssor intermediate representation
-    if(FileExists(arena, str8("output.jr.ps"))) {
-        Log("Deleting previous output file");
-        FileWrite(str8("placeholder"), str8("output.jr.ps"));
-    }
-    Log("Creating new intermediate debug file");
-    if(1) {
-        b32 debug_output_result = FileWrite(main_target_buffer, str8("output.jr.ps"));
-        AssertLog(debug_output_result, "Failed to fill in the buffer");
-    }
+	// TODO: iterate on the modules and load theyre files in parallel
+	// afterwards start doing the rest of  the  stuff
+	{
+		
+		// the first buffer should acutally be tha main target buffer so get the name
+		// get the path and then load it in
+		// after you did all of the proper preprocessing etc.
+		{
+			// make sure we are starting with a clena slate
+			Assert(modules->current == &nil_module || modules->current == NULL);
+			modules->current = FileLoad(arena, main_target_path);
+			String8List *directives    = handle_imports(arena, main_target_buffer, str8("#"));
+			
+		}
+		
+		FOR_NODE(mo, modules, &nil_module) {
+			String8 buffer =  FileLoad(arena, mo->relative_path);
+			str8_copy(&mo->buffer, &buffer);
+			handle_comments(arena, mo->buffer);
+		}
+		
+	}
+	Assert(FileWrite(main_target_buffer, str8("output.jr.ps")));
 	
-    // NOTE: this means there has been no attempt to import any external modules
-    if(module_list->count != 0){
-        for(Module *current = modules->current; current->next != &nil_module && current->next != NULL;
-            current = current->next) {
-            String8 module_buffer = FileLoad(arena, main_target_path);
-            current->tree         = tokenize_tree(arena, module_buffer);
-        }
-    }
-	
-    //- start the lexing and parsing
     TokenTree *tree = tokenize_tree(arena, main_target_buffer);
     AssertLog(tree, "Failed to create Token Tree");
     Ast *ast        = parse_tokenized_tree(arena, tree);

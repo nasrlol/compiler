@@ -129,19 +129,6 @@ typedef intptr_t  smm;
 #endif
 
 
-
-//-
-
-
-#define FOR_NODE(list, root, type, current, next, nil_node) \
-for(type *current = list->root;                  \
-(current != NULL) || (current != &nil_node); \
-current = current->next)
-
-
-//-
-
-
 #if 0
 // TODO: to_str8 using format specifiers
 

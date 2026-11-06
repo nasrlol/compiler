@@ -250,6 +250,10 @@ function((buffer), (count)), ++index)
 for(String8Node *current = str8_list->first; !is_nil_str8_node(current); \
 current              = current->next)
 
+#define FOR_NODE(name, list, nil) \
+for(__typeof__((list->root)) name= (list)->root; name != NULL && name != (nil); name = name->next)
+
+
 internal b32 is_nil_str8(String8 *a);
 internal b32 is_nil_str8_node(String8Node *a);
 internal b32 is_nil_str16(String16 *a);

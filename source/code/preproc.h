@@ -5,9 +5,11 @@ typedef struct Module Module;
 struct Module {
 	TokenTree *tree;
 	String8    name;
+	String8    relative_path;
 	Module    *next;
 	Module    *prev;
 	Module    *owner;
+	String8   buffer;
 };
 
 typedef struct ModuleList ModuleList;
@@ -18,10 +20,10 @@ struct ModuleList {
 };
 
 ReadOnly Module nil_module = {
-	&nil_token_tree,
-	{},
-	&nil_module,
-	
+	.tree  = &nil_token_tree,
+	.next  = &nil_module,
+	.prev  = &nil_module,
+	.owner = &nil_module,
 };
 
 internal Token *consume_token_from_buffer(Arena *arena, String8 *buffer);
