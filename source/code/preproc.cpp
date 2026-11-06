@@ -1,21 +1,26 @@
 internal String8 delete_all_matching_sections(Arena *arena, String8 buffer, String8 start, String8 end) {
+	u64 index = 0;
 	u64 start_pos = 0;
-	u64 comment_position = 0;
-	while(str8_find(&buffer, start_pos, startm, &comment_position)) {
+	while(str8_find(&buffer, index, start, &start_pos)) {
 		
-		u64 new_line = 0;
-		str8_find(&buffer, start_pos, end, &new_line);
-		u64 tail = buffer.size - new_line;
+		u64 end_pos = 0;
+		str8_find(&buffer, index, end, &end_pos);
+		u64 tail = buffer.size - end_pos;
 		
-		memmove((buffer.data + comment_position), (buffer.data + new_line + 1), (tail));
-		buffer.size -= (new_line - comment_position);
-		start_pos += 1;
+		// NOTE: we get the comment posotion but it points to the first  character.
+		// if the  start is bigger than 1. which when handling comments is
+		// we substract 1 from the size. because we already have the first one and then add the rest
+		// to  the comment position. which makes it get  removed in the memmove
+		MemMove((buffer.data + start_pos + (start.size - 1)), (buffer.data + (end_pos + (end.size - 1))), (tail));
+		buffer.size -= (end_pos - start_pos);
+		index += 1;
 	}
+	return buffer;
 }
 
 internal String8 handle_comments(Arena *arena, String8 buffer) {
-	buffer = delete_all_matching_sections(arena,  buffer  str8("//"),  str8("\n"));
-	buffer = delete_all_matching_sections(arena,  buffer  str8("/*"),  str8("*/"));
+	buffer = delete_all_matching_sections(arena,  buffer,  str8("//"),  str8("\n"));
+	buffer = delete_all_matching_sections(arena,  buffer, str8("/*"),  str8("*/"));
 	return buffer;
 }
 
