@@ -78,6 +78,15 @@ internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 en
 	return local;
 }
 
+internal String8 str8_insert(Arena *arena, String8 dest, String8 src, u64 pos) {
+	String8 result = PushString8(arena, dest.size + src.size);
+	String8 left   = str8_chop_left(src, src.size - pos);
+	String8 right  = str8_chop_right(src, pos);
+	str8_append(&result, left);
+	str8_append(&result, src);
+	str8_append(&result, right);
+	return result;
+}
 
 internal String8 str8_cut_match(Arena *arena, String8 buffer, String8 start, String8 end)
 {
