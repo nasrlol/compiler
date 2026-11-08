@@ -1,16 +1,16 @@
 ~ fix next (current working tree, preproc merged into compiler.cpp)
 
 
--- module loop does FileLoad(m->relative_path) but relative_path is never filled -> always loads an empty path
--- to_import_file_names is computed and then dropped, imports never become modules
--- handle_directives runs on the raw buffer before comments are stripped -> `// # current file: main.jr #` in tests/main.jr gets parsed as a directive (can hit the PANIC)
--- is_nil_module: `next != NULL || next == &nil_module` is true for almost every node, should be `it == NULL || it == &nil_module`
 -- module_list is unused next to modules, pick one
 -- dir scan: `if(modules->current != &nil_module)` looks inverted, and every .jr reuses the same new_module
 -- dir scan path leaves modules->current set, so the Assert(current == nil/NULL) before loading the main target fires
 -- --source=main.jr with no slash: context_path is empty but name is chopped by context_path.size + 1 -> "ain.jr"
 -- --include= pushes a stack local String8Node (include_node) into context_directories -> dangling pointer after the loop
 -- no --source= given: FileLoad(main_target_path) still runs with an empty path
+-- [done] is_nil_module: `next != NULL || next == &nil_module` is true for almost every node, should be `it == NULL || it == &nil_module`
+-- [done] handle_directives runs on the raw buffer before comments are stripped -> `// # current file: main.jr #` in tests/main.jr gets parsed as a directive (can hit the PANIC)
+-- [done] to_import_file_names is computed and then dropped, imports never become modules
+-- [done] module loop does FileLoad(m->relative_path) but relative_path is never filled -> always loads an empty path
 -- [done] str8_cut_offset: allocates `local` but never copies buffer into it, memmoves inside the uninitialized copy, and `buffer.size -=` only changes its own parameter
 -- [done] modules->root is never set, so FOR_NODE(m, modules, ...) never runs (the main module from FileLoad isn't linked into the list either)
 -- [done] str8_cut_match: return of str8_cut_offset is ignored and `index` never moves -> infinite loop as soon as the file has a comment

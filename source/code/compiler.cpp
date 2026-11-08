@@ -14,7 +14,7 @@ internal T *peek_forward_rec(T *node, s32 count) {
 	return node;
 }
 
-internal b32 is_nil_module(Module *it) {return (it->next != NULL || it->next == &nil_module);}
+internal b32 is_nil_module(Module *it) {return (it != NULL || it == &nil_module);}
 
 internal b32 detect_import_cycle_in_modules(ModuleList *lst) {
 	for(Module *fast = lst->current; !is_nil_module(fast) && !is_nil_module(fast->next) ; fast = peek_forward_rec(fast, 1))
@@ -102,13 +102,33 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 se
 	return list;
 }
 
+internal void modules_push_new(ModuleList *modules, Module *module) {
+	
+	if(is_nil_module(modules->root)) {
+		modules->root = module;
+		modules->current = module;
+	} else {
+		// NOTE: this is assinged a nil module because there is no owener to the target file.
+		// but within this approach there bassically is never a file owner
+		if(modules->current != &nil_module) {
+			modules->current = module;
+			modules->current->next = &nil_module;
+		} else {
+			modules->current->next = module;
+			modules->current->next->prev = modules->current;
+			modules->current = module;
+		}
+		modules->count++;
+	}
+}
+
 ENTRYPOINT(argc, argv)
 {
     Arena *arena = ArenaCreate(MiB(256));
     AssertLog(arena, "Failed to allocate memory");
 	
     String8List *context_directories  = PushStruct(arena, String8List);
-    String8      main_target_path     = PushString8(arena, 0);
+    String8      target     = PushString8(arena, 0);
     ModuleList  *modules              = PushStruct(arena, ModuleList);
     ModuleList  *module_list          = PushStruct(arena, ModuleList);
 	
@@ -126,7 +146,7 @@ ENTRYPOINT(argc, argv)
                     str8_list_push_node(context_directories, &include_node);
                 }
             } else if(str8_starts_with(a, str8("--source="))) {
-                main_target_path = consume_param(a);
+				target = consume_param(a);
             }
         }
     }
@@ -134,11 +154,11 @@ ENTRYPOINT(argc, argv)
 	
     // the directory of the input file: everything before the last slash, "." if there is none
     String8 context_path = {};
-	for(u64 index = main_target_path.size; index > 0; --index) {
-        if(cstring_is_slash(main_target_path.data[index - 1])) {
+	for(u64 index = target.size; index > 0; --index) {
+        if(cstring_is_slash(target.data[index - 1])) {
             u64 slash_pos = index - 1;
 			// NOTE: this check makes sure we remove the last trailing slash in case we want to trim by 0
-            context_path  = str8_chop_right(main_target_path, main_target_path.size - (slash_pos ? slash_pos : 1));
+            context_path  = str8_chop_right(target, target.size - (slash_pos ? slash_pos : 1));
             break;
         }
     }
@@ -148,11 +168,11 @@ ENTRYPOINT(argc, argv)
 	
     String8List *files = PushStruct(arena, String8List);
 	Module *new_module = PushStruct(arena, Module);
-	new_module->name   = PushString8(arena, main_target_path.size);
-    if(main_target_path.size != 0)
+	new_module->name   = PushString8(arena, target.size);
+    if(target.size != 0)
     {
 		//  TODO: doing a +1 to handle the trailing slash. this needs to be fixed from the root
-		String8 name = str8_chop_left(main_target_path, (context_path.size + 1));
+		String8 name = str8_chop_left(target, (context_path.size + 1));
 		str8_copy(&new_module->name, &name);
 		// NOTE: we have no owner because we are target
 		new_module->owner = &nil_module;
@@ -163,24 +183,15 @@ ENTRYPOINT(argc, argv)
 		// if the file is a folder open the folder and read everything in there
 		
 		// NOTE: no file should have an owner i think
-        files = DirLoadFileNames(arena, &context_path);
+        files = DirLoadFileNames(arena, &context_path); // TODO: this should be replaced with a recursive function
         FOR_STR8_NODE(files, current) {
             String8 extension = str8_get_file_extension(current->value);
-            if(str8_is_match(str8(".jr"), extension))
-            {
+            if(str8_is_match(str8(".jr"), extension)) {
                 new_module->name = current->value;
-				// NOTE: this is assinged a nil module because there is no owener to the target file.
-				// but within this approach there bassically is never a file owner
-                if(modules->current != &nil_module) {
-                    modules->current = new_module;
-                    modules->current->next = &nil_module;
-                } else {
-					modules->current->next = new_module;
-					modules->current->next->prev = modules->current;
-					modules->current = new_module;
-				}
-				modules->count++;
-            }
+				
+				modules_push_new(modules, new_module);
+			}
+			
 		}
 	}
 	
@@ -196,20 +207,38 @@ ENTRYPOINT(argc, argv)
 			// make sure we are starting with a clena slate
 			Assert(modules->current == &nil_module || modules->current == NULL);
 			modules->current = PushStruct(arena, Module);
-			modules->current->buffer = FileLoad(arena, main_target_path);
+			modules->current->buffer = FileLoad(arena, target);
 			modules->root = modules->current;
 			
 			String8 seperator = str8("#");
 			String8 keyword   = str8("import");
+			
+			// handle comments
+			{
+				modules->current->buffer = str8_cut_match(arena,  modules->current->buffer,  str8("//"),  str8("\n"));
+				modules->current->buffer = str8_cut_match(arena,  modules->current->buffer, str8("/*"),  str8("*/"));
+			}
+			
+			
 			String8List *to_import_file_names =  handle_directives(arena, modules->current->buffer,  seperator, keyword);
+			
+			if(to_import_file_names->count == 0) {
+				// TODO: exit in someway
+				// NOTE: no import handling needed and we only have one module
+			}
 			
 			// TODO:  build and  assign the relative path based on the name and save that in the module struct
 			// this maybe based on imports
+			FOR_STR8_NODE(to_import_file_names, c)
 			{
-				// 1. match the name after the directive
-				// 2. try to open it?
-				// 3. prefix it with "./"
-				
+				// TODO: push a new modules with the relative path
+				str8_insert(arena, modules->current->relative_path, str8("./"), 0);
+				b32 exists = FileExists(arena, modules->current->relative_path);
+				AssertLog(exists, "failed to import: " Str8Fmt, Str8Arg(modules->current->buffer));
+				Module *new_module = PushStruct(arena, Module);
+				new_module->name = c->value;
+				str8_append(&new_module->relative_path, c->value);
+				modules_push_new(modules, new_module);
 			}
 			
 			
@@ -218,12 +247,6 @@ ENTRYPOINT(argc, argv)
 		
 		FOR_NODE(m, modules, &nil_module) {
 			String8 buffer =  FileLoad(arena, m->relative_path);
-			
-			// handle comments
-			{
-				buffer = str8_cut_match(arena,  buffer,  str8("//"),  str8("\n"));
-				buffer = str8_cut_match(arena,  buffer, str8("/*"),  str8("*/"));
-			}
 			
 			if(!buffer.data){Assert(0);}
 			str8_copy(&m->buffer, &buffer);
