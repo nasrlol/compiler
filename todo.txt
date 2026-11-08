@@ -1,22 +1,36 @@
 ~ fix next (current working tree, preproc merged into compiler.cpp)
- modules->current->buffer = FileLoad(...) right after asserting current is nil/NULL -> writes into read-only nil_module or derefs NULL
- handle_imports is passed main_target_buffer, which is still empty (file now goes into modules->current->buffer)
--- output.jr.ps / tokenize_tree also still use the empty main_target_buffer
--- handle_comments return value is ignored in the module loop (buffer.size never shrinks)
--- handle_directives never pushes into the returned list, so imports always come back empty
+-- build is broken: str8_cut_offset (base_string.cpp:75) uses `buffe.size` and `remove_end`, neither exists
+-- str8_cut_offset: allocates `local` but never copies buffer into it, memmoves inside the uninitialized copy, and `buffer.size -=` only changes its own parameter
+-- str8_cut_match: return of str8_cut_offset is ignored and `index` never moves -> infinite loop as soon as the file has a comment
+-- modules->root is never set, so FOR_NODE(m, modules, ...) never runs (the main module from FileLoad isn't linked into the list either)
+-- module loop does FileLoad(m->relative_path) but relative_path is never filled -> always loads an empty path
+-- to_import_file_names is computed and then dropped, imports never become modules
+-- handle_directives runs on the raw buffer before comments are stripped -> `// # current file: main.jr #` in tests/main.jr gets parsed as a directive (can hit the PANIC)
 -- is_nil_module: `next != NULL || next == &nil_module` is true for almost every node, should be `it == NULL || it == &nil_module`
 -- module_list is unused next to modules, pick one
 -- dir scan: `if(modules->current != &nil_module)` looks inverted, and every .jr reuses the same new_module
+-- dir scan path leaves modules->current set, so the Assert(current == nil/NULL) before loading the main target fires
+-- --source=main.jr with no slash: context_path is empty but name is chopped by context_path.size + 1 -> "ain.jr"
+-- --include= pushes a stack local String8Node (include_node) into context_directories -> dangling pointer after the loop
+-- no --source= given: FileLoad(main_target_path) still runs with an empty path
+-- [done] main module buffer no longer written into nil_module/NULL (PushStruct before FileLoad)
+-- [done] handle_directives now gets modules->current->buffer instead of the empty main_target_buffer
+-- [done] output.jr.ps dump removed, tokenize_tree now runs on m->buffer
+-- [done] comment stripping return value is assigned back to buffer in the module loop
+-- [done] handle_directives pushes found values into the returned list
 
 ~ preprocessor
--- [done] comment stripping (// and /* */)
 -- [done] relative paths / context directory from --source=
--- comment off by one: buffer.size -= (end_pos - start_pos) should be (remove_end - start_pos)
+-- comment stripping regressed in the str8_cut_match/str8_cut_offset rewrite (see fix next), old MemMove path is under #if 0
 -- comment end search starts at `index`, not start_pos + start.size -> can match a newline before the comment
--- `index += start_pos` should be `index = start_pos`
--- comment with no end (// on last line without \n, unterminated /*) -> handle EOF
+-- after a cut, continue searching from start_pos (old code did `index += start_pos`, new code never updates index)
+-- comment with no end (// on last line without \n, unterminated /*) -> str8_find return for the end is ignored, end_pos stays 0
 -- keep the \n when stripping // comments so line numbers stay correct
--- fix #import reading the wrong module name
+-- fix #import reading the wrong module name: after matching "import" the buffer isn't advanced past the keyword, so the value read is "import" again
+-- get_word: str8_is_match(buffer, delimiter) compares the whole rest of the buffer (size never shrinks, so it never matches), data++ without size-- reads past the end, and data -= offset is one short
+-- get_word_nl splits on " " not "\n", so `#import std.jr\n` runs into the next line
+-- str8_find: `index < size - element.size` skips the last position and underflows when element is longer than buffer
+-- str8_is_empty calls cstring8_length on non null-terminated String8 data
 -- stop chopping the main buffer in place, work on a copy
 -- detect import cycles / duplicate imports (detect_import_cycle_in_modules is a stub; fast/slow
    pointers on the module list won't find import cycles, use a visited set keyed by path + DFS over imports)

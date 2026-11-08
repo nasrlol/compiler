@@ -72,7 +72,7 @@ internal void str8_trim_right(String8 *buffer)
 internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 end)
 {
 	String8 local = PushString8(arena, buffer.size - (end - start));
-	MemMove((local.data + start), (local.data + end), (buffe.size - remove_end));
+	MemMove((local.data + start), (local.data + end), (buffer.size - end));
 	buffer.size -= (end - start);
 	return local;
 }
