@@ -185,14 +185,6 @@ ENTRYPOINT(argc, argv)
 	}
 	
 	
-	// TODO:  build and  assign the relative path based on the name and save that in the module struct
-	// this maybe based on imports
-	{
-		
-		
-	}
-	
-	
 	// TODO: iterate on the modules and load theyre files in parallel
 	// afterwards start doing the rest of  the  stuff
 	{
@@ -205,10 +197,22 @@ ENTRYPOINT(argc, argv)
 			Assert(modules->current == &nil_module || modules->current == NULL);
 			modules->current = PushStruct(arena, Module);
 			modules->current->buffer = FileLoad(arena, main_target_path);
+			modules->root = modules->current;
 			
 			String8 seperator = str8("#");
 			String8 keyword   = str8("import");
 			String8List *to_import_file_names =  handle_directives(arena, modules->current->buffer,  seperator, keyword);
+			
+			// TODO:  build and  assign the relative path based on the name and save that in the module struct
+			// this maybe based on imports
+			{
+				// 1. match the name after the directive
+				// 2. try to open it?
+				// 3. prefix it with "./"
+				
+			}
+			
+			
 			
 		}
 		

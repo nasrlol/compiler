@@ -45,9 +45,11 @@ if((node)->token->type == (type))                         \
 break;
 
 //-
-internal Ast *parse_tokenized_tree_fmt(Arena *arena, TokenTree *token_tree);
+internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree);
 internal b32  is_ast_node_nil(AstNode *node);
-internal void adopt_ast_node(AstNode *tree_node, AstNode *new_node);
+internal void adopt_ast_node(Ast *ast, AstNode *node);
+internal void handle_binary_expression(TokenNode *current_node, AstNode *new_node, Ast *ast);
+internal void handle_ternary_expression();
 
 //- syntax
 global_variable String8 reserved_words[] = {
@@ -67,6 +69,5 @@ global_variable String8 reserved_words[] = {
 if(node->field == NULL || !is_ast_node_nil(node)) \
 node->field = &nil_ast_node;
 
-internal void adopt_ast_node(AstNode *node, AstNode *new_node);
 
 #endif // EDITOR_PARSER_H

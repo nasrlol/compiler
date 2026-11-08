@@ -72,8 +72,9 @@ internal void str8_trim_right(String8 *buffer)
 internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 end)
 {
 	String8 local = PushString8(arena, buffer.size - (end - start));
+	str8_copy(&local, &buffer);
 	MemMove((local.data + start), (local.data + end), (buffer.size - end));
-	buffer.size -= (end - start);
+	local.size -= (end - start);
 	return local;
 }
 
@@ -103,10 +104,10 @@ internal String8 str8_cut_match(Arena *arena, String8 buffer, String8 start, Str
 #if 0
 		MemMove((buffer.data + start_pos), (buffer.data + remove_end), (tail));
 		buffer.size -= (remove_end - start_pos);
-		index += start_pos;
 #else
 		str8_cut_offset(arena, buffer, start_pos, remove_end);
 #endif
+		index += start_pos;
 	}
 	return buffer;
 }

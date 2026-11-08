@@ -127,7 +127,8 @@ internal b32 is_token_node_nil(TokenNode *node);
 internal b32 is_token_nil(Token *token);
 internal void push_token_children(Arena *arena, String8 buffer, TokenTree *tree, String8List *delimiters);
 internal void push_token_node(TokenTree *tree, TokenNode *node);
-internal TokenTree *tokenize_tree_fmt(Arena *arena, String8 *buffer_from_file);
+internal void debug_str8_diff(TokenTree *tree, Arena *arena, u64 diff_size, const char *function_name, String8 buffer);
+internal TokenTree *tokenize_tree(Arena *arena, String8 buffer);
 internal Token consume_token(String8 *buffer);
 internal TokenNode create_node_from_token();
 internal b32 is_token_node_nil(TokenNode *node) { return (node == &nil_token_node); }

@@ -89,6 +89,9 @@ internal b32     str8_insert(Arena *arena, String8 *dest, String8 *src, u64 pos)
 //- str8 trim / chop
 internal void    str8_trim_left(String8 *buffer);
 internal void    str8_trim_right(String8 *buffer);
+internal b32     str8_trim(String8 buffer);
+internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 end);
+internal String8 str8_cut_match(Arena *arena, String8 buffer, String8 start, String8 end);
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
 internal b32     str8_chop_left_ptr(String8 *buffer, u64 count);
@@ -100,11 +103,23 @@ internal b32     str8_is_match(String8 a, String8 b);
 internal b32     str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out);
 internal b32     str8_is_digit(String8 a, u64 start_pos);
 internal b32     str8_is_empty(String8 *buffer);
+internal b32     str8_is_whitespace(String8 buffer);
+internal b32     str8_find_needle(String8 *buffer, u64 start_pos, u8 *needle, u64 *pos);
+internal b32     str8_find_last(String8 *buffer, String8 element, u64 *out);
+internal b32     str8_find_all(Arena *arena, String8 *buffer, u64 start_pos, String8 element, String8List *out);
+internal b32     str8_replace(String8 buffer, String8 element, u64 start_pos);
+internal b32     str8_prefix(Arena *arena, String8 *buffer, String8 *prefix);
+internal b32     str8_starts_with(String8 buffer, String8 prefix);
+internal String8 str8_get_file_extension(String8 buffer);
 
 //- str8 list
-internal b32 str8_list_push_node(String8List *list, String8Node *node);
+internal b32  str8_list_push_node(String8List *list, String8Node *node);
+internal void str8_pop_node(String8List *list);
+internal void str8_list_remove_node(String8List *list, String8Node *node);
 
-//- str16 / str32 chop and substrings
+//- str16 / str32 trim, chop and substrings
+internal void     str16_trim_left(String16 *buffer);
+internal void     str32_trim_left(String32 *buffer);
 internal String16 str16_chop_left(String16 buffer, u64 count);
 internal String16 str16_chop_right(String16 buffer, u64 count);
 internal String16 str16_create_substr(String16 *buffer, u64 left_offset, u64 right_offset);
@@ -113,12 +128,13 @@ internal String32 str32_chop_right(String32 buffer, u64 count);
 internal String32 str32_create_substr(String32 *buffer, u64 left_offset, u64 right_offset);
 
 //- null-termination helpers
-internal cstring null_terminate(Arena *arena, String8 *c);
+internal cstring null_terminate(Arena *arena, String8 *buffer);
 internal String8 remove_null_terminator(Arena *arena, String8 c);
 
 //- convert
 
-internal cstring str8_to_cstring(String8 *buffer);
+internal cstring str8_to_cstring(Arena *arena, String8 *buffer);
+internal int     str8_to_int(String8 *buffer);
 
 //- cstring character classification
 internal b32 cstring_is_digit(u8 point);

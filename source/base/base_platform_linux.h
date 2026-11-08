@@ -41,8 +41,11 @@ internal String8 linux_get_env(const char *var);
 internal b32          linux_file_write(String8 data, String8 path);
 internal String8      linux_file_load(Arena *arena, String8 path);
 internal b32          linux_file_exists(Arena *arena, String8 path);
+internal b32          linux_delete_file(Arena *arena, String8 path);
+internal b32          linux_relative_path(Arena *arena, String8 *path);
+internal String8      linux_read_self(Arena *arena);
 internal String8List *linux_open_dir(Arena *arena,
-									 String8  *original_path); // TODO: change the return value
+									 String8  *path); // TODO: change the return value
 
 internal s64  linux_read(int fd, const void *buf, u64 count);
 internal void linux_os_exit() __attribute__((noreturn));

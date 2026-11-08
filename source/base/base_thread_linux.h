@@ -6,7 +6,8 @@
 
 typedef void (*ThreadProc)(void *arg);
 
-internal b32  thread_launch(Thread *t, ThreadProc proc, void *arg);
+internal ThreadPool thread_pool_create(Arena *arena, u64 count);
+internal Thread     thread_launch(ThreadProc proc);
 internal void thread_join();
 internal void thread_attach();
 internal void thread_exit();
