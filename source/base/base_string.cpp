@@ -69,6 +69,49 @@ internal void str8_trim_right(String8 *buffer)
 	str8_chop_right(*buffer, index);
 }
 
+internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 end)
+{
+	String8 local = PushString8(arena, buffer.size - (end - start));
+	MemMove((local.data + start), (local.data + end), (buffe.size - remove_end));
+	buffer.size -= (end - start);
+	return local;
+}
+
+
+internal String8 str8_cut_match(Arena *arena, String8 buffer, String8 start, String8 end)
+{
+	u64 index = 0;
+	u64 start_pos = 0;
+	while(str8_find(&buffer, index, start, &start_pos)) {
+		
+		u64 end_pos = 0;
+		str8_find(&buffer, index, end, &end_pos);
+		if(end_pos == buffer.size) {
+			// TODO: if the nl position == size thats EOF or something
+		}
+		
+		u64 remove_end = end_pos + end.size;
+		u64 tail       = buffer.size - remove_end;
+		
+		
+		// NOTE: we get the comment posotion but it points to the first  character.
+		// if the  start is bigger than 1. which when handling comments is
+		// we substract 1 from the size. because we already have the first one and then add the rest
+		// to  the comment position. which makes it get removed in the memmove
+		// str8_cut_offset(arena, buffer, start_pos, remove_end)
+		
+#if 0
+		MemMove((buffer.data + start_pos), (buffer.data + remove_end), (tail));
+		buffer.size -= (remove_end - start_pos);
+		index += start_pos;
+#else
+		str8_cut_offset(arena, buffer, start_pos, remove_end);
+#endif
+	}
+	return buffer;
+}
+
+
 internal b32 str8_is_match(String8 a, String8 b)
 {
 	if(a.size != b.size) {
@@ -410,6 +453,9 @@ internal String8 str8_get_file_extension(String8 buffer)
 		return str8_zero();
 	}
 }
+
+
+//- converter
 
 internal cstring str8_to_cstring(Arena *arena, String8 *buffer)
 {

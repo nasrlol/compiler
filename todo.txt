@@ -1,9 +1,27 @@
-~ what is left for a working compiler (llvm backend)
+~ fix next (current working tree, preproc merged into compiler.cpp)
+ modules->current->buffer = FileLoad(...) right after asserting current is nil/NULL -> writes into read-only nil_module or derefs NULL
+ handle_imports is passed main_target_buffer, which is still empty (file now goes into modules->current->buffer)
+-- output.jr.ps / tokenize_tree also still use the empty main_target_buffer
+-- handle_comments return value is ignored in the module loop (buffer.size never shrinks)
+-- handle_directives never pushes into the returned list, so imports always come back empty
+-- is_nil_module: `next != NULL || next == &nil_module` is true for almost every node, should be `it == NULL || it == &nil_module`
+-- module_list is unused next to modules, pick one
+-- dir scan: `if(modules->current != &nil_module)` looks inverted, and every .jr reuses the same new_module
 
 ~ preprocessor
+-- [done] comment stripping (// and /* */)
+-- [done] relative paths / context directory from --source=
+-- comment off by one: buffer.size -= (end_pos - start_pos) should be (remove_end - start_pos)
+-- comment end search starts at `index`, not start_pos + start.size -> can match a newline before the comment
+-- `index += start_pos` should be `index = start_pos`
+-- comment with no end (// on last line without \n, unterminated /*) -> handle EOF
+-- keep the \n when stripping // comments so line numbers stay correct
 -- fix #import reading the wrong module name
 -- stop chopping the main buffer in place, work on a copy
--- detect import cycles / duplicate imports
+-- detect import cycles / duplicate imports (detect_import_cycle_in_modules is a stub; fast/slow
+   pointers on the module list won't find import cycles, use a visited set keyed by path + DFS over imports)
+-- build relative_path for each module from its name + import (empty TODO block in main)
+-- load module files in parallel (later)
 -- keep file + line info so errors point at the right source
 
 ~ lexer
@@ -56,3 +74,8 @@
 -- parser tests (print ast, compare to expected)
 -- end to end: compile tests/*.jr, run it, check output / exit code
 -- add tests to test.sh
+
+
+~ api
+-- str8_list api design needs rewriting. i dont like the way we push stuff at the moment
+-- converting to a str8_node is such a hassle

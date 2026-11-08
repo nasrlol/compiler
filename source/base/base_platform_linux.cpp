@@ -97,7 +97,7 @@ internal String8 linux_file_load(Arena *arena, String8 path)
     }
 	
 	
-    ScratchArena scratch              = scratch_start(arena);
+    ScratchArena scratch = scratch_start(arena);
     const char  *null_terminated_path = null_terminate(scratch.arena, &path);
 	
     s32 file = open(null_terminated_path, O_RDONLY);
@@ -115,7 +115,7 @@ internal String8 linux_file_load(Arena *arena, String8 path)
     result = PushString8(arena, (u64)sbuf.st_size);
 	
     u64 file_size = (u64)sbuf.st_size;
-    result.size   = file_size;
+    result.size = file_size;
 	
     u64 total_bytes_read = 0;
 	
@@ -126,8 +126,7 @@ internal String8 linux_file_load(Arena *arena, String8 path)
             return str8_zero();
         }
 		
-        if(bytes == 0)
-            break;
+        if(bytes == 0) { break; }
         total_bytes_read += (u64)bytes;
     }
 	

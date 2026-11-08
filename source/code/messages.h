@@ -17,8 +17,9 @@ do {                                          \
 Log(panic_message "\n"                    \
 "panic information: \n" \
 "function:\t%s\n"       \
-"file:\t\t%s",          \
-__FUNCTION__, __FILE__);              \
+"file:\t\t%s\n"          \
+"line:\t\t%d",\
+__PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);              \
 OSExit(0);                                \
 } while (0);
 

@@ -146,6 +146,9 @@ struct LogList {
 
 #endif
 
+#if COMPILER_GCC
+#define BASE_FORCE_TAIL [[gnu::musttail]]
+#endif
 
 #define Assert(expression)   \
 do {                     \
@@ -164,5 +167,8 @@ Log(__VA_ARGS__);                                                     \
 Assert(false);                                                        \
 }                                                                         \
 } while (0)
+
+
+#define to_int(value) (value - '0')
 
 #endif //  BASE_CORE_H

@@ -34,8 +34,9 @@ target:
   working_directory: "../compiler"
   enabled: 1
   arguments: "--source=./tests/main.jr"
-  output_label: output
   label: "compiler with arguments"
+  entry_point: main
+  output_label: jjjjjjjjj
 }
 type_view:
 {
@@ -63,3 +64,4 @@ type_view:
   type: "Arena *"
   expr: "rows($, current_position,  capacity, previous, base_position)"
 }
+theme: "VS (Light)"

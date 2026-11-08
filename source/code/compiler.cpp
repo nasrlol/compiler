@@ -1,26 +1,107 @@
-#define DBEUG 1
 #include "base/base_include.h"
 #include "lexer.h"
+#include "compiler.h"
 #include "messages.h"
 #include "parse_table.h"
 #include "parser.h"
-#include "preproc.h"
 #include "lexer.cpp"
 #include "parser.cpp"
-#include "preproc.cpp"
 #include "base/base_raddbg.h"
+
+template <typename T>
+internal T *peek_forward_rec(T *node, s32 count) {
+	if(count > 0) return peek_forward_rec(node->next, count - 1);
+	return node;
+}
+
+internal b32 is_nil_module(Module *it) {return (it->next != NULL || it->next == &nil_module);}
+
+internal b32 detect_import_cycle_in_modules(ModuleList *lst) {
+	for(Module *fast = lst->current; !is_nil_module(fast) && !is_nil_module(fast->next) ; fast = peek_forward_rec(fast, 1))
+	{
+		for(Module *slow = lst->current; !is_nil_module(slow) && is_nil_module(slow->next->next); slow = peek_forward_rec(slow, 2)) {
+			return false;
+		}
+	}
+	return false;
+}
 
 internal String8 consume_param(String8 param)
 {
-    u64 equal_position              = 0;
-    b32 found_equal_sign            = Str8FindNeedle(&param, 0, "=", &equal_position);
-    if(found_equal_sign) param      = str8_chop_left(param, equal_position + 1);
-    else {
-        Log("wrong compiler param");
-        return str8_zero();
-    }
-    return param;
+	u64 equal_position              = 0;
+	b32 found_equal_sign            = Str8FindNeedle(&param, 0, "=", &equal_position);
+	if(found_equal_sign) param      = str8_chop_left(param, equal_position + 1);
+	else {
+		Log("wrong compiler param");
+		return str8_zero();
+	}
+	return param;
 }
+
+internal String8 get_word(Arena *arena, String8 buffer, String8 delimiter)
+{
+	u64 offset = 0;
+	b32 reached = false;
+	
+	for(u32 idx = 0; (!reached) && (idx < buffer.size); ++idx, ++buffer.data) {
+		reached = str8_is_match(buffer, delimiter);
+		offset = idx;
+	}
+	
+	buffer.data -= offset;
+	
+	if(offset != 0) {
+		String8 result = PushString8(arena, offset);
+		result = str8_create_substr(&buffer, 0, offset);
+		return result;
+	}
+	
+	return str8_zero();
+}
+
+internal String8 get_word_nl(Arena* arena, String8 buffer) { return get_word(arena, buffer, str8(" ")); }
+
+typedef struct BufferSection BufferSection;
+struct BufferSection {
+	u64 start;
+	u64 end;
+};
+
+// NOTE: we return a list a of  all pound sign values  that we found  within the current bufferr
+// when find any 1..n we return the next tokens in a String8List.
+internal String8List *handle_directives(Arena *arena, String8 buffer, String8 seperator, String8 keyword)
+{
+	Assert(buffer.size);
+	String8List *list = PushStruct(arena, String8List);
+	
+	b32 found = false;
+	u64 offset = 0;
+	found = str8_find(&buffer, 0, seperator, &offset);
+	
+	while(found)
+	{
+		// TODO: think about how we delete the keywords because they should get handled here
+		buffer = str8_chop_left(buffer, offset + 1);
+		
+		String8 import_word = get_word_nl(arena, buffer);
+		
+		if(str8_is_match(import_word, keyword)) {
+			while (cstring_is_whitespace(*buffer.data)) { buffer = str8_chop_left(buffer, 1); }
+			String8 value = get_word_nl(arena, buffer);
+			String8Node *node = PushStruct(arena, String8Node);
+			*node = ToString8Node(value);
+			str8_list_push_node(list, node);
+		} else if(str8_is_empty(&import_word)) {
+			Log("Error:" Str8Fmt, Str8Arg(import_word));
+			PANIC("Pound sign was found but no directive defined.");
+		}
+		
+		found = str8_find(&buffer, 0, seperator, &offset);
+	}
+	
+	return list;
+}
+
 ENTRYPOINT(argc, argv)
 {
     Arena *arena = ArenaCreate(MiB(256));
@@ -32,8 +113,8 @@ ENTRYPOINT(argc, argv)
     ModuleList  *module_list          = PushStruct(arena, ModuleList);
 	
     if(argc <= 1) {
+		Log("No parameters passed. The compiler is going to find the entry point and take that as the target");
         Log("help [--source=] \"example.jr\" [--include=] [--output=] example[.exe]]\n");
-		
     } else {
         // NOTE: we are bigger then one arguments so we can start assuming that a source file was passed
         for(u64 argument_index = 1; argument_index < (u64)argc; ++argument_index) {
@@ -65,7 +146,6 @@ ENTRYPOINT(argc, argv)
     Log("context directory: " Str8Fmt, Str8Arg(context_path));
 	
 	
-    String8 main_target_buffer = PushString8(arena, 0);
     String8List *files = PushStruct(arena, String8List);
 	Module *new_module = PushStruct(arena, Module);
 	new_module->name   = PushString8(arena, main_target_path.size);
@@ -123,25 +203,32 @@ ENTRYPOINT(argc, argv)
 		{
 			// make sure we are starting with a clena slate
 			Assert(modules->current == &nil_module || modules->current == NULL);
-			modules->current = FileLoad(arena, main_target_path);
-			String8List *directives    = handle_imports(arena, main_target_buffer, str8("#"));
+			modules->current = PushStruct(arena, Module);
+			modules->current->buffer = FileLoad(arena, main_target_path);
+			
+			String8 seperator = str8("#");
+			String8 keyword   = str8("import");
+			String8List *to_import_file_names =  handle_directives(arena, modules->current->buffer,  seperator, keyword);
 			
 		}
 		
-		FOR_NODE(mo, modules, &nil_module) {
-			String8 buffer =  FileLoad(arena, mo->relative_path);
-			str8_copy(&mo->buffer, &buffer);
-			handle_comments(arena, mo->buffer);
+		FOR_NODE(m, modules, &nil_module) {
+			String8 buffer =  FileLoad(arena, m->relative_path);
+			
+			// handle comments
+			{
+				buffer = str8_cut_match(arena,  buffer,  str8("//"),  str8("\n"));
+				buffer = str8_cut_match(arena,  buffer, str8("/*"),  str8("*/"));
+			}
+			
+			if(!buffer.data){Assert(0);}
+			str8_copy(&m->buffer, &buffer);
+			m->tree =  tokenize_tree(arena, m->buffer);
+			AssertLog(m->tree, "Failed to create Token Tree");
+			
 		}
-		
 	}
-	Assert(FileWrite(main_target_buffer, str8("output.jr.ps")));
 	
-    TokenTree *tree = tokenize_tree(arena, main_target_buffer);
-    AssertLog(tree, "Failed to create Token Tree");
-    Ast *ast        = parse_tokenized_tree(arena, tree);
-    AssertLog(ast, "Failed to create AST");
-	
-    return 0;
+	return 0;
 	
 }

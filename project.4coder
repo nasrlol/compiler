@@ -43,7 +43,7 @@ commands = {
 		.cursor_at_end    = true,
 	},
 	.run = {
-		.linux            = "./build/compiler",
+		.linux            = "./build/compiler --source=/home/nasr/dev/compiler/tests/main.jr",
 		.mac              = "./build/compiler",
 		.out              = "*compilation*",
 		.footer_panel     = false,
