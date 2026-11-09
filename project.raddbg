@@ -31,12 +31,11 @@ target:
 target:
 {
   executable: "build/compiler"
-  working_directory: "../compiler"
-  enabled: 1
-  arguments: "--source=./tests/main.jr"
   label: "compiler with arguments"
   entry_point: main
-  output_label: jjjjjjjjj
+  working_directory: tests
+  enabled: 1
+  arguments: "--source=main.jr"
 }
 type_view:
 {
@@ -65,3 +64,13 @@ type_view:
   expr: "rows($, current_position,  capacity, previous, base_position)"
 }
 theme: "VS (Light)"
+watch_pin:
+{
+  expression: import_offset
+  source_location: "source/code/compiler.cpp:104:1"
+}
+watch_pin:
+{
+  expression: substring
+  source_location: "source/code/compiler.cpp:130:1"
+}

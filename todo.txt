@@ -1,19 +1,26 @@
 ~ fix next (current working tree, preproc merged into compiler.cpp)
 
 
+-- by-value str8_insert (base_string.cpp:81) never uses dest (left/right are cut from src) and appends after PushString8 already set size -> writes past the end; two str8_insert overloads with different signatures, header only declares the pointer one
+-- import loop: FileExists checks modules->current->relative_path, which is empty -> AssertLog fires on the first #import; the message prints the buffer instead of the path
+-- import path is never joined with context_path, so `#import std.jr` from tests/main.jr looks in cwd instead of tests/
+-- str8_append(&new_module->relative_path, ...) on a zeroed String8: is_nil_str8 only checks against &nil_str8, so it MemCpy's into NULL -> crash
+-- main target module: the named new_module built from --source is dropped, modules->current is a fresh PushStruct with no name / relative_path
+-- module loop reloads every module from m->relative_path (empty for main) and throws away the comment-stripped buffer; str8_copy into m->buffer has no backing memory (NULL for imports) -> just assign the loaded buffer
+-- imported modules never get comment stripping or handle_directives, only the main target does (no recursion over imports)
 -- module_list is unused next to modules, pick one
--- dir scan: `if(modules->current != &nil_module)` looks inverted, and every .jr reuses the same new_module
+-- dir scan: every .jr reuses the same new_module (the inverted current check moved into modules_push_new)
 -- dir scan path leaves modules->current set, so the Assert(current == nil/NULL) before loading the main target fires
 -- --source=main.jr with no slash: context_path is empty but name is chopped by context_path.size + 1 -> "ain.jr"
 -- --include= pushes a stack local String8Node (include_node) into context_directories -> dangling pointer after the loop
--- no --source= given: FileLoad(main_target_path) still runs with an empty path
--- [done] is_nil_module: `next != NULL || next == &nil_module` is true for almost every node, should be `it == NULL || it == &nil_module`
+-- no --source= given: FileLoad(target) still runs with an empty path
+-- [done] str8_cut_offset: local is PushString8(size - (end - start)) but str8_copy copies all buffer.size bytes into it -> writes (end - start) bytes past the allocation
+-- [done] import loop: str8_insert(arena, modules->current->relative_path, "./", 0) picks the by-value overload, its result is dropped, and it runs on the importer (current) instead of the new module
+-- [done] str8_cut_match still hangs on tests/main.jr (confirmed: stuck in str8_find at compiler.cpp:218 on the `//` at offset 0): the str8_cut_offset result is still thrown away, so buffer never changes, and `index += start_pos` stays 0 -> assign `buffer = str8_cut_offset(...)` and keep searching from start_pos
+-- [done] is_nil_module is still wrong after the fix: `it != NULL || it == &nil_module` is true for every real module, should be `it == NULL || it == &nil_module` -> modules_push_new always takes the root branch, overwrites root/current on every push, never links next/prev or bumps count
 -- [done] handle_directives runs on the raw buffer before comments are stripped -> `// # current file: main.jr #` in tests/main.jr gets parsed as a directive (can hit the PANIC)
--- [done] to_import_file_names is computed and then dropped, imports never become modules
--- [done] module loop does FileLoad(m->relative_path) but relative_path is never filled -> always loads an empty path
--- [done] str8_cut_offset: allocates `local` but never copies buffer into it, memmoves inside the uninitialized copy, and `buffer.size -=` only changes its own parameter
+-- [done] to_import_file_names is computed and then dropped, imports never become modules (now pushed via modules_push_new, see the import loop bugs above)
 -- [done] modules->root is never set, so FOR_NODE(m, modules, ...) never runs (the main module from FileLoad isn't linked into the list either)
--- [done] str8_cut_match: return of str8_cut_offset is ignored and `index` never moves -> infinite loop as soon as the file has a comment
 -- [done] main module buffer no longer written into nil_module/NULL (PushStruct before FileLoad)
 -- [done] handle_directives now gets modules->current->buffer instead of the empty main_target_buffer
 -- [done] output.jr.ps dump removed, tokenize_tree now runs on m->buffer
@@ -22,9 +29,9 @@
 
 ~ preprocessor
 -- [done] relative paths / context directory from --source=
--- comment stripping regressed in the str8_cut_match/str8_cut_offset rewrite (see fix next), old MemMove path is under #if 0
+-- comment stripping regressed in the str8_cut_match/str8_cut_offset rewrite (see fix next), old MemMove path is under #if 0, delete it once the new path works
 -- comment end search starts at `index`, not start_pos + start.size -> can match a newline before the comment
--- after a cut, continue searching from start_pos (old code did `index += start_pos`, new code never updates index)
+-- after a cut, continue searching from start_pos (`index += start_pos` adds instead of sets, and is 0 when the comment is at offset 0)
 -- comment with no end (// on last line without \n, unterminated /*) -> str8_find return for the end is ignored, end_pos stays 0
 -- keep the \n when stripping // comments so line numbers stay correct
 -- fix #import reading the wrong module name: after matching "import" the buffer isn't advanced past the keyword, so the value read is "import" again
@@ -35,7 +42,7 @@
 -- stop chopping the main buffer in place, work on a copy
 -- detect import cycles / duplicate imports (detect_import_cycle_in_modules is a stub; fast/slow
    pointers on the module list won't find import cycles, use a visited set keyed by path + DFS over imports)
--- build relative_path for each module from its name + import (empty TODO block in main)
+-- build relative_path for each module from context_path + import name (first attempt in the import loop is broken, see fix next)
 -- load module files in parallel (later)
 -- keep file + line info so errors point at the right source
 
@@ -82,7 +89,7 @@
 ~ driver
 -- proper error/exit codes, stop after first failing phase
 -- flags: --emit-tokens, --emit-ast, --emit-llvm for debugging
--- remove the output.jr.ps debug dump or put it behind a flag
+-- [done] remove the output.jr.ps debug dump or put it behind a flag
 
 ~ tests
 -- lexer tests on small inputs
