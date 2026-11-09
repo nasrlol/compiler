@@ -1,7 +1,7 @@
 #ifndef BASE_RADDBG_H
 #define BASE_RADDBG_H
 
-#if defined(DEBUG) && DEBUG && (defined(__GNUC__) || defined(__clang__))
+#if defined(DEBUG) && DEBUG && COMPILER_GCC || COMPILER_CLANG
 
 #define RaddbgGlue_(a, b) a##b
 #define RaddbgGlue(a, b)  RaddbgGlue_(a, b)
