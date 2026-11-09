@@ -268,7 +268,10 @@ ENTRYPOINT(argc, argv)
 			b32 append_ok = str8_append(&import_module->relative_path, import_node->value);
 			Assert(append_ok);
 			
-			import_module->relative_path = str8_insert(arena, import_module->relative_path, str8("./"), 0);
+			str8_append(&source_directory, str8("/"));
+			import_module->relative_path = str8_insert(arena, import_module->relative_path, source_directory, 0);
+			
+			// import_module->relative_path = str8_insert(arena, import_module->relative_path, str8("./"), 0);
 			
 			b32 import_exists = FileExists(arena, import_module->relative_path);
 			AssertLog(import_exists, "failed to import: " Str8Fmt, Str8Arg(import_module->relative_path));
