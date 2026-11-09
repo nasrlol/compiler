@@ -71,7 +71,7 @@ internal void str8_trim_right(String8 *buffer)
 
 internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 end)
 {
-	String8 local = PushString8(arena, buffer.size - (end - start));
+	String8 local = PushString8(arena, buffer.size);
 	str8_copy(&local, &buffer);
 	MemMove((local.data + start), (local.data + end), (buffer.size - end));
 	local.size -= (end - start);
@@ -79,9 +79,15 @@ internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 en
 }
 
 internal String8 str8_insert(Arena *arena, String8 dest, String8 src, u64 pos) {
-	String8 result = PushString8(arena, dest.size + src.size);
-	String8 left   = str8_chop_left(src, src.size - pos);
-	String8 right  = str8_chop_right(src, pos);
+	
+	Assert(dest.size > pos);
+	
+	String8 result  = PushString8(arena, dest.size + src.size);
+	result.size = 0;
+	
+	String8 left  = str8_chop_right(dest, dest.size - pos);
+    String8 right = str8_chop_left(dest, pos);
+	
 	str8_append(&result, left);
 	str8_append(&result, src);
 	str8_append(&result, right);
@@ -114,7 +120,7 @@ internal String8 str8_cut_match(Arena *arena, String8 buffer, String8 start, Str
 		MemMove((buffer.data + start_pos), (buffer.data + remove_end), (tail));
 		buffer.size -= (remove_end - start_pos);
 #else
-		str8_cut_offset(arena, buffer, start_pos, remove_end);
+		buffer = str8_cut_offset(arena, buffer, start_pos, remove_end);
 #endif
 		index += start_pos;
 	}
@@ -133,6 +139,12 @@ internal b32 str8_is_match(String8 a, String8 b)
 	}
 	
 	return (b32)(memcmp(a.data, b.data, b.size) == 0);
+}
+
+internal b32 str8_is_any_match(String8 a, String8 b)
+{
+	b32 equal = (b32)(memcmp(a.data, b.data, b.size) == 0);
+	return equal;
 }
 
 
@@ -182,6 +194,8 @@ internal b32 str8_find_all(Arena *arena, String8 *buffer, u64 start_pos, String8
 // TODO: does this work like it should?
 internal b32 str8_find(String8 *buffer, u64 start_pos, String8 element, u64 *out)
 {
+	if(buffer->size < element.size) return false;
+	
 	for(u64 index = start_pos; index < buffer->size - element.size; ++index) {
 		String8 view = str8_chop_left(*buffer, index);
 		view         = str8_chop_right(view, view.size - element.size);
