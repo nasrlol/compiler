@@ -3,26 +3,26 @@ internal b32 is_ast_node_nil(AstNode *node)
 	return (node == NULL || node == &nil_ast_node);
 }
 
-// used to fill in the AstNode(new_node)
-// TokenNode *current_node signifies the current node in the iteration when cycling
-// that got produced by the lexer over the tokenstream
+// used to fill in the AstNode (new_node)
+// TokenNode *token_node is the current node in the iteration over the
+// token stream produced by the lexer
 
-internal void handle_binary_expression(TokenNode *current_node, AstNode *new_node, Ast *ast)
+internal void handle_binary_expression(TokenNode *token_node, AstNode *new_node, Ast *ast)
 {
 	new_node->type             = AstNodeType::Binary;
-	AstNode *temp_current_node = ast->current;
-	ast->current->first        = temp_current_node;
+	AstNode *current_ast_node = ast->current;
+	ast->current->first        = current_ast_node;
 	
 	// TODO: i think we should categorize these better in the future
-	if(current_node->next->token->type == TokenType::IdentToken ||
-	   current_node->next->token->type == TokenType::Number ||
-	   current_node->next->token->type == TokenType::String) {
-		TokenNode *next_token = current_node->next;
-		current_node->last    = next_token;
+	if(token_node->next->token->type == TokenType::IdentToken ||
+	   token_node->next->token->type == TokenType::Number ||
+	   token_node->next->token->type == TokenType::String) {
+		TokenNode *next_token_node = token_node->next;
+		token_node->last    = next_token_node;
 		// restructure the tree by moving the next node to sit closer?
 		
 		// todo: this needs testing
-		current_node->next = current_node->next->next;
+		token_node->next = token_node->next->next;
 	}
 }
 
@@ -37,12 +37,12 @@ internal void adopt_ast_node(Ast *ast, AstNode *node)
 	ast->current->next = node;
 }
 
-// TODO: do we want a reference or copy fo the token we are working on?
+// TODO: do we want a reference or copy of the token we are working on?
 internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 {
 	// TODO: replace with something containing a breakpoint, Assert or something like that
 	// currently it still throws that asm junk
-	// im going to ignore it for now and just put if checks. do a scan of the code later and fix it
+	// i'm going to ignore it for now and just put if checks. do a scan of the code later and fix it
 	// up
 	if(!token_tree || !arena)
 		return NULL;
@@ -51,12 +51,12 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 	MemStack *stack;
 	stack = ArenaToStack(arena, MiB(10));
 	
-	for(TokenNode *current_node = token_tree->current; !is_token_node_nil(current_node); current_node = current_node->next) {
+	for(TokenNode *token_node = token_tree->current; !is_token_node_nil(token_node); token_node = token_node->next) {
 		AstNode *new_node = StackPushStruct(stack, AstNode);
 		// TODO: cleanup after scan
 		if(!new_node) {
 			// NOTE: this doesn't need to be part of the compiler output because it should never fail
-			Log("Failed to push new node on to the stack");
+			Log("Failed to push AST node onto the stack");
 			return NULL;
 		}
 		
@@ -65,7 +65,7 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 		FillAstNodeFieldWIthNilNode(new_node, parent);
 		FillAstNodeFieldWIthNilNode(new_node, next);
 		
-		switch (current_node->token->type) {
+		switch (token_node->token->type) {
 			case TokenType::IdentToken: {
 				if(is_ast_node_nil(ast->current)) {
 					ast->current       = new_node;
@@ -98,7 +98,7 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 			} break;
 			
 			case TokenType::Double_Equal: {
-				handle_binary_expression(current_node, new_node, ast);
+				handle_binary_expression(token_node, new_node, ast);
 			} break;
 			
 			case TokenType::Greater_Equal: {
@@ -130,7 +130,7 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 			} break;
 			
 			default: {
-				// 1. TokenType::Undedfined
+				// 1. TokenType::Undefined
 				// 2. null
 				
 			} break;

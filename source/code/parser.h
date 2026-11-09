@@ -36,7 +36,7 @@ ReadOnly global_variable AstNode nil_ast_node = {
 
 ReadOnly global_variable Ast nil_ast = {
 	&nil_ast_node, // root
-	&nil_ast_node, // currrent
+	&nil_ast_node, // current
 };
 
 #define PeekForward(node, type, nil_node)                          \
@@ -48,7 +48,7 @@ break;
 internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree);
 internal b32  is_ast_node_nil(AstNode *node);
 internal void adopt_ast_node(Ast *ast, AstNode *node);
-internal void handle_binary_expression(TokenNode *current_node, AstNode *new_node, Ast *ast);
+internal void handle_binary_expression(TokenNode *token_node, AstNode *new_node, Ast *ast);
 internal void handle_ternary_expression();
 
 //- syntax

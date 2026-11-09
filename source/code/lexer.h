@@ -14,13 +14,13 @@ if(node->field == NULL || !is_token_node_nil(node)) \
 node->field = &nil_token_node;
 
 enum TokenType {
-	// if this is the case. we fall through to use the TokenFlags which do a beter job at specifying
+	// if this is the case. we fall through to use the TokenFlags, which do a better job at specifying
 	// the properties of the identifier
 	Illegal = 256,
 	IdentToken,
 	
-	// TODO: what is this commentm man what are you saying
-	// because an identfier could really be anything from a value, variable or function.
+	// TODO: what is this comment saying?
+	// because an identifier could really be anything from a value, variable or function.
 	Value,
 	
 	String,
@@ -90,7 +90,7 @@ struct TokenTree {
 typedef struct TranslationUnit TranslationUnit;
 struct TranslationUnit {
 	// stored as an array
-	// per omdule one unit, to handle namespace issues
+	// one unit per module, to handle namespace issues
 	TokenTree *tree_units;
 };
 
