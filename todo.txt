@@ -1,58 +1,68 @@
 ~ fix next (current working tree, preproc merged into compiler.cpp)
 
 
--- module loop strips comments from root_module->buffer for every module (compiler.cpp:292-293) -> every import's buffer gets replaced with main.jr's text; use module->buffer, and pass the result of the `//` pass into the `/*` pass (251-252 only work because modules->current aliases root_module)
--- tokenize_tree segfaults on the first '{' in tests/main.jr (lexer.cpp:105): tree is PushStructZero so tree->current is NULL, node/token are PushStruct (garbage) and node->token is never set; also MemCpy(&working_buffer, &buffer, buffer.size) at lexer.cpp:73 copies the file into the String8 struct on the stack instead of into working_buffer.data -> stack smash (see lexer section)
--- handle_directives value length is measured from the start of the keyword, not after it: value_cursor starts at "import", so value_length == strlen("import") == 6, and `#import std.jr` only works because "std.jr" is also 6 chars (`#import math.jr` would read "math.j")
--- handle_directives word/value loops: data += 1 without size -= 1 and str8_is_any_match does memcmp(b.size) without checking a.size -> reads past the end of the buffer when the directive is the last thing in the file; data is advanced before the first compare so index 0 is never checked
--- str8_insert: two overloads with different signatures/return types (by-value returns String8 at base_string.cpp:81, pointer returns b32 at :448), header only declares the pointer one; Assert(dest.size > pos) rejects inserting at the end and inserting into an empty string
--- main target module: target_module (with name) built from --source is never pushed, the list gets a separate root_module with relative_path but no name
--- imported modules never get handle_directives (no recursion over imports, nested #import is ignored)
--- module_list is unused next to modules, pick one
--- dir scan: every .jr reuses the same target_module (pushed n times, list links to itself), and it is pushed before root_module
--- no --source= given: dir scan runs DirLoadFileNames on an empty source_directory, then FileLoad(source_path) runs with an empty path and the AssertLog fires
--- --source=main.jr with no slash: source_directory is empty but name is chopped by source_directory.size + 1 -> "ain.jr"
--- --include= pushes a stack local String8Node (include_node) into include_directories -> dangling pointer after the loop
--- base_raddbg.h: `defined(DEBUG) && DEBUG && COMPILER_GCC || COMPILER_CLANG` parses as (... && GCC) || CLANG -> raddbg markers are on in release builds with clang; needs parens
--- [done] import path is never joined with source_directory: `./` is prepended instead, so `--source=tests/main.jr` from the repo root (raddbg working dir) dies with "failed to import: ./std.jr"; only works when run from inside tests/
--- [done] import loop: FileExists now checks the new module's relative_path and the message prints the path
--- [done] str8_append into the import's relative_path: now backed by PushString8 + size = 0 instead of a zeroed String8
--- [done] by-value str8_insert now cuts left/right from dest and resets result.size before appending
--- [done] module loop no longer reloads modules that already have a buffer (main keeps its comment-stripped buffer)
--- [done] str8_cut_offset: local is PushString8(size - (end - start)) but str8_copy copies all buffer.size bytes into it -> writes (end - start) bytes past the allocation
--- [done] import loop: str8_insert(arena, modules->current->relative_path, "./", 0) picks the by-value overload, its result is dropped, and it runs on the importer (current) instead of the new module
--- [done] str8_cut_match still hangs on tests/main.jr (confirmed: stuck in str8_find at compiler.cpp:218 on the `//` at offset 0): the str8_cut_offset result is still thrown away, so buffer never changes, and `index += start_pos` stays 0 -> assign `buffer = str8_cut_offset(...)` and keep searching from start_pos
--- [done] is_nil_module is still wrong after the fix: `it != NULL || it == &nil_module` is true for every real module, should be `it == NULL || it == &nil_module` -> modules_push_new always takes the root branch, overwrites root/current on every push, never links next/prev or bumps count
--- [done] handle_directives runs on the raw buffer before comments are stripped -> `// # current file: main.jr #` in tests/main.jr gets parsed as a directive (can hit the PANIC)
--- [done] to_import_file_names is computed and then dropped, imports never become modules (now pushed via modules_push_new, see the import loop bugs above)
--- [done] modules->root is never set, so FOR_NODE(m, modules, ...) never runs (the main module from FileLoad isn't linked into the list either)
--- [done] main module buffer no longer written into nil_module/NULL (PushStruct before FileLoad)
--- [done] handle_directives now gets modules->current->buffer instead of the empty main_target_buffer
--- [done] output.jr.ps dump removed, tokenize_tree now runs on m->buffer
+source/code/lexer.cpp:102: tokenize_tree segfaults on the first '{' in tests/main.jr (re-confirmed on the current tree with --source=tests/main.jr, the backtrace handler points here): tree is PushStructZero so tree->current is NULL, node/token are PushStruct (garbage) and node->token is never set (lexer.cpp:103); also MemCpy(&iteration_buffer, &buffer, buffer.size) at lexer.cpp:71 copies the file into the String8 struct on the stack instead of into iteration_buffer.data -> stack smash (see lexer section)
+source/code/lexer.cpp:47: push_token_node after the rewrite: always derefs tree->current, which is NULL on the first push (is_token_node_nil only checks &nil_token_node, not NULL) -> crash; `tree->current->previous = tree->current` makes current point at itself instead of setting node->previous; FillTokenNodeFieldWithNilNode's `|| !is_token_node_nil(node)` is always true, so it wipes the parent/previous that were just set (lexer.cpp:52-57)
+source/code/compiler.cpp:335: module loop strips comments from root_module->buffer for every module -> every import's buffer gets replaced with main.jr's text; use module->buffer, and pass the result of the `//` pass into the `/*` pass at compiler.cpp:336 (the root pass at compiler.cpp:292 is fixed and already chains them)
+source/code/compiler.cpp:312: import loop: str8_append(&source_directory, "/") writes into argv (source_directory is a view of source_path) and runs once per import -> 2nd import gives "tests//std.jr" and overwrites source_path to "tests//ain.jr", keeps growing past the argv string; build "dir/" once before the loop into arena memory (only works now because tests/main.jr has a single import)
+source/code/compiler.cpp:142: handle_directives value length is measured from the start of the keyword, not after it: value_cursor (compiler.cpp:121) starts at "import", so value_length == strlen("import") == 6, and `#import std.jr` only works because "std.jr" is also 6 chars (`#import math.jr` would read "math.j")
+source/code/compiler.cpp:84: handle_directives word/value loops (also compiler.cpp:125): data += 1 without size -= 1 and str8_is_any_match (base_string.cpp:144) does memcmp(b.size) without checking a.size -> reads past the end of the buffer when the directive is the last thing in the file; data is advanced before the first compare so index 0 is never checked
+source/base/base_string.cpp:81: str8_insert: two overloads with different signatures/return types (by-value returns String8 here, pointer returns b32 at base_string.cpp:448), header (base_string.h:87) only declares the pointer one; Assert(dest.size > pos) at base_string.cpp:83 rejects inserting at the end and inserting into an empty string
+source/code/compiler.cpp:249: main target module: target_module (with name) built from --source is never pushed, the list gets a separate root_module (compiler.cpp:281) with relative_path but no name
+source/code/compiler.cpp:296: imported modules never get handle_directives (only the root buffer is scanned, no recursion over imports, nested #import is ignored)
+source/code/compiler.cpp:212: module_list is unused next to modules, pick one
+source/code/compiler.cpp:269: dir scan: every .jr reuses the same target_module (pushed n times at compiler.cpp:271, list links to itself), and it is pushed before root_module
+source/code/compiler.cpp:265: no --source= given: dir scan runs DirLoadFileNames on an empty source_directory, then FileLoad(source_path) at compiler.cpp:283 runs with an empty path and the AssertLog fires
+source/code/compiler.cpp:254: --source=main.jr with no slash: source_directory is empty but name is chopped by source_directory.size + 1 -> "ain.jr"
+source/code/compiler.cpp:224: --include= pushes a stack local String8Node (include_node) into include_directories -> dangling pointer after the loop
+source/code/compiler.cpp:207: LogBacktrace (and tls_scratch_arena setup) is Linux only: base_platform_win32.h has no LogBacktrace, so build.bat / the Windows build no longer compiles; give win32 an empty define or wrap the call
+source/base/base_platform_linux.cpp:5: linux_sig_handler: 4 x 4096-entry buffers (~44KB) on the stack of a SIGSEGV handler with no sigaltstack -> a stack overflow crash can't be reported; also uses non async-signal-safe calls (popen/printf), fine for debug but keep it debug-only
+source/base/base_platform_linux.h:66: LogBacktrace only hooks SIGSEGV/SIGTRAP: Assert -> Trap() is __builtin_trap, which is SIGTRAP on arm64 but SIGILL on x86_64, so failed asserts on x86 get no backtrace; also hook SIGILL/SIGABRT/SIGBUS/SIGFPE and print which signal it was
+source/base/base_raddbg.h:4: `defined(DEBUG) && DEBUG && COMPILER_GCC || COMPILER_CLANG` parses as (... && GCC) || CLANG -> raddbg markers are on in release builds with clang; needs parens
+source/base/base_platform_linux.h:56: linux_log_with_args_nl declared but never defined
+source/code/compiler.cpp:177: remove crash_inner / crash_outer test helpers (now under #if 0; the handler is verified, it printed the tokenize_tree crash)
+source/base/base_thread_linux.cpp:4: linux_thread_entry calls free() on the ThreadStart that thread_launch got from PushStruct(arena) -> invalid free on the first thread launched; drop the free (arena owns it)
+source/base/base_thread.h:24: thread_launch is declared as (proc, param) but defined as (arena, proc, param) at base_thread_linux.cpp:13 -> the declared overload is never defined; Thread::memory (base_thread.h:13) is never set
+x source/base/base_include.h:36: release build (DEBUG=0) doesn't compile: execinfo.h is only included under #if DEBUG but linux_sig_handler / LogBacktrace are unconditional -> "'backtrace' was not declared" (execinfo.h/link.h/signal.h are now included unconditionally, release build compiles)
+x source/base/base_platform_linux.cpp:2: SIGSEGV/SIGTRAP backtrace handler (LogBacktrace, symbolized with llvm-symbolizer)
+x source/code/compiler.cpp:313: import path is never joined with source_directory: `./` is prepended instead, so `--source=tests/main.jr` from the repo root (raddbg working dir) dies with "failed to import: ./std.jr"; only works when run from inside tests/ (now joined, but see the source_directory append bug above)
+x source/code/compiler.cpp:317: import loop: FileExists now checks the new module's relative_path and the message prints the path
+x source/code/compiler.cpp:306: str8_append into the import's relative_path: now backed by PushString8 + size = 0 instead of a zeroed String8
+x source/base/base_string.cpp:88: by-value str8_insert now cuts left/right from dest and resets result.size before appending
+x source/code/compiler.cpp:326: module loop no longer reloads modules that already have a buffer (main keeps its comment-stripped buffer)
+x source/base/base_string.cpp:72: str8_cut_offset: local is PushString8(size - (end - start)) but str8_copy copies all buffer.size bytes into it -> writes (end - start) bytes past the allocation
+x source/code/compiler.cpp:315: import loop: str8_insert(arena, modules->current->relative_path, "./", 0) picks the by-value overload, its result is dropped, and it runs on the importer (current) instead of the new module
+x source/base/base_string.cpp:123: str8_cut_match still hangs on tests/main.jr (confirmed: stuck in str8_find at compiler.cpp:218 on the `//` at offset 0): the str8_cut_offset result is still thrown away, so buffer never changes, and `index += start_pos` stays 0 -> assign `buffer = str8_cut_offset(...)` and keep searching from start_pos
+x source/code/compiler.cpp:18: is_nil_module is still wrong after the fix: `it != NULL || it == &nil_module` is true for every real module, should be `it == NULL || it == &nil_module` -> modules_push_new always takes the root branch, overwrites root/current on every push, never links next/prev or bumps count
+x source/code/compiler.cpp:292: handle_directives runs on the raw buffer before comments are stripped -> `// # current file: main.jr #` in tests/main.jr gets parsed as a directive (can hit the PANIC)
+x source/code/compiler.cpp:302: to_import_file_names is computed and then dropped, imports never become modules (now pushed via modules_push_new, see the import loop bugs above)
+x source/code/compiler.cpp:167: modules->root is never set, so FOR_NODE(m, modules, ...) never runs (the main module from FileLoad isn't linked into the list either)
+x source/code/compiler.cpp:281: main module buffer no longer written into nil_module/NULL (PushStruct before FileLoad)
+x source/code/compiler.cpp:296: handle_directives now gets modules->current->buffer instead of the empty main_target_buffer
+x source/code/compiler.cpp:340: output.jr.ps dump removed, tokenize_tree now runs on m->buffer
 -- [done] comment stripping return value is assigned back to buffer in the module loop
--- [done] handle_directives pushes found values into the returned list
+x source/code/compiler.cpp:150: handle_directives pushes found values into the returned list
 
 ~ preprocessor
--- [done] relative paths / context directory from --source=
--- [done] comment stripping works again on tests/main.jr (str8_cut_offset result assigned back)
--- delete the old MemMove path under #if 0 in str8_cut_match
--- comment end search starts at `index`, not start_pos + start.size -> can match a newline before the comment
--- after a cut, continue searching from start_pos (`index += start_pos` adds instead of sets, and is 0 when the comment is at offset 0)
--- comment with no end (// on last line without \n, unterminated /*) -> str8_find return for the end is ignored, end_pos stays 0
--- keep the \n when stripping // comments so line numbers stay correct
--- [done] get_word / get_word_nl replaced by inline delimiter loops in handle_directives (new bugs in fix next)
--- pull the word/value scanning out of handle_directives into one str8 helper that stops at any of a set of delimiters (" ", "\n", "\t", "\r"), working on a view instead of copying the buffer into scratch
--- str8_find: `index < size - element.size` skips the last position (a match ending exactly at EOF is never found); underflow is fixed by the size check
--- str8_is_empty calls cstring8_length on non null-terminated String8 data
+x source/code/compiler.cpp:236: relative paths / context directory from --source=
+x source/base/base_string.cpp:123: comment stripping works again on tests/main.jr (str8_cut_offset result assigned back)
+source/base/base_string.cpp:119: delete the old MemMove path under #if 0 in str8_cut_match
+source/base/base_string.cpp:104: comment end search starts at `index`, not start_pos + start.size -> can match a newline before the comment
+source/base/base_string.cpp:125: after a cut, continue searching from start_pos: `index += start_pos` adds instead of sets (2nd comment at 50 then 3rd at 120 -> search starts at 170 and skips it)
+source/base/base_string.cpp:105: comment with no end (// on last line without \n, unterminated /*) -> str8_find return for the end is ignored, end_pos stays 0 and remove_end < start_pos goes into str8_cut_offset
+source/base/base_string.cpp:109: keep the \n when stripping // comments so line numbers stay correct (remove_end includes end.size)
+x source/code/compiler.cpp:73: get_word / get_word_nl replaced by inline delimiter loops in handle_directives (new bugs in fix next)
+source/code/compiler.cpp:56: pull the word/value scanning out of handle_directives into one str8 helper that stops at any of a set of delimiters (" ", "\n", "\t", "\r"), working on a view instead of copying the buffer into scratch
+source/base/base_string.cpp:199: str8_find: `index < size - element.size` skips the last position (a match ending exactly at EOF is never found); underflow is fixed by the size check
+source/base/base_string.cpp:443: str8_is_empty calls cstring8_length on non null-terminated String8 data
 -- [done] stop chopping the main buffer in place, work on a copy (str8_cut_offset copies, handle_directives chops a by-value view)
--- detect import cycles / duplicate imports (detect_import_cycle_in_modules is a stub; fast/slow
-   pointers on the module list won't find import cycles, use a visited set keyed by path + DFS over imports)
--- build relative_path for each module from source_directory + import name (currently "./" + name, see fix next)
--- load module files in parallel (later)
+source/code/compiler.cpp:21: detect import cycles / duplicate imports (detect_import_cycle_in_modules is a stub; fast/slow pointers on the module list won't find import cycles, use a visited set keyed by path + DFS over imports)
+x source/code/compiler.cpp:313: build relative_path for each module from source_directory + import name (append bug in fix next)
+-- load module files in parallel (later; base_thread.h now has thread_launch/join, see the thread bugs in fix next)
 -- keep file + line info so errors point at the right source
 
 ~ lexer
--- tokenize_tree is broken before it produces anything: crashes on '{' (fix next), scratch_start every iteration without scratch_end, node->parent / node->first read before being set, working_buffer is chopped on newline while buffer_index keeps counting -> fold into the flat token array rewrite below
+source/code/lexer.cpp:60: tokenize_tree is broken before it produces anything: crashes on '{' (fix next), scratch_start every iteration without scratch_end (lexer.cpp:70), node->parent / node->first read before being set, iteration_buffer is chopped on newline while buffer_index keeps counting (lexer.cpp:84) -> fold into the flat token array rewrite below
 -- tokens for every keyword (struct, enum, if, else, for, in, while, switch, case, return, defer)
 -- tokens for all operators (+ - * / % = += -= == != < > <= >= && || ! | : , ; . [ ] { } ( ))
 -- number literals (int, float), string literals with escapes, true/false
@@ -73,6 +83,7 @@
 -- resolve names across modules
 -- type checking (assignments, calls, returns, binary ops)
 -- decide what `!` and `int | string` return types mean and check them
+source/code/compiler.cpp:43: find the entry point (proc_table_contains_entrypoint is a stub that returns false, nothing builds a proc table yet)
 -- struct field lookup, enum value lookup
 -- report undefined / duplicate symbols
 
@@ -96,7 +107,8 @@
 -- proper error/exit codes, stop after first failing phase
 -- flags: --emit-tokens, --emit-ast, --emit-llvm for debugging
 -- [done] remove the output.jr.ps debug dump or put it behind a flag
--- build.sh now only does `exec build-notify ./compile.sh`: compile.sh is untracked (git add it) and build.sh fails on machines without build-notify
+build.sh:3: build.sh only does `exec build-notify ./compile.sh` -> fails on machines without build-notify (fall back to ./compile.sh)
+-- [done] compile.sh is tracked in git
 
 ~ tests
 -- lexer tests on small inputs
