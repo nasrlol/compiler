@@ -1,24 +1,31 @@
 #ifndef BASE_THREAD_H
+
+thread_local Arena *tls_scratch_arena = 0;
+#define ScratchGet() scratch_start(tls_scratch_arena)
+
 #define BASE_THREAD_H
 
+typedef void ThreadProc(void *param);
 
-// platform agnostic thread buffer
+
 typedef struct Thread Thread;
 struct Thread {
-#if PLATFORM_LINUX
-	pthread_t id;
-#endif
-	u64 data[2];
-	s32 input;
-	s32 result;
+    ScratchArena *memory;
+    u64 data[1];
+};   
+
+typedef struct ThreadStart ThreadStart;
+struct ThreadStart {
+    ThreadProc *proc;
+    void       *param;
 };
 
 
-typedef struct ThreadPool ThreadPool;
-struct ThreadPool {
-	Thread *threads;
-	u64     count;
-};
+internal Thread thread_launch(ThreadProc *proc, void *param);
+internal b32 thread_join(Thread thread);     
+internal void thread_detach(Thread thread);  
+internal void thread_set_name(String8 name);   
+internal u64  thread_current_id(void);        
 
 
 #endif // BASE_THREAD_H

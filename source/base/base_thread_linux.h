@@ -4,16 +4,6 @@
 //- os impementations for threading
 // note: keeping the implementation linux specific for now
 
-typedef void (*ThreadProc)(void *arg);
-
-internal ThreadPool thread_pool_create(Arena *arena, u64 count);
-internal Thread     thread_launch(ThreadProc proc);
-internal void thread_join();
-internal void thread_attach();
-internal void thread_exit();
-internal void thread_get_current();
-internal void thread_compare();
-
 internal void mutex_create();
 internal void mutex_destroy();
 internal void mutex_lock();
