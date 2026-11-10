@@ -478,6 +478,38 @@ internal String8 str8_get_file_extension(String8 buffer)
 	}
 }
 
+internal String8Array
+str8_array_reserve(Arena *arena, u64 count)
+{
+    String8Array result = {};
+    result.v     = PushArrayZero(arena, String8, count);
+    result.count = count;
+    return result;
+}
+
+
+internal String8Array
+str8_array_from_list(Arena *arena, String8List *list)
+{
+    String8Array result = str8_array_reserve(arena, list->count);
+    u64 index = 0;
+    FOR_STR8_NODE(list, node) {
+	result.v[index++] = node->value;
+    }
+    return result;
+}
+internal String8Array
+str8_array_slice(String8Array array, u64 first, u64 count)
+{
+    String8Array result = {};
+
+    first = Min(first, array.count);
+    count = Min(count, array.count - first);
+
+    result.v     = array.v + first;
+    result.count = count;
+    return result;
+}
 
 //- converter
 
