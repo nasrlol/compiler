@@ -1,3 +1,31 @@
+
+internal void linux_sig_handler(int signal)
+{
+	u64 COUNT = 4096;
+	void *buffer[COUNT] = {0};
+	int size = backtrace(buffer, COUNT);
+	for(int index = 0; index < size; ++index) {
+		Dl_info info = {0};
+		struct link_map *map = 0;
+		if(!dladdr1(buffer[index], &info, (void **)&map, RTLD_DL_LINKMAP) || !info.dli_fname) continue;
+		if(info.dli_fname[0] != '/' && info.dli_fname[0] != '.') continue;
+		
+		char cmd[COUNT] = {0};
+		u64 address = (u64)((u8 *)buffer[index] - (u8 *)map->l_addr) - 1;
+		Fmt(cmd, sizeof(cmd), "llvm-symbolizer -f -e %s 0x%lx", info.dli_fname, address);
+		
+		FILE *f = popen(cmd, "r");
+		if(!f) continue;
+		char out[COUNT] = {0};
+		char loc[COUNT] = {0};
+		if(fgets(out, ArrayCount(out), f) && fgets(loc, ArrayCount(loc), f)) {
+			Log("backtrace %s\t%s", out, loc);
+		}
+		pclose(f);
+	}
+	_exit(1);
+}
+
 internal String8 linux_get_env(const char *var)
 {
     AssertLog(environ, "Environment not loaded");
@@ -157,13 +185,12 @@ internal b32 linux_file_write(String8 data, String8 path)
     close(file);
     return true;
 }
-
 internal void linux_log_with_args(const char *format, ...)
 {
     va_list arguments;
     va_start(arguments, format);
     vprintf(format, arguments);
-    putc('\n', stdout);
+	putc('\n', stdout);
     fflush(stdout);
     va_end(arguments);
 }

@@ -3,6 +3,7 @@
 
 //- Types
 
+
 typedef void(LibSym)(void *);
 
 
@@ -52,6 +53,7 @@ internal void linux_os_exit() __attribute__((noreturn));
 
 internal s64  linux_log(int fd, const void *buf, u64 count);
 internal void linux_log_with_args(const char *format, ...);
+internal void linux_log_with_args_nl(const char *format, ...);
 
 
 #define FileLoad(arena, path) linux_file_load(arena, path)
@@ -60,6 +62,10 @@ internal void linux_log_with_args(const char *format, ...);
 #define DirLoadFileNames(arena, path) linux_open_dir(arena, path)
 #define ReadSelf(arena) linux_read_self(arena)
 #define FileDelete(arena, path) linux_delete_file(arena, path)
+
+#define LogBacktrace   signal(SIGSEGV, linux_sig_handler); signal(SIGTRAP, linux_sig_handler)
+
+
 
 #if DEBUG
 #define OSExit(code) _exit(code)

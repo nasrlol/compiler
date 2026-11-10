@@ -100,6 +100,9 @@
 
 //-
 
+#define Fmt(buffer,size, fmt, ...) snprintf(buffer, size, fmt, __VA_ARGS__)
+
+
 //- types
 
 typedef uint64_t u64;
