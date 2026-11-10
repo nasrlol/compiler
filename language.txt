@@ -1,0 +1,24 @@
+the lexer takes in expressions.
+experssions are defined by delimiters
+
+
+```
+v   v          v   v
+calc(value: s32) ! {
+
+
+   if value > 1 {
+       return value + 3;
+   }
+
+   return 1;
+
+}
+^
+
+
+```
+
+
+so maybe we want like in scheme
+single expressions and then also have groupped expressions
