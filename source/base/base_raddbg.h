@@ -21,8 +21,16 @@ RaddbgTypeView(String8List,  list(first, next));
 RaddbgTypeView(String16List, list(first, next));
 RaddbgTypeView(String32List, list(first, next));
 
-RaddbgTypeView(TokenNodeList, list(root, next));
-RaddbgTypeView(ModuleList,    list(root, next));
+RaddbgTypeView(Token,     rows($, type, line, keyword, value));
+RaddbgTypeView(TokenNode, rows($, token, buffer_index));
+RaddbgTypeView(TokenList, list(first, next));
+RaddbgTypeView(BufferProperties, rows($, newlines));
+
+RaddbgTypeView(AstNode, rows($, type, first, next, parent));
+RaddbgTypeView(Ast,     rows($, root, current, symbols));
+
+RaddbgTypeView(Module,     rows($, name, relative_path, token_list, owner)j);
+RaddbgTypeView(ModuleList, list(root, next));
 
 RaddbgTypeView(Arena,        rows($, current_position, capacity, previous, base_position));
 RaddbgTypeView(ScratchArena, rows($, arena, start_position));
