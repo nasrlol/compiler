@@ -44,7 +44,9 @@ arena_pop_to(Arena *arena, u64 pos)
 	
 	while(block->previous && (block->block_position >= pos)) {
 		Arena *previous = block->previous;
+#if 0
 		ArenaDestroy(block);
+#endif
 		block = previous;
 	}
 	
