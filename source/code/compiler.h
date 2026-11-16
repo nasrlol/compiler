@@ -6,11 +6,10 @@ global_variable b32 import_chasing = false;
 typedef struct Module Module;
 struct Module {
 	TokenList *token_list;
-	String8    name;
-	String8    relative_path;
+	String8    file_name;
 	Module    *next;
 	Module    *prev;
-	Module    *owner;
+	Module    *file_owner;
 	String8   buffer;
 	
 };
@@ -26,7 +25,7 @@ ReadOnly Module nil_module = {
 	.token_list  = &nil_token_list,
 	.next  = &nil_module,
 	.prev  = &nil_module,
-	.owner = &nil_module,
+	.file_owner = &nil_module,
 };
 
 #endif // COMPILER_H

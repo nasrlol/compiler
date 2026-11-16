@@ -54,12 +54,6 @@ type_view:
 }
 type_view:
 {
-  type: TokenNodeList
-  expr: "list(root, next)"
-}
-type_view
-type_view:
-{
   type: "Arena *"
   expr: "rows($, current_position,  capacity, previous, base_position)"
 }
@@ -73,29 +67,4 @@ watch_pin:
 {
   expression: substring
   source_location: "source/code/compiler.cpp:130:1"
-}
-type_view:
-{
-  type: Token
-  expr: "rows($, type, line, keyword, value)"
-}
-type_view:
-{
-  type: TokenNode
-  expr: "rows($, token, buffer_index)"
-}
-type_view:
-{
-  type: TokenList
-  expr: "list(first, next)"
-}
-type_view:
-{
-  type: Module
-  expr: "rows($, name, relative_path, token_list, owner)"
-}
-type_view:
-{
-  type: ModuleList
-  expr: "list(root, next)"
 }

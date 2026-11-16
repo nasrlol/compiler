@@ -61,11 +61,8 @@ struct Token
     enum TokenType type;
     u64            line;
 	
-    union
-	{
-		Keyword keyword;
-		String8 value;
-    };
+	Keyword keyword;
+	String8 value;
 	
 };
 
@@ -90,6 +87,10 @@ struct TokenList
     u64 index;
 	u64 size;
 };
+
+// TODO: refactor first to root or something
+#define FOR_TOKEN_NODE(name, list, nil) \
+for(__typeof__((list->first)) name= (list)->first; name != NULL && name != (nil); name = name->next)
 
 global_variable String8 reserved_words[] =
 {

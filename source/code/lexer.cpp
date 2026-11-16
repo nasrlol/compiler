@@ -160,7 +160,7 @@ internal TokenList *lexer_tokenize(Arena *arena, String8 buffer)
 				Keyword k = lexer_lexeme_is_keyword(lexeme);
 				// NOTE: Fixed,  eventhough its not a keyword its always an identifier of some sort
 				{
-					// node->token->keyword = k;
+					node->token->keyword = k;
 					node->token->value   = lexeme;
 					lexer_push_token_node_token_list(list, node);
 				}

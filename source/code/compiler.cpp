@@ -41,12 +41,30 @@ internal String8 consume_param(Arena *arena, String8 argument)
 	return result;
 }
 
+internal String8 consume_param_as_potential_list_using_delimiter(Arena *arena, String8 argument, String8 delimiter)
+{
+	
+	String8 result = PushString8(arena, argument.size);
+	u64 equal_position = 0;
+	b32 found_equal_sign = Str8FindNeedle(&argument, 0, "=", &equal_position);
+	if(found_equal_sign) result = str8_chop_left(argument, equal_position + 1);
+	else {
+		Log("wrong compiler param");
+		return str8_zero();
+	}
+	return result;
+}
+
 internal b32 proc_table_contains_entrypoint(TokenList *list)
 {
 	
-    // TODO: build a proc table from the lexical phase
-    // so we can do semantical analysis later
-	
+	FOR_TOKEN_NODE(node, list, &nil_token_node)
+	{
+		if(str8_is_match(node->token->value, str8("main")))
+		{
+			return true;
+		}
+	}
     return false;
 	
 }
@@ -98,7 +116,8 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 di
 		
 		
 		
-		if(str8_is_match(directive_word, directive_keyword)) {
+		if(str8_is_match(directive_word, directive_keyword))
+		{
 			String8 directive_value = {};
 			
 			//- get value with multiple delimiters
@@ -108,26 +127,27 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 di
 				ScratchArena scratch = scratch_start(arena);
 				String8List *value_delimiters = PushStructZero(scratch.arena, String8List);
 				
-				// push regular delimiters, maybe i should make this a str8 function that checks for all the defualt eol delimters, or word seperators? maybe including parans etc. and call that the get word function. it goes until the first delimiter. but the issue with that function is that its too generic
-				
-				
+				// push regular delimiters, maybe i should make this a str8 function that checks for all the defualt eol delimters, or word seperator?
+				// maybe including parans etc. and call that the get word function. it goes until the first delimiter. but the issue with that function is that its too generic
 				{
-					
 					String8Node *space_node = PushStruct(scratch.arena, String8Node); *space_node = str8_node(" ");
 					String8Node *newline_node    = PushStruct(scratch.arena, String8Node); *newline_node    = str8_node("\n");
 					str8_list_push_node(value_delimiters, space_node);
 					str8_list_push_node(value_delimiters, newline_node);
 				}
 				
+				
 				String8 value_cursor = PushString8(scratch.arena, buffer.size);
 				str8_copy(&value_cursor, &buffer);
 				
-				for(u32 char_index = 0; (!reached_delimiter) && (char_index < value_cursor.size); ++char_index, value_length = char_index) {
+				for(u32 char_index = 0; (!reached_delimiter) && (char_index < value_cursor.size); ++char_index, value_length = char_index)
+				{
 					value_cursor.data += 1;
 					FOR_STR8_NODE(value_delimiters, delimiter_node)
 					{
 						reached_delimiter = str8_is_any_match(value_cursor, delimiter_node->value);
-						if(reached_delimiter) {
+						if(reached_delimiter)
+						{
 							break;
 						}
 					}
@@ -136,11 +156,10 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 di
 				
 				scratch_end(&scratch);
 				
-				
-				
 				Assert(value_length != 0);
 				String8 substring = PushString8(arena, value_length);
-				substring = str8_create_substr(&buffer, import_offset + 1, value_length); // TODO:  0 is wrong. 0 should be the offset from the previous keyword
+				// TODO:  0 is wrong. 0 should be the offset from the previous keyword
+				substring = str8_create_substr(&buffer, import_offset + 1, value_length);
 				directive_value = substring;
 				
 			}
@@ -149,7 +168,9 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 di
 			String8Node *directive_value_node = PushStruct(arena, String8Node);
 			*directive_value_node = ToString8Node(directive_value);
 			str8_list_push_node(directive_values, directive_value_node);
-		} else if(str8_is_empty(&directive_word)) {
+		}
+		else if(str8_is_empty(&directive_word))
+		{
 			Log("Error:" Str8Fmt, Str8Arg(directive_word));
 			PANIC("Pound sign was found but no directive defined.");
 		}
@@ -160,13 +181,17 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 di
 	return directive_values;
 }
 
-internal void modules_push_new(ModuleList *modules, Module *module) {
+internal void modules_push_new(ModuleList *modules, Module *module)
+{
 	module->next = &nil_module;
 	module->prev = &nil_module;
 	
-	if(is_nil_module(modules->root)) {
+	if(is_nil_module(modules->root))
+	{
 		modules->root = module;
-	} else {
+	}
+	else
+	{
 		module->prev           = modules->current;
 		modules->current->next = module;
 	}
@@ -198,7 +223,46 @@ crash_outer(void)
 internal String8
 metaprogram(String8 buffer) { return buffer; }
 
+internal String8 build_path(Arena *arena, String8 source_dir, String8 name, b32 relative)
+{
+	String8 result = PushString8(arena, source_dir.size + name.size);
+	result.size = 0;
+	
+	if(relative) {
+		source_dir = str8("./");
+	}
+	
+	result = str8_insert(arena, source_dir, name, source_dir.size);
+	source_dir = str8_concat(arena, source_dir, str8("/"));
+	return result;
+}
 
+internal String8List *handle_imports(Arena *arena, String8 buffer)
+{
+	String8 directive_marker        = str8("#");
+	String8 directive_keyword       = str8("import");
+	String8List *imported_file_names  = handle_directives(arena, buffer,  directive_marker, directive_keyword);
+	return imported_file_names;
+}
+
+internal String8 get_directory_from_path(Arena *arena, String8 path)
+{
+	String8 result = PushString8(arena, path.size);
+	result.size = 0;
+	for(u64 index = path.size; index > 0; --index)
+	{
+		if(cstring_is_slash(path.data[index - 1]))
+		{
+			u64 slash_index = index;
+			result = str8_chop_right(path, path.size - (slash_index ? slash_index : 1));
+			break;
+		}
+	}
+	
+	return result;
+}
+
+//- ENTRYPOINT
 
 ENTRYPOINT(argc, argv)
 {
@@ -207,12 +271,9 @@ ENTRYPOINT(argc, argv)
 	
 	LogBacktrace;
 	
-    // String8List *include_directories = PushStructZero(arena, String8List);
-    String8      source_path         = {};
-	String8      source_directory    = {};
+    String8     source_path          = {};
 	ModuleList  *modules             = PushStruct(arena, ModuleList);
     ModuleList  *module_list         = PushStruct(arena, ModuleList);
-	
 	
     if(argc <= 1)
 	{
@@ -230,149 +291,98 @@ ENTRYPOINT(argc, argv)
                 String8 include_path = consume_param(scratch.arena, argument);
                 if(!str8_is_empty(&include_path))
 				{
-#if 0 // TODO: ...
-					String8Node *include_node = PushStructZero(arena, String8Node);
-					*include_node = ToString8Node(include_path);
-					str8_list_push_node(include_directories, &include_node);
-#endif
+					Module *module = PushStructZero(arena, Module);
+					String8 file = consume_param(arena, argument);
+					str8_copy(&module->file_name, &file);
+					modules_push_new(modules, module);
                 }
             }
 			else if(str8_starts_with(argument, str8("--source=")))
 			{
 				source_path = consume_param(scratch.arena, argument);
             }
+			else if(str8_starts_with(argument, str8("--output=")))
+			{
+				// TODO: handle output file
+				
+			}
         }
 		scratch_end(&scratch);
     }
 	
 	
-	for(u64 char_index = source_path.size; char_index > 0; --char_index)
+	
+	
+	// NOTE: handle the target module, when not doing a directory scan this is usefull because we chase imports and the first import we handle is the target.
+	// and after wards we get the rest
+	if(source_path.size != 0)
 	{
-		if(cstring_is_slash(source_path.data[char_index - 1]))
-		{
-			u64 slash_index = char_index - 1;
-			// NOTE: this check makes sure we remove the last trailing slash in case we want to trim by 0
-			source_directory  = str8_chop_right(source_path, source_path.size - (slash_index ? slash_index : 1));
-			break;
-		}
-	}
-	
-	b32 using_relative_path = false;
-	if(str8_is_empty(&source_directory)) {
-		using_relative_path = true;
-		source_directory = str8("./");
-	}
-	
-	
-    Log("context directory: " Str8Fmt, Str8Arg(source_directory));
-	
-	
-    String8List *directory_files = PushStructZero(arena, String8List);
-	Module *target_module = PushStruct(arena, Module);
-	target_module->name   = PushString8(arena, source_path.size);
-    if(source_path.size != 0)
-    {
-		//  TODO: doing a +1 to handle the trailing slash. this needs to be fixed from the root
-		String8 module_name = str8_chop_left(source_path, (source_directory.size + 1));
-		str8_copy(&target_module->name, &module_name);
+		Module *new_module = PushStruct(arena, Module);
+		String8 module_name = str8_chop_left(source_path, (source_path.size + 1));
+		new_module->file_name = PushString8(arena, module_name.size);
+		new_module->file_name.size = 0;
+		str8_copy(&new_module->file_name, &module_name);
 		// NOTE: we have no owner because we are target
-		target_module->owner = &nil_module;
-    }
-    else
-    {
-		// TODO: find the files recursivly  first check  if the file is a folder
-		// if the file is a folder open the folder and read everything in there
-		
-		// NOTE: no file should have an owner i think
-        directory_files = DirLoadFileNames(arena, &source_directory); // TODO: this should be replaced with a recursive function
-        FOR_STR8_NODE(directory_files, file_node) {
-            String8 extension = str8_get_file_extension(file_node->value);
-            if(str8_is_match(str8(".jr"), extension)) {
-                target_module->name = file_node->value;
-				
-				modules_push_new(modules, target_module);
+		new_module->file_owner = &nil_module;
+		modules_push_new(modules, new_module);
+	}
+	else
+	{
+		// TODO(PLATFORM): recursion
+		String8List *files = PushStructZero(arena, String8List);
+		files = OpenDir(arena, &source_path);
+		FOR_STR8_NODE(files, file_node)
+		{
+			// NOTE: no need to check if the file "exists" thats only needed when importing modules
+			String8 extension = str8_get_file_extension(file_node->value);
+			if(str8_is_match(str8(".jr"), extension))
+			{
+				Module *new_module = PushStructZero(arena, Module);
+				new_module->file_name = file_node->value;
+				modules_push_new(modules, new_module);
 			}
-			
 		}
 	}
 	
-	
-	// TODO: threading
+	//- TODO: threading
+	FOR_NODE(module, modules, &nil_module)
 	{
-		
-		Module *root_module = PushStructZero(arena, Module);
-		root_module->relative_path = source_path;
-		root_module->buffer = FileLoad(arena, source_path);
-		root_module->name   = target_module->name;
-		AssertLog(root_module->buffer.size, "Failed to load source file: " Str8Fmt, Str8Arg(source_path));
-		modules_push_new(modules, root_module);
-		
-		String8 directive_marker = str8("#");
-		String8 directive_keyword   = str8("import");
-		
-		// handle comments
+		if(module->buffer.size == 0)
 		{
-			root_module->buffer = str8_cut_match(arena,  root_module->buffer,  str8("//"),  str8("\n"));
-			root_module->buffer = str8_cut_match(arena,  root_module->buffer,  str8("/*"),  str8("*/"));
+			
+			String8 dir = get_directory_from_path(arena, str8(argv[0]));
+			String8 path = build_path(arena, dir, module->file_name, false);
+			module->buffer = FileLoad(arena, path);
+			AssertLog(module->buffer.size, "Failed to load module: " Str8Fmt "\nbuffer size: %d", Str8Arg(module->file_name), module->buffer.size);
 		}
 		
-		String8List *import_paths =  handle_directives(arena, modules->current->buffer,  directive_marker, directive_keyword);
 		
-#if DEBUG
-		AssertLog(import_paths->count, "No imports found, not possible, when testing");
-#endif
-		
-		FOR_STR8_NODE(import_paths, import_node)
+		String8List *imported_file_names  = handle_imports(arena, module->buffer);
+		FOR_STR8_NODE(imported_file_names, file)
 		{
-			Module *import_module        = PushStruct(arena, Module);
-			
-			import_module->relative_path = PushString8(arena, import_node->value.size);
-			import_module->relative_path.size = 0;
-			
-			b32 append_ok = str8_append(&import_module->relative_path, import_node->value);
-			Assert(append_ok);
-			
-			
-			Log("chakaboenka before: \t\t" Str8Fmt, Str8Arg(source_directory));
-			Log("chakaboenka ?: %d", using_relative_path);
-			if(!using_relative_path) source_directory = str8_concat(arena, source_directory, str8("/"));
-			Log("chakaboenka after : \t\t" Str8Fmt, Str8Arg(source_directory));
-			import_module->relative_path = str8_insert(arena, import_module->relative_path, source_directory, 0);
-			
-			
-			b32 import_exists = FileExists(arena, import_module->relative_path);
-			Log("chakaboenka module: " Str8Fmt, Str8Arg(import_module->relative_path));
-			AssertLog(import_exists, "failed to import: " Str8Fmt, Str8Arg(import_module->relative_path));
-			
-			import_module->name = import_node->value;
-			modules_push_new(modules, import_module);
+			Module *new_module = PushStructZero(arena, Module);
+			String8 dir = get_directory_from_path(arena, str8(argv[0]));
+			String8 path = build_path(arena, dir, file->value, false);
+			b32 file_exists = FileExists(arena, path);
+			Assert(file_exists);
+			new_module->file_name = file->value;
+			modules_push_new(modules, new_module);
 		}
 		
-		FOR_NODE(module, modules, &nil_module)
+		
+		// TODO: integrate some default compile time metaprogramming
+		module->buffer = metaprogram(module->buffer);
+		
+		module->buffer = str8_cut_match(arena,  module->buffer,  str8("//"),  str8("\n"));
+		module->buffer = str8_cut_match(arena,  module->buffer,  str8 ("/*"),  str8("*/"));
+		
+		module->token_list = lexer_tokenize(arena, module->buffer);
+		
+		Log("//-\nchakaboenka name: "  Str8Fmt, Str8Arg(module->file_name));
+		for(TokenNode *node = module->token_list->first; !is_token_node_nil(node); node = node->next)
 		{
-			if(module->buffer.size == 0){
-                module->buffer = FileLoad(arena, module->relative_path);
-                AssertLog(module->buffer.size, "Failed to load module: " Str8Fmt, Str8Arg(module->relative_path));
-			}
-			
-            module->buffer = metaprogram(module->buffer);
-			
-			{
-				module->buffer = str8_cut_match(arena,  root_module->buffer,  str8("//"),  str8("\n"));
-				module->buffer = str8_cut_match(arena,  root_module->buffer,  str8 ("/*"),  str8("*/"));
-			}
-			
-			
-			module->token_list =  lexer_tokenize(arena, module->buffer);
-			// Log( "chakaboenka buffer: " Str8Fmt, Str8Arg(module->buffer));
-			
-			Log("//-\nchakaboenka name: "  Str8Fmt, Str8Arg(module->name));
-			for(TokenNode *node = module->token_list->first; !is_token_node_nil(node); node = node->next)
-			{
-				Log("chakaboenka token: "  Str8Fmt, Str8Arg(node->token->value));
-				// Log("chakaboenka token: %d",  node->token->keyword);
-				
-			}
+			Log("token: %d ["  Str8Fmt "]", node->token->keyword, Str8Arg(node->token->value));
+			// Log("chakaboenka token: %d",  node->token->keyword);
 		}
 	}
 	

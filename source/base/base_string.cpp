@@ -84,7 +84,7 @@ internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 en
 
 internal String8 str8_insert(Arena *arena, String8 dest, String8 src, u64 pos) {
 	
-	Assert(dest.size > pos);
+	Assert(dest.size >= pos);
 	
 	String8 result  = PushString8(arena, dest.size + src.size);
 	result.size = 0;
