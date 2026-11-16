@@ -67,8 +67,6 @@ internal b32 lexer_character_is_delimiter(u8 character)
 	return character == '(' || character == ')' || character == '[' || character == ']' || character == '{' || character == '}' || character == '|' || character == ',' || character == '!' || character == '<' || character == '=' || character == '>' || character == '-' || character == '+' || character == '%' || character == '&' || character == '*' || character == '/' || character == ';';
 }
 
-
-
 internal String8 lexer_parse_expression(Arena *arena, String8 buffer)
 {
 	if(buffer.size == 0) return str8_zero();

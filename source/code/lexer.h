@@ -18,18 +18,26 @@ node->field = &nil_token_node;
 
 enum TokenType: u32
 {
-    TokenType_Illegal = 256,
+    TokenType_None = 0,
+	
+	TokenType_Double_Equal,
+	TokenType_Not_Equal,
+	TokenType_Greater_Equal,
+	TokenType_Lesser_Equal,
+	TokenType_Plus_Equal,
+	TokenType_Minus_Equal,
+	TokenType_Star_Equal,
+	TokenType_Slash_Equal,
+	TokenType_Right_Shift,
+	TokenType_Left_Shift,
+	TokenType_Double_Ampersand,
+	TokenType_Double_Pipe,
+	TokenType_Arrow,
+	
 	TokenType_Identifier,
 	TokenType_Keyword,
 	TokenType_Number,
 	TokenType_Delimiter,
-	TokenType_Double_Equal,
-	TokenType_Greater_Equal,
-	TokenType_Lesser_Equal,
-	TokenType_Param,
-	TokenType_Right_Shift,
-	TokenType_Left_Shift,
-	TokenType_Asterisk,
 	
 };
 
@@ -96,6 +104,26 @@ global_variable String8 reserved_words[] =
 	[Keyword_Defer]  = str8("defer"),
 	[Keyword_Enum]   = str8("enum"),
 };
+
+
+ReadOnly global_variable String8 operators[] = {
+	[TokenType_None]               = str8(""),
+	[TokenType_Double_Equal]       = str8("=="),
+	[TokenType_Not_Equal]          = str8("!="),
+	[TokenType_Greater_Equal]      = str8("<="),
+	[TokenType_Lesser_Equal]       = str8(">="),
+	[TokenType_Plus_Equal]         = str8("+="),
+	[TokenType_Minus_Equal]        = str8("-="),
+	[TokenType_Star_Equal]         = str8("*="),
+	[TokenType_Slash_Equal]        = str8("/="),
+	[TokenType_Right_Shift]        = str8("<<"),
+	[TokenType_Left_Shift]         = str8(">>"),
+	[TokenType_Double_Ampersand]   = str8("&&"),
+	[TokenType_Double_Pipe]        = str8("||"),
+	[TokenType_Arrow]              = str8("->"),
+};
+
+
 
 ReadOnly global_variable Token nil_token = {};
 ReadOnly global_variable TokenNode nil_token_node = {};

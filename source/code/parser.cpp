@@ -82,9 +82,9 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenList *list)
 			
 			case TokenType::TokenType_Lesser_Equal: {
 			} break;
+#if 0
 			
 			case TokenType::TokenType_Param: {
-#if 0
 				if(node->first->token->type != (enum TokenType)'{') {
 					Log("Error: '}' does not match an opening '{'");
 				} else {
@@ -110,7 +110,6 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenList *list)
 					}
 				}
 				
-#endif
 				
 			} break;
 			
@@ -123,6 +122,7 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenList *list)
 			case TokenType::TokenType_Asterisk: {
 			} break;
 			
+#endif
 			
 			default: {
 				

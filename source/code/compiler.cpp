@@ -303,6 +303,7 @@ ENTRYPOINT(argc, argv)
 		Module *root_module = PushStructZero(arena, Module);
 		root_module->relative_path = source_path;
 		root_module->buffer = FileLoad(arena, source_path);
+		root_module->name   = target_module->name;
 		AssertLog(root_module->buffer.size, "Failed to load source file: " Str8Fmt, Str8Arg(source_path));
 		modules_push_new(modules, root_module);
 		
