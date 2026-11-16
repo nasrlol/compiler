@@ -12,18 +12,8 @@ internal void handle_binary_expression(TokenNode *token_node, AstNode *new_node,
 	new_node->type             = AstNodeType::Binary;
 	AstNode *current_ast_node = ast->current;
 	ast->current->first        = current_ast_node;
+	// TODO: ...
 	
-	// TODO: i think we should categorize these better in the future
-	if(token_node->next->token->type == TokenType::IdentToken ||
-	   token_node->next->token->type == TokenType::Number ||
-	   token_node->next->token->type == TokenType::String) {
-		TokenNode *next_token_node = token_node->next;
-		token_node->last    = next_token_node;
-		// restructure the tree by moving the next node to sit closer?
-		
-		// todo: this needs testing
-		token_node->next = token_node->next->next;
-	}
 }
 
 internal void handle_ternary_expression()
@@ -38,20 +28,14 @@ internal void adopt_ast_node(Ast *ast, AstNode *node)
 }
 
 // TODO: do we want a reference or copy of the token we are working on?
-internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
+internal Ast *parse_tokenized_tree(Arena *arena, TokenList *list)
 {
-	// TODO: replace with something containing a breakpoint, Assert or something like that
-	// currently it still throws that asm junk
-	// i'm going to ignore it for now and just put if checks. do a scan of the code later and fix it
-	// up
-	if(!token_tree || !arena)
-		return NULL;
-	
+	Assert(list);
 	Ast      *ast = PushStruct(arena, Ast);
 	MemStack *stack;
 	stack = ArenaToStack(arena, MiB(10));
 	
-	for(TokenNode *token_node = token_tree->current; !is_token_node_nil(token_node); token_node = token_node->next) {
+	for(TokenNode *token_node = list->current; !is_token_node_nil(token_node); token_node = token_node->next) {
 		AstNode *new_node = StackPushStruct(stack, AstNode);
 		// TODO: cleanup after scan
 		if(!new_node) {
@@ -66,14 +50,14 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 		FillAstNodeFieldWIthNilNode(new_node, next);
 		
 		switch (token_node->token->type) {
-			case TokenType::IdentToken: {
+			case TokenType::TokenType_Identifier: {
 				if(is_ast_node_nil(ast->current)) {
 					ast->current       = new_node;
 					ast->current->type = AstNodeType::IdentExpr;
 				}
 			} break;
 			
-			case TokenType::Value: {
+			case TokenType::TokenType_Keyword: {
 				if(is_ast_node_nil(ast->current->first) &&
 				   ast->current->type == AstNodeType::Literal) {
 					new_node->type = AstNodeType::Assignment;
@@ -83,55 +67,64 @@ internal Ast *parse_tokenized_tree(Arena *arena, TokenTree *token_tree)
 			
 			// TODO: or do we mark this as an expression and evaluate it later?
 			// this can be taken as a value or parameter
-			case TokenType::String: {
-				if(ast->current->type == AstNodeType::Function ||
-				   ast->current->type == AstNodeType::IdentExpr) {
-					// TODO: handle this as an expression
-				}
-			} break;
-			
-			case TokenType::Number: {
+			case TokenType::TokenType_Number: {
 				if(ast->current->type == AstNodeType::Function ||
 				   ast->current->type == AstNodeType::IdentExpr) {
 				}
-				
 			} break;
 			
-			case TokenType::Double_Equal: {
+			case TokenType::TokenType_Double_Equal: {
 				handle_binary_expression(token_node, new_node, ast);
 			} break;
 			
-			case TokenType::Greater_Equal: {
+			case TokenType::TokenType_Greater_Equal: {
 			} break;
 			
-			case TokenType::Lesser_Equal: {
+			case TokenType::TokenType_Lesser_Equal: {
 			} break;
 			
-			case TokenType::Param: {
+			case TokenType::TokenType_Param: {
+#if 0
+				if(node->first->token->type != (enum TokenType)'{') {
+					Log("Error: '}' does not match an opening '{'");
+				} else {
+					Token *brace_token  = PushStruct(arena, Token);
+					tree->current->last = node;
+					brace_token->type         = TokenType::Param;
+					brace_token->line         = tree->nl_count;
+					brace_token->as_str = str8("}");
+					
+					if(is_token_node_nil(tree->current->last)) {
+						node->token    = brace_token;
+						node->flag     = TokenNodeFlags::Child;
+						node->previous = tree->current;
+						node->parent   = node->previous->parent;
+						
+						FillTokenNodeFieldWithNilNode(last);
+						FillTokenNodeFieldWithNilNode(first);
+						FillTokenNodeFieldWithNilNode(child); FillTokenNodeFieldWithNilNode(next); } else { TokenNode *next_node = tree->current->last->next;
+						next_node->token     = brace_token;
+						next_node->flag      = TokenNodeFlags::Invalid;
+						next_node->previous  = tree->current->last;
+						next_node->parent    = tree->current->last->parent;
+					}
+				}
+				
+#endif
+				
 			} break;
 			
-			case TokenType::Right_Shift: {
+			case TokenType::TokenType_Right_Shift: {
 			} break;
 			
-			case TokenType::Left_Shift: {
+			case TokenType::TokenType_Left_Shift: {
 			} break;
 			
-			case TokenType::Asterisk: {
+			case TokenType::TokenType_Asterisk: {
 			} break;
 			
-			// ignore comments for now
-			case TokenType::Cpp_Style_Comment_Start: {
-			} break;
-			
-			case TokenType::C_Style_Comment_Start: {
-			} break;
-			
-			case TokenType::C_Style_Comment_End: {
-			} break;
 			
 			default: {
-				// 1. TokenType::Undefined
-				// 2. null
 				
 			} break;
 		}
