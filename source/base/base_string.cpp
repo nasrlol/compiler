@@ -1,3 +1,4 @@
+//- nil check functions
 internal b32 is_nil_str8(String8 *a)
 {
 	return (a == &nil_str8);
@@ -27,6 +28,8 @@ internal b32 is_nil_str32_node(String32Node *a)
 {
 	return (a == &nil_str32_node);
 }
+
+//- buffer clensing
 
 internal void str8_trim_left(String8 *buffer)
 {
@@ -69,6 +72,7 @@ internal void str8_trim_right(String8 *buffer)
 	str8_chop_right(*buffer, index);
 }
 
+//
 internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 end)
 {
 	String8 local = PushString8(arena, buffer.size);
@@ -275,6 +279,17 @@ internal int str8_to_int(String8 *buffer)
 	return result;
 }
 
+internal String8 str8_concat(Arena *arena, String8 dest, String8 source)
+{
+    String8 result = PushString8(arena, dest.size + source.size + 1);
+    result.size = dest.size + source.size;
+    if(dest.size) MemCpy(result.data, dest.data, dest.size);
+    if(source.size) MemCpy(result.data + dest.size, source.data, source.size);
+    result.data[result.size] = 0;
+    return result;
+}
+
+
 internal b32 str8_append(String8 *dest, String8 src)
 {
 	if(is_nil_str8(dest) || is_nil_str8(&src) || src.size == 0)
@@ -287,26 +302,6 @@ internal b32 str8_append(String8 *dest, String8 src)
 internal String8 str8_zero()
 {
 	return String8{0};
-}
-
-// TODO: error handling
-internal b32 str8_chop_left_ptr(String8 *buffer, u64 count)
-{
-	if(buffer->size < count)
-		return false;
-	
-	buffer->data += count;
-	buffer->size -= count;
-	return true;
-}
-
-internal b32 str8_chop_right_ptr(String8 *buffer, u64 count)
-{
-	if(buffer->size < count)
-		return false;
-	
-	buffer->size -= count;
-	return true;
 }
 
 internal String8 str8_chop_left(String8 buffer, u64 count)
@@ -478,13 +473,14 @@ internal String8 str8_get_file_extension(String8 buffer)
 	}
 }
 
+#if 0
 internal String8Array
 str8_array_reserve(Arena *arena, u64 count)
 {
     String8Array result = {};
     result.v     = PushArrayZero(arena, String8, count);
-    result.count = count;
     return result;
+    result.count = count;
 }
 
 
@@ -494,7 +490,7 @@ str8_array_from_list(Arena *arena, String8List *list)
     String8Array result = str8_array_reserve(arena, list->count);
     u64 index = 0;
     FOR_STR8_NODE(list, node) {
-	result.v[index++] = node->value;
+		result.v[index++] = node->value;
     }
     return result;
 }
@@ -502,14 +498,15 @@ internal String8Array
 str8_array_slice(String8Array array, u64 first, u64 count)
 {
     String8Array result = {};
-
+	
     first = Min(first, array.count);
     count = Min(count, array.count - first);
-
+	
     result.v     = array.v + first;
     result.count = count;
     return result;
 }
+#endif
 
 //- converter
 

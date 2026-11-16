@@ -18,7 +18,9 @@ typedef struct String8List  String8List;
 typedef struct String16List String16List;
 typedef struct String32List String32List;
 
-typedef String8[] String8Array;
+typedef struct String8Array String8Array;
+typedef struct String16Array String16Array;
+typedef struct String32Array String32Array;
 
 //- strings
 
@@ -72,6 +74,29 @@ struct String32List {
 	u64           count;
 };
 
+//- arrays
+
+
+struct String8Array {
+	u64 size;
+	u64 index;
+	String8 *array;
+};
+
+struct String16Array {
+	u64 size;
+	u64 index;
+	String16 *array;
+};
+
+
+struct String32Array {
+	u64 size;
+	u64 index;
+	String32 *array;
+};
+
+
 //- nil / zero-value checks and constructors
 internal b32     is_nil_str8(String8 *a);
 internal b32     is_nil_str8_node(String8Node *a);
@@ -96,8 +121,6 @@ internal String8 str8_cut_offset(Arena *arena, String8 buffer, u64 start, u64 en
 internal String8 str8_cut_match(Arena *arena, String8 buffer, String8 start, String8 end);
 internal String8 str8_chop_left(String8 buffer, u64 count);
 internal String8 str8_chop_right(String8 buffer, u64 count);
-internal b32     str8_chop_left_ptr(String8 *buffer, u64 count);
-internal b32     str8_chop_right_ptr(String8 *buffer, u64 count);
 
 //- str8 substrings, matching, search
 internal String8 str8_create_substr(String8 *buffer, u64 left_offset, u64 right_offset);
@@ -285,7 +308,7 @@ internal b32 is_nil_str32_node(String32Node *a);
 #endif
 
 #define Str8Fmt "%.*s"
-#define Str8Arg(buffer) (u64)((buffer).size), (char *)((buffer).data)
+#define Str8Arg(buffer) (int)((buffer).size), (char *)((buffer).data)
 
 #define Str8FindNeedle(buffer, start_pos, needle, pos) str8_find_needle(buffer, (u64)start_pos, (u8 *)needle, pos)
 
@@ -293,11 +316,18 @@ internal b32 is_nil_str32_node(String32Node *a);
 
 internal String8Array str8_array_reserve(Arena *arena, u64 count);
 internal String8Array str8_array_from_list(Arena *arena, String8List *list);
-internal String8Array str8_array_slice(String8Array array, u64 first, u64 count);  
+internal String8Array str8_array_slice(String8Array array, u64 first, u64 count);
 
 #define FOR_STR8_ARRAY(array, it)					\
-    for(String8 *it = (array).v; it < (array).v + (array).count; ++it)
+for(String8 *it = (array).v; it < (array).v + (array).count; ++it)
 
+#define Str8ArrayAlloc(arena,  size) String8Array { \
+.size = (size), \
+.index = 0, \
+.array = PushArrayZero(arena, String8, (size)), }
+
+#define Str16ArrayAlloc(arena, size)
+#define Str32ArrayAlloc(arena, size)
 
 
 
