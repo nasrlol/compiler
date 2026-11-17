@@ -357,16 +357,19 @@ ENTRYPOINT(argc, argv)
 		}
 		
 		
-		String8List *imported_file_names  = handle_imports(arena, module->buffer);
-		FOR_STR8_NODE(imported_file_names, file)
+		// NOTE: the issue is that this needs to happen after the target has been imported
 		{
-			Module *new_module = PushStructZero(arena, Module);
-			String8 dir = get_directory_from_path(arena, str8(argv[0]));
-			String8 path = build_path(arena, dir, file->value, false);
-			b32 file_exists = FileExists(arena, path);
-			Assert(file_exists);
-			new_module->file_name = file->value;
-			modules_push_new(modules, new_module);
+			String8List *imported_file_names  = handle_imports(arena, module->buffer);
+			FOR_STR8_NODE(imported_file_names, file)
+			{
+				Module *new_module = PushStructZero(arena, Module);
+				String8 dir = get_directory_from_path(arena, str8(argv[0]));
+				String8 path = build_path(arena, dir, file->value, false);
+				b32 file_exists = FileExists(arena, path);
+				Assert(file_exists);
+				new_module->file_name = file->value;
+				modules_push_new(modules, new_module);
+			}
 		}
 		
 		
