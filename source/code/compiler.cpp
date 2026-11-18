@@ -344,6 +344,26 @@ ENTRYPOINT(argc, argv)
 		}
 	}
 	
+	FOR_NODE(module, modules, &nil_module)
+	{
+		if(module->file_name.size == 0) break;
+		String8List *imported_file_names  = handle_imports(arena, module->buffer);
+		// b32 import_cycle_found = detect_import_cycle_in_modules(modules);
+		// Assert(import_cycle_found);
+		
+		FOR_STR8_NODE(imported_file_names, file)
+		{
+			Module *new_module = PushStructZero(arena, Module);
+			String8 dir = get_directory_from_path(arena, str8(argv[0]));
+			String8 path = build_path(arena, dir, file->value, false);
+			b32 file_exists = FileExists(arena, path);
+			Assert(file_exists);
+			new_module->file_name = file->value;
+			modules_push_new(modules, new_module);
+		}
+	}
+	
+	
 	//- TODO: threading
 	FOR_NODE(module, modules, &nil_module)
 	{
@@ -357,21 +377,6 @@ ENTRYPOINT(argc, argv)
 		}
 		
 		
-		// NOTE: the issue is that this needs to happen after the target has been imported
-		{
-			String8List *imported_file_names  = handle_imports(arena, module->buffer);
-			FOR_STR8_NODE(imported_file_names, file)
-			{
-				Module *new_module = PushStructZero(arena, Module);
-				String8 dir = get_directory_from_path(arena, str8(argv[0]));
-				String8 path = build_path(arena, dir, file->value, false);
-				b32 file_exists = FileExists(arena, path);
-				Assert(file_exists);
-				new_module->file_name = file->value;
-				modules_push_new(modules, new_module);
-			}
-		}
-		
 		
 		// TODO: integrate some default compile time metaprogramming
 		module->buffer = metaprogram(module->buffer);
@@ -382,12 +387,15 @@ ENTRYPOINT(argc, argv)
 		module->token_list = lexer_tokenize(arena, module->buffer);
 		
 		Log("//-\nchakaboenka name: "  Str8Fmt, Str8Arg(module->file_name));
+#if 0
 		for(TokenNode *node = module->token_list->first; !is_token_node_nil(node); node = node->next)
 		{
 			Log("token: %d ["  Str8Fmt "]", node->token->keyword, Str8Arg(node->token->value));
 			// Log("chakaboenka token: %d",  node->token->keyword);
 		}
+#endif
 	}
+	
 	
 	return 0;
 	
