@@ -16,6 +16,7 @@ struct Module {
 
 typedef struct ModuleList ModuleList;
 struct ModuleList {
+	Module *target_module;
 	Module *current;
 	Module *root;
 	u64 count;

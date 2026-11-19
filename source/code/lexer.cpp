@@ -118,6 +118,12 @@ internal Keyword lexer_lexeme_is_keyword(String8 lexeme)
 	return Keyword_None;
 }
 
+internal TokenList *lexer_tokenize(Arena *arena, String8 buffer);
+internal void mt_lexer_tokenize(void *raw)
+{
+	LexArg *arg  = (LexArg *)raw;
+	arg->result = lexer_tokenize(arg->arena, arg->buffer);
+}
 
 internal TokenList *lexer_tokenize(Arena *arena, String8 buffer)
 {
@@ -127,15 +133,11 @@ internal TokenList *lexer_tokenize(Arena *arena, String8 buffer)
 	TokenList *list = PushStructZero(arena, TokenList);
 	String8 local_buffer = PushString8(arena, buffer.size);
 	BufferProperties p = {};
-	
 	str8_copy(&local_buffer, &buffer);
-	
 	
 	while(local_buffer.size != 0)
 	{
-		
 		u8 current_character = local_buffer.data[0];
-		
 		b32 is_newline       = cstring_is_newline(current_character);
 		b32 is_whitespace    = cstring_is_whitespace(current_character);
 		if(is_newline || is_whitespace)
@@ -152,7 +154,6 @@ internal TokenList *lexer_tokenize(Arena *arena, String8 buffer)
 		// make token node
 		{
 			TokenNode *node = PushStructZero(arena, TokenNode);
-			
 			node->token = PushStructZero(arena, Token);
 			
 			// make token
@@ -164,7 +165,6 @@ internal TokenList *lexer_tokenize(Arena *arena, String8 buffer)
 					node->token->value   = lexeme;
 					lexer_push_token_node_token_list(list, node);
 				}
-				
 			}
 		}
 		
@@ -177,5 +177,3 @@ internal TokenList *lexer_tokenize(Arena *arena, String8 buffer)
 	
 	return list;
 }
-
-

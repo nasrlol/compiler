@@ -1,27 +1,24 @@
 internal void *linux_thread_entry(void *raw)
 {
     ThreadStart start = *(ThreadStart *)raw;
-    free(raw);
-
-    tls_scratch_arena = ArenaCreate(MiB(64));
+	Arena *arena = ArenaCreate(MiB(64));
     start.proc(start.param);
-    ArenaDestroy(tls_scratch_arena);
-
+    ArenaDestroy(arena);
     return 0;
 }
 
 internal Thread thread_launch(Arena *arena, ThreadProc *proc, void *param)
 {
     Thread thread = {};
-
+	
     ThreadStart *start = PushStruct(arena, ThreadStart);
     start->proc  = proc;
     start->param = param;
-
+	
     pthread_t handle;
     int error = pthread_create(&handle, 0, linux_thread_entry, start);
     AssertLog(!error, "failed to launch thread");
-
+	
     thread.data[0] = (u64)handle;
     return thread;
 }

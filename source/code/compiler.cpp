@@ -10,61 +10,68 @@
 
 template <typename T>
 internal T *peek_forward_rec(T *node, s32 steps) {
-	if(steps > 0) return peek_forward_rec(node->next, steps - 1);
-	return node;
+    if(steps > 0) return peek_forward_rec(node->next, steps - 1);
+    return node;
 }
 
 internal b32 is_nil_module(Module *module) {
-	return (module == NULL || module == &nil_module);
+    return (module == NULL || module == &nil_module);
 }
 
+// NOTE: this was some sort of compiler algorithm for finding import cycles
+// but i forgot which one...
 internal b32 detect_import_cycle_in_modules(ModuleList *modules) {
-	for(Module *fast = modules->current; !is_nil_module(fast) && !is_nil_module(fast->next) ; fast = peek_forward_rec(fast, 1))
-	{
-		for(Module *slow = modules->current; !is_nil_module(slow) && is_nil_module(slow->next->next); slow = peek_forward_rec(slow, 2)) {
+    for(Module *fast = modules->current; !is_nil_module(fast) && !is_nil_module(fast->next) ; fast = peek_forward_rec(fast, 1))
+    {
+		for(Module *slow = modules->current; !is_nil_module(slow) && is_nil_module(slow->next->next); slow = peek_forward_rec(slow, 2))
+		{
 			return false;
 		}
-	}
-	return false;
+    }
+    return false;
 }
 
 internal String8 consume_param(Arena *arena, String8 argument)
 {
-	String8 result = PushString8(arena, argument.size);
-	u64 equal_position = 0;
-	b32 found_equal_sign = Str8FindNeedle(&argument, 0, "=", &equal_position);
-	if(found_equal_sign) result = str8_chop_left(argument, equal_position + 1);
-	else {
+    String8 result = PushString8(arena, argument.size);
+    u64 equal_position = 0;
+    b32 found_equal_sign = Str8FindNeedle(&argument, 0, "=", &equal_position);
+    if(found_equal_sign) result = str8_chop_left(argument, equal_position + 1);
+    else {
 		Log("wrong compiler param");
 		return str8_zero();
-	}
-	return result;
+    }
+    return result;
 }
 
 internal String8 consume_param_as_potential_list_using_delimiter(Arena *arena, String8 argument, String8 delimiter)
 {
 	
-	String8 result = PushString8(arena, argument.size);
-	u64 equal_position = 0;
-	b32 found_equal_sign = Str8FindNeedle(&argument, 0, "=", &equal_position);
-	if(found_equal_sign) result = str8_chop_left(argument, equal_position + 1);
-	else {
+    String8 result = PushString8(arena, argument.size);
+    u64 equal_position = 0;
+    b32 found_equal_sign = Str8FindNeedle(&argument, 0, "=", &equal_position);
+    if(found_equal_sign)
+    {
+		result = str8_chop_left(argument, equal_position + 1);
+    }
+    else
+    {
 		Log("wrong compiler param");
 		return str8_zero();
-	}
-	return result;
+    }
+    return result;
 }
 
 internal b32 proc_table_contains_entrypoint(TokenList *list)
 {
 	
-	FOR_TOKEN_NODE(node, list, &nil_token_node)
-	{
+    FOR_TOKEN_NODE(node, list, &nil_token_node)
+    {
 		if(str8_is_match(node->token->value, str8("main")))
 		{
 			return true;
 		}
-	}
+    }
     return false;
 	
 }
@@ -74,15 +81,16 @@ internal b32 proc_table_contains_entrypoint(TokenList *list)
 // when find any 1..n we return the next tokens in a String8List.
 internal String8List *handle_directives(Arena *arena, String8 buffer, String8 directive_marker, String8 directive_keyword)
 {
-	Assert(buffer.size);
-	String8List *directive_values = PushStructZero(arena, String8List);
+    Assert(buffer.size);
+    String8List *directive_values = PushStructZero(arena, String8List);
 	
-	b32 found_marker = false;
-	u64 marker_offset = 0;
-	found_marker = str8_find(&buffer, 0, directive_marker, &marker_offset);
 	
-	while(found_marker)
-	{
+    b32 found_marker = false;
+    u64 marker_offset = 0;
+    found_marker = str8_find(&buffer, 0, directive_marker, &marker_offset);
+	
+    while(found_marker)
+    {
 		// TODO: think about how we delete the keywords because they should get handled here
 		buffer = str8_chop_left(buffer, marker_offset + 1);
 		
@@ -176,28 +184,28 @@ internal String8List *handle_directives(Arena *arena, String8 buffer, String8 di
 		}
 		found_marker = str8_find(&buffer, 0, directive_marker, &marker_offset);
 		
-	}
+    }
 	
-	return directive_values;
+    return directive_values;
 }
 
 internal void modules_push_new(ModuleList *modules, Module *module)
 {
-	module->next = &nil_module;
-	module->prev = &nil_module;
+    module->next = &nil_module;
+    module->prev = &nil_module;
 	
-	if(is_nil_module(modules->root))
-	{
+    if(is_nil_module(modules->root))
+    {
 		modules->root = module;
-	}
-	else
-	{
+    }
+    else
+    {
 		module->prev           = modules->current;
 		modules->current->next = module;
-	}
+    }
 	
-	modules->current = module;
-	modules->count++;
+    modules->current = module;
+    modules->count++;
 }
 
 #if 0
@@ -207,14 +215,14 @@ internal void modules_push_new(ModuleList *modules, Module *module)
 internal noinline void
 crash_inner(int *volatile *slot)
 {
-	**slot = 42;
+    **slot = 42;
 }
 
 internal noinline void
 crash_outer(void)
 {
-	int *volatile pointer = 0;
-	crash_inner(&pointer);
+    int *volatile pointer = 0;
+    crash_inner(&pointer);
 }
 
 #endif
@@ -225,42 +233,72 @@ metaprogram(String8 buffer) { return buffer; }
 
 internal String8 build_path(Arena *arena, String8 source_dir, String8 name, b32 relative)
 {
-	String8 result = PushString8(arena, source_dir.size + name.size);
-	result.size = 0;
+    String8 result = PushString8(arena, source_dir.size + name.size);
+    result.size = 0;
 	
-	if(relative) {
+    if(relative) {
 		source_dir = str8("./");
-	}
+    }
 	
-	result = str8_insert(arena, source_dir, name, source_dir.size);
-	source_dir = str8_concat(arena, source_dir, str8("/"));
-	return result;
+    result = str8_insert(arena, source_dir, name, source_dir.size);
+    source_dir = str8_concat(arena, source_dir, str8("/"));
+    return result;
 }
 
-internal String8List *handle_imports(Arena *arena, String8 buffer)
+internal b32 handle_imports(Arena *arena, String8 buffer, String8List *out)
 {
-	String8 directive_marker        = str8("#");
-	String8 directive_keyword       = str8("import");
-	String8List *imported_file_names  = handle_directives(arena, buffer,  directive_marker, directive_keyword);
-	return imported_file_names;
+    String8 directive_marker        = str8("#");
+    String8 directive_keyword       = str8("import");
+	String8List *result = handle_directives(arena, buffer,  directive_marker, directive_keyword);
+	if(result->count != 0) return false;
+	out = result;
+	return true;
 }
 
 internal String8 get_directory_from_path(Arena *arena, String8 path)
 {
-	String8 result = PushString8(arena, path.size);
-	result.size = 0;
-	for(u64 index = path.size; index > 0; --index)
-	{
+    String8 result = PushString8(arena, path.size);
+    result.size = 0;
+    for(u64 index = path.size; index > 0; --index)
+    {
 		if(cstring_is_slash(path.data[index - 1]))
 		{
 			u64 slash_index = index;
 			result = str8_chop_right(path, path.size - (slash_index ? slash_index : 1));
 			break;
 		}
+    }
+	
+    return result;
+}
+
+internal void str8_concat_list(String8List *a, String8List *b)
+{
+	b->last   = a->last->next;
+	b->count  += a->count;
+}
+
+internal void handle_imports_and_push_to_modules(Arena *arena, ModuleList *list, String8 buffer)
+{
+	
+	String8List *total_list = PushStructZero(arena, String8List);
+	b32 found_one = true;
+	while(found_one)
+	{
+		String8List* out = PushStructZero(arena, String8List);
+		found_one = handle_imports(arena, buffer, out);
+		if(!found_one) break;
+		str8_concat_list(total_list, out);
 	}
 	
-	return result;
+	FOR_STR8_NODE(total_list, current)
+	{
+		Module *new_module = PushStructZero(arena, Module);
+		new_module->file_name = current->value;
+		modules_push_new(list, new_module);
+	}
 }
+
 
 //- ENTRYPOINT
 
@@ -269,19 +307,21 @@ ENTRYPOINT(argc, argv)
     Arena *arena = ArenaCreate(MiB(64));
     AssertLog(arena, "Failed to allocate memory");
 	
-	LogBacktrace;
+    LogBacktrace;
 	
     String8     source_path          = {};
-	ModuleList  *modules             = PushStruct(arena, ModuleList);
+    ModuleList  *modules             = PushStruct(arena, ModuleList);
     ModuleList  *module_list         = PushStruct(arena, ModuleList);
 	
+	
     if(argc <= 1)
-	{
+    {
 		Log("No parameters passed. The compiler is going to find the entry point and take that as the target");
         Log("help [--source=] \"example.jr\" [--include=] [--output=] example[.exe]]\n");
+		Assert(0);
     }
-	else
-	{
+    else
+    {
 		ScratchArena scratch = scratch_start(arena);
         for(u64 argument_index = 1; argument_index < (u64)argc; ++argument_index)
 		{
@@ -313,10 +353,10 @@ ENTRYPOINT(argc, argv)
 	
 	
 	
-	// NOTE: handle the target module, when not doing a directory scan this is usefull because we chase imports and the first import we handle is the target.
-	// and after wards we get the rest
-	if(source_path.size != 0)
-	{
+    // NOTE: handle the target module, when not doing a directory scan this is usefull because we chase imports and the first import we handle is the target.
+    // and after wards we get the rest
+    if(source_path.size != 0)
+    {
 		Module *new_module = PushStruct(arena, Module);
 		String8 module_name = str8_chop_left(source_path, (source_path.size + 1));
 		new_module->file_name = PushString8(arena, module_name.size);
@@ -325,9 +365,9 @@ ENTRYPOINT(argc, argv)
 		// NOTE: we have no owner because we are target
 		new_module->file_owner = &nil_module;
 		modules_push_new(modules, new_module);
-	}
-	else
-	{
+    }
+    else
+    {
 		// TODO(PLATFORM): recursion
 		String8List *files = PushStructZero(arena, String8List);
 		files = OpenDir(arena, &source_path);
@@ -342,60 +382,78 @@ ENTRYPOINT(argc, argv)
 				modules_push_new(modules, new_module);
 			}
 		}
-	}
+    }
 	
-	FOR_NODE(module, modules, &nil_module)
-	{
-		if(module->file_name.size == 0) break;
-		String8List *imported_file_names  = handle_imports(arena, module->buffer);
-		// b32 import_cycle_found = detect_import_cycle_in_modules(modules);
-		// Assert(import_cycle_found);
+	String8List *imported_file_names = PushArrayZero(arena, String8List, 32);
+	String8 dir = get_directory_from_path(arena, str8(argv[0]));
+	do {
+		if(modules->root->buffer.size != 0) {
+			handle_imports_and_push_to_modules(arena, modules, modules->root->buffer);
+		}
+		b32 import_cycle_found = detect_import_cycle_in_modules(modules);
+#if 0
+		Assert(import_cycle_found);
+#endif
 		
+		if(imported_file_names->count == 0) break;
 		FOR_STR8_NODE(imported_file_names, file)
 		{
-			Module *new_module = PushStructZero(arena, Module);
-			String8 dir = get_directory_from_path(arena, str8(argv[0]));
+			file = PushStructZero(arena, String8Node);
+			Module *new_module = PushStruct(arena, Module);
 			String8 path = build_path(arena, dir, file->value, false);
 			b32 file_exists = FileExists(arena, path);
 			Assert(file_exists);
 			new_module->file_name = file->value;
 			modules_push_new(modules, new_module);
 		}
-	}
+		
+	} while(imported_file_names->count != 0);
 	
 	
-	//- TODO: threading
-	FOR_NODE(module, modules, &nil_module)
-	{
+	
+    for(Module *module = modules->root; !is_nil_module(module); module = module->next)
+    {
+		// TODO: lnx / win abstraction
 		if(module->buffer.size == 0)
 		{
-			
 			String8 dir = get_directory_from_path(arena, str8(argv[0]));
 			String8 path = build_path(arena, dir, module->file_name, false);
 			module->buffer = FileLoad(arena, path);
 			AssertLog(module->buffer.size, "Failed to load module: " Str8Fmt "\nbuffer size: %d", Str8Arg(module->file_name), module->buffer.size);
 		}
 		
-		
-		
 		// TODO: integrate some default compile time metaprogramming
 		module->buffer = metaprogram(module->buffer);
-		
 		module->buffer = str8_cut_match(arena,  module->buffer,  str8("//"),  str8("\n"));
 		module->buffer = str8_cut_match(arena,  module->buffer,  str8 ("/*"),  str8("*/"));
-		
-		module->token_list = lexer_tokenize(arena, module->buffer);
-		
-		Log("//-\nchakaboenka name: "  Str8Fmt, Str8Arg(module->file_name));
-#if 0
-		for(TokenNode *node = module->token_list->first; !is_token_node_nil(node); node = node->next)
-		{
-			Log("token: %d ["  Str8Fmt "]", node->token->keyword, Str8Arg(node->token->value));
-			// Log("chakaboenka token: %d",  node->token->keyword);
-		}
-#endif
 	}
 	
+	u64 count                    = modules->count;
+	Thread *module_threads       = PushArrayZero(arena, Thread, count);
+	LexArg *args                 = PushArrayZero(arena, LexArg, count);
+	
+	u64 thread_idx = 0;
+	for(Module *module = modules->root; !is_nil_module(module); module = module->next, ++thread_idx)
+	{
+		Assert(args);
+		args[thread_idx].arena     = ArenaCreate(MiB(64));
+		args[thread_idx].buffer    = module->buffer;
+		args[thread_idx].result    = PushStructZero(arena, TokenList);
+		module_threads[thread_idx] = thread_launch(arena, mt_lexer_tokenize,  &args[thread_idx]);
+	}
+	
+	
+	thread_idx = 0;
+	for(Module *module = modules->root; !is_nil_module(module->next); module = module->next, ++thread_idx)
+	{
+		b32 ok = thread_join(module_threads[thread_idx]);
+		Assert(ok);
+		module->token_list = args[thread_idx].result;
+		
+#ifdef THREADING
+		module->token_list = lexer_tokenize(arena, module->buffer);
+#endif
+	}
 	
 	return 0;
 	

@@ -60,10 +60,8 @@ struct Token
 {
     enum TokenType type;
     u64            line;
-	
 	Keyword keyword;
 	String8 value;
-	
 };
 
 struct TokenNode
@@ -106,7 +104,6 @@ global_variable String8 reserved_words[] =
 	[Keyword_Enum]   = str8("enum"),
 };
 
-
 ReadOnly global_variable String8 operators[] = {
 	[TokenType_None]               = str8(""),
 	[TokenType_Double_Equal]       = str8("=="),
@@ -123,6 +120,16 @@ ReadOnly global_variable String8 operators[] = {
 	[TokenType_Double_Pipe]        = str8("||"),
 	[TokenType_Arrow]              = str8("->"),
 };
+
+// multithreading
+typedef struct LexArg LexArg;
+struct LexArg
+{
+	Arena     *arena;
+	String8   buffer;
+	TokenList *result;
+};
+
 
 
 
