@@ -156,6 +156,12 @@ internal b32  str8_is_whitespace(String8 buffer) {
 	return ((char)buffer.data[0] == ' ');
 }
 
+internal void str8_concat_list(String8List *a, String8List *b) {
+	b->last   = a->last->next;
+	b->count  += a->count;
+}
+
+
 internal b32 str8_find_needle(String8 *buffer, u64 start_pos, u8 *needle, u64 *pos) {
 	return str8_find(buffer, start_pos, str8(needle), pos);
 }
@@ -460,6 +466,15 @@ internal b32 str8_insert(Arena *arena, String8 *dest, String8 *src, u64 pos)
 	
 	*dest = result;
 	return true;
+}
+
+internal String8 str8_ends_with(String8 buffer, String8 affix)
+{
+	
+	AssertLog(0,"TODO");
+	// TODO: ...
+	return str8_zero();
+	
 }
 
 internal String8 str8_get_file_extension(String8 buffer)

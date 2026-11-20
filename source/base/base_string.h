@@ -310,13 +310,12 @@ internal b32 is_nil_str32_node(String32Node *a);
 #define Str8Fmt "%.*s"
 #define Str8Arg(buffer) (int)((buffer).size), (char *)((buffer).data)
 
-#define Str8FindNeedle(buffer, start_pos, needle, pos) str8_find_needle(buffer, (u64)start_pos, (u8 *)needle, pos)
-
 //- arrays
 
 internal String8Array str8_array_reserve(Arena *arena, u64 count);
 internal String8Array str8_array_from_list(Arena *arena, String8List *list);
 internal String8Array str8_array_slice(String8Array array, u64 first, u64 count);
+internal void str8_concat_list(String8List *a, String8List *b);
 
 #define FOR_STR8_ARRAY(array, it)					\
 for(String8 *it = (array).v; it < (array).v + (array).count; ++it)
